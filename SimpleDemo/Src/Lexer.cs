@@ -12,12 +12,8 @@ internal sealed class Lexer
         _position++;
     }
 
-    public Token NextToken()
+    public Token Lex()
     {
-        // <numbers>
-        // + - * / ( )
-        // <whitespace>
-
         if (_position >= _text.Length)
             return new Token(kind: SyntaxKind.EndOfFileToken, position: _position, text: "\0", value: null);
 
