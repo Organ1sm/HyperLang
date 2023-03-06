@@ -65,9 +65,23 @@ internal sealed class Parser
         return new AST(expresion, endOfFileToken, _diagnostics);
     }
 
-    private Expression ParseExpression()
+    private Expression ParseExpression(int parentPrecedence = 0)
     {
-        return ParseTerm();
+        var left = ParsePrimaryExpression();
+
+        while (true)
+        {
+            var precedence = Current.Kind.GetBinaryOperatorPrecedence();
+            if (precedence == 0 || precedence <= parentPrecedence)
+                break;
+
+            var OPToken = NextToken();
+            var right   = ParseExpression();
+
+            left = new BinaryExpression(left, OPToken, right);
+        }
+
+        return left;
     }
 
     private Expression ParseTerm()
