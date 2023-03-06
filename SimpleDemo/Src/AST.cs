@@ -1,6 +1,6 @@
 ﻿namespace HyperLang.SimpleDemo;
 
-sealed class AST
+public sealed class AST
 {
     public AST(Expression root, Token eofToken, IReadOnlyList<string> diagnostics)
     {

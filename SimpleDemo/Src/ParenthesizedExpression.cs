@@ -1,6 +1,6 @@
 ﻿namespace HyperLang.SimpleDemo;
 
-sealed class ParenthesizedExpression :
+public sealed class ParenthesizedExpression :
     Expression
 {
     public override SyntaxKind Kind                  => SyntaxKind.ParenthesizedExpression;

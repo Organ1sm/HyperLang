@@ -1,6 +1,6 @@
 ﻿namespace HyperLang.SimpleDemo;
 
-abstract class Node
+public abstract class Node
 {
     public abstract SyntaxKind Kind { get; }
 

@@ -1,18 +1,23 @@
 ﻿namespace HyperLang.SimpleDemo;
 
-enum SyntaxKind
+public enum SyntaxKind
 {
-    NumberToken,
+    
+    BadToken,
+    EndOfFileToken,
+    
     WhitespaceToken,
+    NumberToken,
+    
     PlusToken,             // +
     MinusToken,            // -
     StarToken,             // *
     SlashToken,            // /
     OpenParenthesisToken,  // '('
     CloseParenthesisToken, // ')'
-    BadToken,
-    EndOfFileToken,
-    NumberExpression,
+    
+    // Expression
+    LiteralExpression,
     BinaryExpression,
     ParenthesizedExpression
 }

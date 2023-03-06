@@ -1,6 +1,6 @@
 ﻿namespace HyperLang.SimpleDemo;
 
-class Lexer
+internal sealed class Lexer
 {
     public Lexer(string text)
     {

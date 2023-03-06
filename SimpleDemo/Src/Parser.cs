@@ -2,7 +2,7 @@
 
 namespace HyperLang.SimpleDemo;
 
-class Parser
+internal sealed class Parser
 {
     private readonly Token[]      _tokens;
     private          List<string> _diagnostics = new();
@@ -112,6 +112,6 @@ class Parser
         }
 
         var numberToken = Match(SyntaxKind.NumberToken);
-        return new NumberExpression(numberToken);
+        return new LiteralExpression(numberToken);
     }
 }

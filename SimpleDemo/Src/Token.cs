@@ -1,6 +1,6 @@
 ﻿namespace HyperLang.SimpleDemo;
 
-class Token : Node
+public sealed class Token : Node
 {
     public Token(SyntaxKind kind, int position, string? text = null, object? value = null)
     {

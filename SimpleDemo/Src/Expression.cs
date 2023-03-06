@@ -1,3 +1,3 @@
 ﻿namespace HyperLang.SimpleDemo;
 
-abstract class Expression : Node { }
+public abstract class Expression : Node { }

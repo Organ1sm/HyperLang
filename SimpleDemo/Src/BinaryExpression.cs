@@ -2,7 +2,7 @@
 
 namespace HyperLang.SimpleDemo;
 
-sealed class BinaryExpression : Expression
+public sealed class BinaryExpression : Expression
 {
     public override SyntaxKind Kind     => SyntaxKind.BinaryExpression;
     public          Expression Left     { get; }
