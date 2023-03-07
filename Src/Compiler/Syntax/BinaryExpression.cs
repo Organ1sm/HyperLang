@@ -1,6 +1,6 @@
-﻿using System.Linq.Expressions;
+﻿using Hyper.Compiler.Parser;
 
-namespace HyperLang.SimpleDemo;
+namespace Hyper.Compiler.Syntax;
 
 public sealed class BinaryExpression : Expression
 {

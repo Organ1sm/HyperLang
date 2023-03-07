@@ -1,4 +1,6 @@
-﻿namespace HyperLang.SimpleDemo;
+﻿using Hyper.Compiler.Parser;
+
+namespace Hyper.Compiler.Syntax;
 
 public sealed class ParenthesizedExpression :
     Expression

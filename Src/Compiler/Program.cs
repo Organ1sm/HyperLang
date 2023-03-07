@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Hyper.Compiler.Parser;
 
-namespace HyperLang.SimpleDemo
+namespace Hyper.Compiler.Syntax.Syntax
 {
     class Program
     {

@@ -1,4 +1,7 @@
-﻿namespace HyperLang.SimpleDemo;
+﻿
+using Hyper.Compiler.Parser;
+
+namespace Hyper.Compiler.Syntax;
 
 public sealed class AST
 {
@@ -11,7 +14,7 @@ public sealed class AST
 
     public static AST Parse(string text)
     {
-        var parser = new Parser(text);
+        var parser = new Parser.Parser(text);
         return parser.Parse();
     }
 
