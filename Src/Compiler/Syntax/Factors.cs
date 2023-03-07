@@ -4,31 +4,23 @@ internal static class Factors
 {
     public static int GetBinaryOperatorPrecedence(this SyntaxKind kind)
     {
-        switch (kind)
+        return kind switch
         {
-            case SyntaxKind.StarToken:
-            case SyntaxKind.SlashToken:
-                return 2;
-
-            case SyntaxKind.PlusToken:
-            case SyntaxKind.MinusToken:
-                return 1;
-
-            default:
-                return 0;
-        }
+            SyntaxKind.StarToken  => 2,
+            SyntaxKind.SlashToken => 2,
+            SyntaxKind.PlusToken  => 1,
+            SyntaxKind.MinusToken => 1,
+            _                     => 0
+        };
     }
 
     public static int GetUnaryOperatorPrecedence(this SyntaxKind kind)
     {
-        switch (kind)
+        return kind switch
         {
-            case SyntaxKind.PlusToken:
-            case SyntaxKind.MinusToken:
-                return 3;
-
-            default:
-                return 0;
-        }
+            SyntaxKind.PlusToken  => 3,
+            SyntaxKind.MinusToken => 3,
+            _                     => 0
+        };
     }
 }

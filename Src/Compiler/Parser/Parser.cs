@@ -72,9 +72,9 @@ namespace Hyper.Compiler.Parser
             var unaryOperatorPrecedence = Current.Kind.GetUnaryOperatorPrecedence();
             if (unaryOperatorPrecedence != 0 && unaryOperatorPrecedence >= parentPrecedence)
             {
-                var OPToken = NextToken();
+                var opToken = NextToken() ?? throw new ArgumentNullException("NextToken()");
                 var operand = ParseExpression(unaryOperatorPrecedence);
-                left = new UnaryExpression(OPToken, operand);
+                left = new UnaryExpression(opToken, operand);
             }
             else
             {
@@ -87,10 +87,10 @@ namespace Hyper.Compiler.Parser
                 if (precedence == 0 || precedence <= parentPrecedence)
                     break;
 
-                var OPToken = NextToken();
+                var opToken = NextToken();
                 var right   = ParseExpression();
 
-                left = new BinaryExpression(left, OPToken, right);
+                left = new BinaryExpression(left, opToken, right);
             }
 
             return left;
