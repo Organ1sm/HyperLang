@@ -129,16 +129,31 @@ namespace Hyper.Compiler.Parser
 
         private Expression ParsePrimaryExpression()
         {
-            if (Current.Kind == SyntaxKind.OpenParenthesisToken)
+            switch (Current.Kind)
             {
-                var left       = NextToken();
-                var expression = ParseExpression();
-                var right      = Match(SyntaxKind.CloseParenthesisToken);
-                return new ParenthesizedExpression(left, expression, right);
-            }
+                case SyntaxKind.OpenParenthesisToken:
+                {
+                    var left       = NextToken();
+                    var expression = ParseExpression();
+                    var right      = Match(SyntaxKind.CloseParenthesisToken);
+                    return new ParenthesizedExpression(left, expression, right);
+                }
 
-            var numberToken = Match(SyntaxKind.NumberToken);
-            return new LiteralExpression(numberToken);
+                case SyntaxKind.TrueKeyword:
+                case SyntaxKind.FalseKeyword:
+                {
+                    var value        = (Current.Kind == SyntaxKind.TrueKeyword);
+                    var keywordToken = NextToken();
+
+                    return new LiteralExpression(keywordToken, value);
+                }
+
+                default:
+                {
+                    var numberToken = Match(SyntaxKind.NumberToken);
+                    return new LiteralExpression(numberToken);
+                }
+            }
         }
     }
 }

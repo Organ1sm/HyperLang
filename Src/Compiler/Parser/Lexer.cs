@@ -47,6 +47,19 @@ namespace Hyper.Compiler.Parser
                 return new Token(SyntaxKind.WhitespaceToken, start, text);
             }
 
+            if (char.IsLetter(Current))
+            {
+                var start = _position;
+                while (char.IsLetter(Current))
+                    Next();
+
+                var length = _position - start;
+                var text   = _text.Substring(start, length);
+                var kind   = Factors.GetKeywordKind(text);
+
+                return new Token(kind, start, text);
+            }
+
             switch (Current)
             {
                 case '+':

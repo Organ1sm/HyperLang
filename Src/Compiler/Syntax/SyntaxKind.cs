@@ -14,6 +14,12 @@ public enum SyntaxKind
     SlashToken,            // /
     OpenParenthesisToken,  // '('
     CloseParenthesisToken, // ')'
+    
+    IdentifierToken,
+    
+    // Keywords
+    TrueKeyword,
+    FalseKeyword,
 
     // Expression
     LiteralExpression,
