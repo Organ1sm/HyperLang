@@ -6,13 +6,13 @@
         public override Type          Type => Left.Type;
 
         public BoundExpression         Left         { get; }
-        public BoundBinaryOperatorKind OperatorKind { get; }
+        public BoundBinaryOperator Operator { get; }
         public BoundExpression         Right        { get; }
 
-        public BoundBinaryExpression(BoundExpression left, BoundBinaryOperatorKind operatorKind, BoundExpression right)
+        public BoundBinaryExpression(BoundExpression left, BoundBinaryOperator @operator, BoundExpression right)
         {
             Left = left;
-            OperatorKind = operatorKind;
+            Operator = @operator;
             Right = right;
         }
     }

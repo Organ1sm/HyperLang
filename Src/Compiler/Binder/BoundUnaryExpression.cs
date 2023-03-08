@@ -5,12 +5,12 @@
         public override BoundNodeKind Kind => BoundNodeKind.UnaryExpression;
         public override Type          Type => Operand.Type;
 
-        public BoundUnaryOperatorKind OperatorKind { get; }
-        public BoundExpression        Operand      { get; }
+        public BoundUnaryOperator Operator { get; }
+        public BoundExpression    Operand  { get; }
 
-        public BoundUnaryExpression(BoundUnaryOperatorKind operatorKind, BoundExpression operand)
+        public BoundUnaryExpression(BoundUnaryOperator @operator, BoundExpression operand)
         {
-            OperatorKind = operatorKind;
+            Operator = @operator;
             Operand = operand;
         }
     }
