@@ -74,15 +74,40 @@ namespace Hyper.Compiler.Parser
                     return new Token(SyntaxKind.OpenParenthesisToken, _position++, "(");
                 case ')':
                     return new Token(SyntaxKind.CloseParenthesisToken, _position++, ")");
-                default:
-                    _diagnostics.Add($"ERROR: bad character input: '{Current}'");
-                    return new Token(SyntaxKind.BadToken, _position++, _text.Substring(_position - 1, 1));
+
+                case '!':
+                    return new Token(SyntaxKind.BangToken, _position++, "!");
+                case '&':
+                {
+                    if (Lookahead == '&')
+                        return new Token(SyntaxKind.AmpersandAmpersandToken, _position += 2, "&&");
+                    break;
+                }
+                case '|':
+                {
+                    if (Lookahead == '|')
+                        return new Token(SyntaxKind.PipePipeToken, _position += 2, "||");
+                    break;
+                }
             }
+
+            _diagnostics.Add($"ERROR: bad character input: '{Current}'");
+            return new Token(SyntaxKind.BadToken, _position++, _text.Substring(_position - 1, 1));
+        }
+
+        private char Peek(int offset)
+        {
+            var index = _position + offset;
+
+            return index >= _text.Length ? '\0' : _text[index];
         }
 
         public IEnumerable<string> Diagnostics => _diagnostics;
 
-        private char Current => _position >= _text.Length ? '\0' : _text[_position];
+        private char Current => Peek(0);
+
+        private char Lookahead => Peek(1);
+
 
         private readonly string       _text;
         private          int          _position;

@@ -59,7 +59,7 @@ namespace Hyper.Compiler.Parser
 
         public AST Parse()
         {
-            var expresion      = ParseTerm();
+            var expresion      = ParseExpression();
             var endOfFileToken = Match(SyntaxKind.EndOfFileToken);
 
             return new AST(expresion, endOfFileToken, _diagnostics);
@@ -96,36 +96,6 @@ namespace Hyper.Compiler.Parser
             return left;
         }
 
-        private Expression ParseTerm()
-        {
-            var left = ParseFactor();
-
-            while (Current.Kind == SyntaxKind.PlusToken ||
-                   Current.Kind == SyntaxKind.MinusToken)
-            {
-                var operatorToken = NextToken();
-                var right         = ParseFactor();
-
-                left = new BinaryExpression(left, operatorToken, right);
-            }
-
-            return left;
-        }
-
-        private Expression ParseFactor()
-        {
-            var left = ParsePrimaryExpression();
-            while (Current.Kind == SyntaxKind.StarToken ||
-                   Current.Kind == SyntaxKind.SlashToken)
-            {
-                var operatorToken = NextToken();
-                var right         = ParsePrimaryExpression();
-
-                left = new BinaryExpression(left, operatorToken, right);
-            }
-
-            return left;
-        }
 
         private Expression ParsePrimaryExpression()
         {
@@ -136,14 +106,15 @@ namespace Hyper.Compiler.Parser
                     var left       = NextToken();
                     var expression = ParseExpression();
                     var right      = Match(SyntaxKind.CloseParenthesisToken);
+
                     return new ParenthesizedExpression(left, expression, right);
                 }
 
                 case SyntaxKind.TrueKeyword:
                 case SyntaxKind.FalseKeyword:
                 {
-                    var value        = (Current.Kind == SyntaxKind.TrueKeyword);
                     var keywordToken = NextToken();
+                    var value        = (keywordToken.Kind == SyntaxKind.TrueKeyword);
 
                     return new LiteralExpression(keywordToken, value);
                 }
