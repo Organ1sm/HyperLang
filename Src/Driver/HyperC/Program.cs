@@ -1,5 +1,4 @@
-﻿using Hyper.Compiler.Binding;
-using Hyper.Compiler.Parser;
+﻿using Hyper.Compiler.Parser;
 using Hyper.Compiler.Syntax;
 
 namespace Hyper
