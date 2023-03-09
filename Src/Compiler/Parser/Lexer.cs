@@ -1,4 +1,6 @@
-﻿using Hyper.Compiler.Syntax;
+﻿using Hyper.Compiler.Diagnostic;
+using Hyper.Compiler.Syntax;
+using Hyper.Compiler.Text;
 
 namespace Hyper.Compiler.Parser
 {
@@ -29,7 +31,7 @@ namespace Hyper.Compiler.Parser
                 var text   = _text.Substring(start, length);
 
                 if (!int.TryParse(text, out var value))
-                    _diagnostics.Add($"The number {_text} isn't valid Int32.");
+                    _diagnostics.ReportInvalidNumber(new TextSpan(start, length), _text, typeof(int));
 
                 return new Token(kind: SyntaxKind.NumberToken, position: start, text: text, value: value);
             }
@@ -115,7 +117,7 @@ namespace Hyper.Compiler.Parser
                 }
             }
 
-            _diagnostics.Add($"ERROR: bad character input: '{Current}'");
+            _diagnostics.ReportBadCharacter(_position, Current);
             return new Token(SyntaxKind.BadToken, _position++, _text.Substring(_position - 1, 1));
         }
 
@@ -126,15 +128,15 @@ namespace Hyper.Compiler.Parser
             return index >= _text.Length ? '\0' : _text[index];
         }
 
-        public IEnumerable<string> Diagnostics => _diagnostics;
+        public DiagnosticBag Diagnostics => _diagnostics;
 
         private char Current => Peek(0);
 
         private char Lookahead => Peek(1);
 
 
-        private readonly string       _text;
-        private          int          _position;
-        private          List<string> _diagnostics = new();
+        private readonly string        _text;
+        private          int           _position;
+        private          DiagnosticBag _diagnostics = new();
     }
 }

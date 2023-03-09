@@ -1,12 +1,13 @@
 ﻿using System.Diagnostics.SymbolStore;
+using Hyper.Compiler.Diagnostic;
 using Hyper.Compiler.Syntax;
 
 namespace Hyper.Compiler.Binding
 {
     internal sealed class Binder
     {
-        private readonly List<string>        _diagnostics = new();
-        public           IEnumerable<string> Diagnostics => _diagnostics;
+        private readonly DiagnosticBag                      _diagnostics = new();
+        public           IEnumerable<Diagnostic.Diagnostic> Diagnostics => _diagnostics;
 
         public BoundExpression BindExpression(Expression syntax)
         {
@@ -30,12 +31,14 @@ namespace Hyper.Compiler.Binding
         private BoundExpression BindUnaryExpression(UnaryExpression syntax)
         {
             var boundOperand  = BindExpression(syntax.Operand);
-            var boundOperator = BoundUnaryOperator.Bind(syntax.OperatorToken.Kind, boundOperand.Type);
+            var boundOperator = BoundUnaryOperator.Bind(syntax.Operator.Kind, boundOperand.Type);
 
             if (boundOperator == null)
             {
                 _diagnostics
-                    .Add($"Unary operator '{syntax.OperatorToken.Text}' is not defined for type {boundOperand.Type}");
+                    .ReportUndefinedUnaryOperator(syntax.Operator.Span,
+                                                  syntax.Operator.Text,
+                                                  boundOperand.Type);
                 return boundOperand;
             }
 
@@ -51,7 +54,10 @@ namespace Hyper.Compiler.Binding
             if (boundOperator == null)
             {
                 _diagnostics
-                    .Add($"Binary operator '{syntax.Operator.Text}' is not defined for types {boundLeft.Type} and {boundRight.Type}.");
+                    .ReportUndefinedBinaryOperator(syntax.Operator.Span,
+                                                   syntax.Operator.Text,
+                                                   boundLeft.Type,
+                                                   boundRight.Type);
                 return boundLeft;
             }
 

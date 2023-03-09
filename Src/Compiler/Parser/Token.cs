@@ -1,5 +1,5 @@
-﻿using Compiler.Text;
-using Hyper.Compiler.Syntax;
+﻿using Hyper.Compiler.Syntax;
+using Hyper.Compiler.Text;
 
 namespace Hyper.Compiler.Parser
 {

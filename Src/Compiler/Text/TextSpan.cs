@@ -1,4 +1,4 @@
-﻿namespace Compiler.Text;
+﻿namespace Hyper.Compiler.Text;
 
 public class TextSpan
 {

@@ -1,15 +1,16 @@
-﻿using Hyper.Compiler.Syntax;
+﻿using Hyper.Compiler.Diagnostic;
+using Hyper.Compiler.Syntax;
 
 namespace Hyper.Compiler.Parser
 {
     internal sealed class Parser
     {
-        private readonly Token[]      _tokens;
-        private          List<string> _diagnostics = new();
-        private          int          _position;
+        private readonly Token[]       _tokens;
+        private          DiagnosticBag _diagnostics = new();
+        private          int           _position;
 
-        public  IEnumerable<string> Diagnostics => _diagnostics;
-        private Token               Current     => Peek(0);
+        public  DiagnosticBag Diagnostics => _diagnostics;
+        private Token         Current     => Peek(0);
 
         public Parser(string text)
         {
@@ -53,7 +54,7 @@ namespace Hyper.Compiler.Parser
             if (Current.Kind == kind)
                 return NextToken();
 
-            _diagnostics.Add($"ERROR: Unexpected token <{Current.Kind}>, expected <{kind}>");
+            _diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind, kind);
             return new Token(kind: kind, position: Current.Position, null);
         }
 
