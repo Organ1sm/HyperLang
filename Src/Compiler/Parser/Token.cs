@@ -1,4 +1,4 @@
-﻿
+﻿using Compiler.Text;
 using Hyper.Compiler.Syntax;
 
 namespace Hyper.Compiler.Parser
@@ -15,9 +15,10 @@ namespace Hyper.Compiler.Parser
 
         public override SyntaxKind Kind { get; }
 
-        public int     Position { get; }
-        public string  Text     { get; }
-        public object? Value    { get; }
+        public int      Position { get; }
+        public string   Text     { get; }
+        public object?  Value    { get; }
+        public TextSpan Span     => new(Position, Text.Length);
 
         public override IEnumerable<Node> GetChildren()
         {
