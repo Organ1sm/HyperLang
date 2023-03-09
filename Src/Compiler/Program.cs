@@ -29,12 +29,9 @@ namespace Hyper
                     continue;
                 }
 
-                var ast             = AST.Parse(line);
-                var binder          = new Binder();
-                var boundExpression = binder.BindExpression(ast.Root);
-
-                var diagnostics = ast.Diagnostics.Concat(binder.Diagnostics).ToArray();
-
+                var ast         = AST.Parse(line);
+                var compilation = new Compilation(ast);
+                var result      = compilation.Evaluate();
 
                 if (showTree)
                 {
@@ -44,18 +41,16 @@ namespace Hyper
                     Console.ForegroundColor = color;
                 }
 
-                if (!diagnostics.Any())
+                if (!result.Diagnostics.Any())
                 {
-                    var e      = new Evaluator(boundExpression);
-                    var result = e.Evaluate();
-                    Console.WriteLine(result);
+                    Console.WriteLine(result.Value);
                 }
                 else
                 {
                     var color = Console.ForegroundColor;
                     Console.ForegroundColor = ConsoleColor.DarkRed;
 
-                    foreach (var diagnostic in diagnostics)
+                    foreach (var diagnostic in result.Diagnostics)
                         Console.WriteLine(diagnostic);
 
                     Console.ForegroundColor = color;
