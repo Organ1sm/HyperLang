@@ -12,10 +12,11 @@ namespace Hyper.Compiler.Binding
         {
             return syntax.Kind switch
             {
-                SyntaxKind.LiteralExpression => BindLiteralExpression((LiteralExpression) syntax),
-                SyntaxKind.UnaryExpression   => BindUnaryExpression((UnaryExpression) syntax),
-                SyntaxKind.BinaryExpression  => BindBinaryExpression((BinaryExpression) syntax),
-                _                            => throw new ArgumentException($"Unexpected syntax {syntax.Kind}")
+                SyntaxKind.LiteralExpression       => BindLiteralExpression((LiteralExpression) syntax),
+                SyntaxKind.UnaryExpression         => BindUnaryExpression((UnaryExpression) syntax),
+                SyntaxKind.BinaryExpression        => BindBinaryExpression((BinaryExpression) syntax),
+                SyntaxKind.ParenthesizedExpression => BindExpression(((ParenthesizedExpression) syntax).Expression),
+                _                                  => throw new ArgumentException($"Unexpected syntax {syntax.Kind}")
             };
         }
 
