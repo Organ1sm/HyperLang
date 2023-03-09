@@ -74,9 +74,20 @@ namespace Hyper.Compiler.Parser
                     return new Token(SyntaxKind.OpenParenthesisToken, _position++, "(");
                 case ')':
                     return new Token(SyntaxKind.CloseParenthesisToken, _position++, ")");
-
                 case '!':
-                    return new Token(SyntaxKind.BangToken, _position++, "!");
+                {
+                    return Lookahead switch
+                    {
+                        '=' => new Token(SyntaxKind.EqualsEqualsToken, _position += 2, "!="),
+                        _   => new Token(SyntaxKind.BangToken, _position++, "!")
+                    };
+                }
+                case '=':
+                {
+                    if (Lookahead == '=')
+                        return new Token(SyntaxKind.BangEqualsToken, _position += 2, "==");
+                    break;
+                }
                 case '&':
                 {
                     if (Lookahead == '&')

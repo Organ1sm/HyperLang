@@ -39,7 +39,7 @@ namespace Hyper.Compiler.Parser
                 var left  = EvaluateExpression(b.Left);
                 var right = EvaluateExpression(b.Right);
 
-                return b.Operator.OPKind switch
+                return b.Operator.OpKind switch
                 {
                     BoundBinaryOperatorKind.Addition => (int) left + (int) right,
                     BoundBinaryOperatorKind.Subtraction => (int) left - (int) right,
@@ -47,6 +47,8 @@ namespace Hyper.Compiler.Parser
                     BoundBinaryOperatorKind.Division => (int) left / (int) right,
                     BoundBinaryOperatorKind.LogicalAnd => (bool) left && (bool) right,
                     BoundBinaryOperatorKind.LogicalOr => (bool) left || (bool) right,
+                    BoundBinaryOperatorKind.Equals => Equals(left, right),
+                    BoundBinaryOperatorKind.NotEquals => Equals(left, right),
                     _ => throw new Exception($"Unexpected binary operator {b.Operator}")
                 };
             }

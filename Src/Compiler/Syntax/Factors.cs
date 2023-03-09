@@ -6,10 +6,15 @@ internal static class Factors
     {
         return kind switch
         {
-            SyntaxKind.StarToken               => 4,
-            SyntaxKind.SlashToken              => 4,
-            SyntaxKind.PlusToken               => 3,
-            SyntaxKind.MinusToken              => 3,
+            SyntaxKind.StarToken               => 5,
+            SyntaxKind.SlashToken              => 5,
+            
+            SyntaxKind.PlusToken               => 4,
+            SyntaxKind.MinusToken              => 4,
+            
+            SyntaxKind.EqualsEqualsToken       => 3,
+            SyntaxKind.BangEqualsToken         => 3,
+            
             SyntaxKind.AmpersandAmpersandToken => 2,
             SyntaxKind.PipePipeToken           => 1,
             _                                  => 0
@@ -20,9 +25,9 @@ internal static class Factors
     {
         return kind switch
         {
-            SyntaxKind.PlusToken  => 5,
-            SyntaxKind.MinusToken => 5,
-            SyntaxKind.BangToken  => 5,
+            SyntaxKind.PlusToken  => 6,
+            SyntaxKind.MinusToken => 6,
+            SyntaxKind.BangToken  => 6,
             _                     => 0
         };
     }
