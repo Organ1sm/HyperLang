@@ -1,58 +1,57 @@
-﻿using Hyper.Compiler.Syntax;
+﻿using Hyper.Compiler.Binding;
 
 namespace Hyper.Compiler.Parser
 {
-    public sealed class Evaluator
+    internal sealed class Evaluator
     {
-        private readonly Expression _root;
+        private readonly BoundExpression _root;
 
-        public Evaluator(Expression root)
+        public Evaluator(BoundExpression root)
         {
             this._root = root;
         }
 
-        public int Evaluate()
+        public object Evaluate()
         {
             return EvaluateExpression(_root);
         }
 
-        private int EvaluateExpression(Expression node)
+        private object EvaluateExpression(BoundExpression node)
         {
-            if (node is LiteralExpression n)
-                return (int) n.LiteralToken.Value;
+            if (node is BoundLiteralExpression n)
+                return n.Value;
 
-
-            if (node is UnaryExpression u)
+            if (node is BoundUnaryExpression u)
             {
                 var operand = EvaluateExpression(u.Operand);
 
-                if (u.OperatorToken.Kind == SyntaxKind.PlusToken)
-                    return operand;
-                else if (u.OperatorToken.Kind == SyntaxKind.MinusToken)
-                    return -operand;
-                else
-                    throw new Exception($"Unexpected unary operator {u.OperatorToken.Kind}");
+                return u.Operator.Kind switch
+                {
+                    BoundUnaryOperatorKind.Identity => (int) operand,
+                    BoundUnaryOperatorKind.Negation => -(int) operand,
+                    BoundUnaryOperatorKind.LogicalNegation => !(bool) operand,
+                    _ => throw new Exception($"Unexpected unary operator {u.Operator}")
+                };
             }
 
-            if (node is BinaryExpression b)
+            if (node is BoundBinaryExpression b)
             {
                 var left  = EvaluateExpression(b.Left);
                 var right = EvaluateExpression(b.Right);
 
-                if (b.Operator.Kind == SyntaxKind.PlusToken)
-                    return left + right;
-                else if (b.Operator.Kind == SyntaxKind.MinusToken)
-                    return left - right;
-                else if (b.Operator.Kind == SyntaxKind.StarToken)
-                    return left * right;
-                else if (b.Operator.Kind == SyntaxKind.SlashToken)
-                    return left / right;
-                else
-                    throw new Exception($"Unexpected binary operator {b.Operator.Kind}");
+                return b.Operator.OpKind switch
+                {
+                    BoundBinaryOperatorKind.Addition => (int) left + (int) right,
+                    BoundBinaryOperatorKind.Subtraction => (int) left - (int) right,
+                    BoundBinaryOperatorKind.Multiplication => (int) left * (int) right,
+                    BoundBinaryOperatorKind.Division => (int) left / (int) right,
+                    BoundBinaryOperatorKind.LogicalAnd => (bool) left && (bool) right,
+                    BoundBinaryOperatorKind.LogicalOr => (bool) left || (bool) right,
+                    BoundBinaryOperatorKind.Equals => Equals(left, right),
+                    BoundBinaryOperatorKind.NotEquals => Equals(left, right),
+                    _ => throw new Exception($"Unexpected binary operator {b.Operator}")
+                };
             }
-
-            if (node is ParenthesizedExpression p)
-                return EvaluateExpression(p.Expression);
 
             throw new Exception($"Unexpected node {node.Kind}");
         }

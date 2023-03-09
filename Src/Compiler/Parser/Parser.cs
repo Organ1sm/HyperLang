@@ -59,7 +59,7 @@ namespace Hyper.Compiler.Parser
 
         public AST Parse()
         {
-            var expresion      = ParseTerm();
+            var expresion      = ParseExpression();
             var endOfFileToken = Match(SyntaxKind.EndOfFileToken);
 
             return new AST(expresion, endOfFileToken, _diagnostics);
@@ -72,9 +72,9 @@ namespace Hyper.Compiler.Parser
             var unaryOperatorPrecedence = Current.Kind.GetUnaryOperatorPrecedence();
             if (unaryOperatorPrecedence != 0 && unaryOperatorPrecedence >= parentPrecedence)
             {
-                var OPToken = NextToken();
+                var opToken = NextToken() ?? throw new ArgumentNullException("NextToken()");
                 var operand = ParseExpression(unaryOperatorPrecedence);
-                left = new UnaryExpression(OPToken, operand);
+                left = new UnaryExpression(opToken, operand);
             }
             else
             {
@@ -87,58 +87,44 @@ namespace Hyper.Compiler.Parser
                 if (precedence == 0 || precedence <= parentPrecedence)
                     break;
 
-                var OPToken = NextToken();
+                var opToken = NextToken();
                 var right   = ParseExpression();
 
-                left = new BinaryExpression(left, OPToken, right);
+                left = new BinaryExpression(left, opToken, right);
             }
 
             return left;
         }
 
-        private Expression ParseTerm()
-        {
-            var left = ParseFactor();
-
-            while (Current.Kind == SyntaxKind.PlusToken ||
-                   Current.Kind == SyntaxKind.MinusToken)
-            {
-                var operatorToken = NextToken();
-                var right         = ParseFactor();
-
-                left = new BinaryExpression(left, operatorToken, right);
-            }
-
-            return left;
-        }
-
-        private Expression ParseFactor()
-        {
-            var left = ParsePrimaryExpression();
-            while (Current.Kind == SyntaxKind.StarToken ||
-                   Current.Kind == SyntaxKind.SlashToken)
-            {
-                var operatorToken = NextToken();
-                var right         = ParsePrimaryExpression();
-
-                left = new BinaryExpression(left, operatorToken, right);
-            }
-
-            return left;
-        }
 
         private Expression ParsePrimaryExpression()
         {
-            if (Current.Kind == SyntaxKind.OpenParenthesisToken)
+            switch (Current.Kind)
             {
-                var left       = NextToken();
-                var expression = ParseExpression();
-                var right      = Match(SyntaxKind.CloseParenthesisToken);
-                return new ParenthesizedExpression(left, expression, right);
-            }
+                case SyntaxKind.OpenParenthesisToken:
+                {
+                    var left       = NextToken();
+                    var expression = ParseExpression();
+                    var right      = Match(SyntaxKind.CloseParenthesisToken);
 
-            var numberToken = Match(SyntaxKind.NumberToken);
-            return new LiteralExpression(numberToken);
+                    return new ParenthesizedExpression(left, expression, right);
+                }
+
+                case SyntaxKind.TrueKeyword:
+                case SyntaxKind.FalseKeyword:
+                {
+                    var keywordToken = NextToken();
+                    var value        = (keywordToken.Kind == SyntaxKind.TrueKeyword);
+
+                    return new LiteralExpression(keywordToken, value);
+                }
+
+                default:
+                {
+                    var numberToken = Match(SyntaxKind.NumberToken);
+                    return new LiteralExpression(numberToken);
+                }
+            }
         }
     }
 }

@@ -8,12 +8,23 @@ public enum SyntaxKind
     WhitespaceToken,
     NumberToken,
 
-    PlusToken,             // +
-    MinusToken,            // -
-    StarToken,             // *
-    SlashToken,            // /
-    OpenParenthesisToken,  // '('
-    CloseParenthesisToken, // ')'
+    PlusToken,               // +
+    MinusToken,              // -
+    StarToken,               // *
+    SlashToken,              // /
+    BangToken,               // '!'
+    AmpersandAmpersandToken, // '&&'
+    PipePipeToken,           // '||'
+    EqualsEqualsToken,       // '=='
+    BangEqualsToken,         // '!='
+    OpenParenthesisToken,    // '('
+    CloseParenthesisToken,   // ')'
+
+    IdentifierToken,
+
+    // Keywords
+    TrueKeyword,
+    FalseKeyword,
 
     // Expression
     LiteralExpression,

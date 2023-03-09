@@ -1,6 +1,8 @@
-﻿using Hyper.Compiler.Parser;
+﻿using Hyper.Compiler.Binding;
+using Hyper.Compiler.Parser;
+using Hyper.Compiler.Syntax;
 
-namespace Hyper.Compiler.Syntax.Syntax
+namespace Hyper
 {
     class Program
     {
@@ -27,7 +29,12 @@ namespace Hyper.Compiler.Syntax.Syntax
                     continue;
                 }
 
-                var ast = AST.Parse(line);
+                var ast             = AST.Parse(line);
+                var binder          = new Binder();
+                var boundExpression = binder.BindExpression(ast.Root);
+
+                var diagnostics = ast.Diagnostics.Concat(binder.Diagnostics).ToArray();
+
 
                 if (showTree)
                 {
@@ -37,9 +44,9 @@ namespace Hyper.Compiler.Syntax.Syntax
                     Console.ForegroundColor = color;
                 }
 
-                if (!ast.Diagnostics.Any())
+                if (!diagnostics.Any())
                 {
-                    var e      = new Evaluator(ast.Root);
+                    var e      = new Evaluator(boundExpression);
                     var result = e.Evaluate();
                     Console.WriteLine(result);
                 }
@@ -48,7 +55,7 @@ namespace Hyper.Compiler.Syntax.Syntax
                     var color = Console.ForegroundColor;
                     Console.ForegroundColor = ConsoleColor.DarkRed;
 
-                    foreach (var diagnostic in ast.Diagnostics)
+                    foreach (var diagnostic in diagnostics)
                         Console.WriteLine(diagnostic);
 
                     Console.ForegroundColor = color;
@@ -72,7 +79,7 @@ namespace Hyper.Compiler.Syntax.Syntax
 
             Console.WriteLine();
 
-            indent += isLast ? "    " : "│   ";
+            indent += isLast ? "    " : "│  ";
 
             var lastChild = node.GetChildren().LastOrDefault();
 
