@@ -2,7 +2,7 @@
 {
     internal class BoundBinaryExpression : BoundExpression
     {
-        public override BoundNodeKind Kind => BoundNodeKind.UnaryExpression;
+        public override BoundNodeKind Kind => BoundNodeKind.BinaryExpression;
         public override Type          Type => Left.Type;
 
         public BoundExpression         Left         { get; }
