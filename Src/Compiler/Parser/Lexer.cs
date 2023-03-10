@@ -1,4 +1,6 @@
-﻿using Hyper.Compiler.Syntax;
+﻿using Hyper.Compiler.Diagnostic;
+using Hyper.Compiler.Syntax;
+using Hyper.Compiler.Text;
 
 namespace Hyper.Compiler.Parser
 {
@@ -19,10 +21,9 @@ namespace Hyper.Compiler.Parser
             if (_position >= _text.Length)
                 return new Token(kind: SyntaxKind.EndOfFileToken, position: _position, text: "\0", value: null);
 
+            int start = _position;
             if (char.IsDigit(Current))
             {
-                int start = _position;
-
                 while (char.IsDigit(Current))
                     Next();
 
@@ -30,15 +31,13 @@ namespace Hyper.Compiler.Parser
                 var text   = _text.Substring(start, length);
 
                 if (!int.TryParse(text, out var value))
-                    _diagnostics.Add($"The number {_text} isn't valid Int32.");
+                    _diagnostics.ReportInvalidNumber(new TextSpan(start, length), _text, typeof(int));
 
                 return new Token(kind: SyntaxKind.NumberToken, position: start, text: text, value: value);
             }
 
             if (char.IsWhiteSpace(Current))
             {
-                var start = _position;
-
                 while (char.IsWhiteSpace(Current))
                     Next();
 
@@ -49,7 +48,6 @@ namespace Hyper.Compiler.Parser
 
             if (char.IsLetter(Current))
             {
-                var start = _position;
                 while (char.IsLetter(Current))
                     Next();
 
@@ -76,33 +74,51 @@ namespace Hyper.Compiler.Parser
                     return new Token(SyntaxKind.CloseParenthesisToken, _position++, ")");
                 case '!':
                 {
-                    return Lookahead switch
+                    if (Lookahead == '=')
                     {
-                        '=' => new Token(SyntaxKind.EqualsEqualsToken, _position += 2, "!="),
-                        _   => new Token(SyntaxKind.BangToken, _position++, "!")
-                    };
+                        _position += 2;
+                        return new Token(SyntaxKind.EqualsEqualsToken, start, "!=");
+                    }
+                    else
+                    {
+                        _position++;
+                        return new Token(SyntaxKind.BangToken, start, "!");
+                    }
                 }
                 case '=':
                 {
                     if (Lookahead == '=')
-                        return new Token(SyntaxKind.BangEqualsToken, _position += 2, "==");
-                    break;
+                    {
+                        _position += 2;
+                        return new Token(SyntaxKind.BangEqualsToken, start, "==");
+                    }
+
+                    _position++;
+                    return new Token(SyntaxKind.EqualsToken, start, "=");
                 }
                 case '&':
                 {
                     if (Lookahead == '&')
-                        return new Token(SyntaxKind.AmpersandAmpersandToken, _position += 2, "&&");
+                    {
+                        _position += 2;
+                        return new Token(SyntaxKind.AmpersandAmpersandToken, start, "&&");
+                    }
+
                     break;
                 }
                 case '|':
                 {
                     if (Lookahead == '|')
-                        return new Token(SyntaxKind.PipePipeToken, _position += 2, "||");
+                    {
+                        _position += 2;
+                        return new Token(SyntaxKind.PipePipeToken, start, "||");
+                    }
+
                     break;
                 }
             }
 
-            _diagnostics.Add($"ERROR: bad character input: '{Current}'");
+            _diagnostics.ReportBadCharacter(_position, Current);
             return new Token(SyntaxKind.BadToken, _position++, _text.Substring(_position - 1, 1));
         }
 
@@ -113,15 +129,15 @@ namespace Hyper.Compiler.Parser
             return index >= _text.Length ? '\0' : _text[index];
         }
 
-        public IEnumerable<string> Diagnostics => _diagnostics;
+        public DiagnosticBag Diagnostics => _diagnostics;
 
         private char Current => Peek(0);
 
         private char Lookahead => Peek(1);
 
 
-        private readonly string       _text;
-        private          int          _position;
-        private          List<string> _diagnostics = new();
+        private readonly string        _text;
+        private          int           _position;
+        private          DiagnosticBag _diagnostics = new();
     }
 }

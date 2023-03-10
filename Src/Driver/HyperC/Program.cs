@@ -1,5 +1,5 @@
-﻿using Hyper.Compiler.Binding;
-using Hyper.Compiler.Parser;
+﻿using Hyper.Compiler.Parser;
+using Hyper.Compiler.Symbol;
 using Hyper.Compiler.Syntax;
 
 namespace Hyper
@@ -8,7 +8,8 @@ namespace Hyper
     {
         static void Main(string[] args)
         {
-            bool showTree = false;
+            bool showTree  = false;
+            var  variables = new Dictionary<VariableSymbol, object>();
 
             while (true)
             {
@@ -29,12 +30,9 @@ namespace Hyper
                     continue;
                 }
 
-                var ast             = AST.Parse(line);
-                var binder          = new Binder();
-                var boundExpression = binder.BindExpression(ast.Root);
-
-                var diagnostics = ast.Diagnostics.Concat(binder.Diagnostics).ToArray();
-
+                var ast         = AST.Parse(line);
+                var compilation = new Compilation(ast);
+                var result      = compilation.Evaluate(variables);
 
                 if (showTree)
                 {
@@ -44,21 +42,37 @@ namespace Hyper
                     Console.ForegroundColor = color;
                 }
 
-                if (!diagnostics.Any())
+                if (!result.Diagnostics.Any())
                 {
-                    var e      = new Evaluator(boundExpression);
-                    var result = e.Evaluate();
-                    Console.WriteLine(result);
+                    Console.WriteLine(result.Value);
                 }
                 else
                 {
-                    var color = Console.ForegroundColor;
-                    Console.ForegroundColor = ConsoleColor.DarkRed;
+                    foreach (var diagnostic in result.Diagnostics)
+                    {
+                        Console.WriteLine();
 
-                    foreach (var diagnostic in diagnostics)
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
                         Console.WriteLine(diagnostic);
+                        Console.ResetColor();
 
-                    Console.ForegroundColor = color;
+                        var prefix = line.Substring(0, diagnostic.Span.Start);
+                        var error  = line.Substring(diagnostic.Span.Start, diagnostic.Span.Length);
+                        var suffix = line.Substring(diagnostic.Span.End);
+
+                        Console.Write("     ");
+                        Console.Write(prefix);
+
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        Console.Write(error);
+                        Console.ResetColor();
+
+                        Console.Write(suffix);
+
+                        Console.WriteLine();
+                    }
+
+                    Console.WriteLine();
                 }
             }
         }

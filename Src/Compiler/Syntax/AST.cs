@@ -1,14 +1,15 @@
 ﻿using Hyper.Compiler.Parser;
+using Hyper.Compiler.Diagnostic;
 
 namespace Hyper.Compiler.Syntax;
 
 public sealed class AST
 {
-    public AST(Expression root, Token eofToken, IReadOnlyList<string> diagnostics)
+    public AST(Expression root, Token eofToken, IEnumerable<Diagnostic.Diagnostic> diagnostics)
     {
         Root = root;
         EOFToken = eofToken;
-        Diagnostics = diagnostics;
+        Diagnostics = diagnostics.ToArray();
     }
 
     public static AST Parse(string text)
@@ -17,7 +18,7 @@ public sealed class AST
         return parser.Parse();
     }
 
-    public Expression            Root        { get; }
-    public Token                 EOFToken    { get; }
-    public IReadOnlyList<string> Diagnostics { get; }
+    public Expression                           Root        { get; }
+    public Token                                EOFToken    { get; }
+    public IReadOnlyList<Diagnostic.Diagnostic> Diagnostics { get; }
 }

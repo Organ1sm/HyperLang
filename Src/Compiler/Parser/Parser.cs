@@ -1,15 +1,16 @@
-﻿using Hyper.Compiler.Syntax;
+﻿using Hyper.Compiler.Diagnostic;
+using Hyper.Compiler.Syntax;
 
 namespace Hyper.Compiler.Parser
 {
     internal sealed class Parser
     {
-        private readonly Token[]      _tokens;
-        private          List<string> _diagnostics = new();
-        private          int          _position;
+        private readonly Token[]       _tokens;
+        private          DiagnosticBag _diagnostics = new();
+        private          int           _position;
 
-        public  IEnumerable<string> Diagnostics => _diagnostics;
-        private Token               Current     => Peek(0);
+        public  DiagnosticBag Diagnostics => _diagnostics;
+        private Token         Current     => Peek(0);
 
         public Parser(string text)
         {
@@ -22,9 +23,7 @@ namespace Hyper.Compiler.Parser
                 token = lexer.Lex();
 
                 if (token.Kind != SyntaxKind.WhitespaceToken && token.Kind != SyntaxKind.BadToken)
-                {
                     tokens.Add(token);
-                }
             } while (token.Kind != SyntaxKind.EndOfFileToken);
 
             _tokens = tokens.ToArray();
@@ -53,7 +52,7 @@ namespace Hyper.Compiler.Parser
             if (Current.Kind == kind)
                 return NextToken();
 
-            _diagnostics.Add($"ERROR: Unexpected token <{Current.Kind}>, expected <{kind}>");
+            _diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind, kind);
             return new Token(kind: kind, position: Current.Position, null);
         }
 
@@ -65,7 +64,7 @@ namespace Hyper.Compiler.Parser
             return new AST(expresion, endOfFileToken, _diagnostics);
         }
 
-        private Expression ParseExpression(int parentPrecedence = 0)
+        private Expression ParseBinaryExpression(int parentPrecedence = 0)
         {
             Expression left;
 
@@ -73,7 +72,7 @@ namespace Hyper.Compiler.Parser
             if (unaryOperatorPrecedence != 0 && unaryOperatorPrecedence >= parentPrecedence)
             {
                 var opToken = NextToken() ?? throw new ArgumentNullException("NextToken()");
-                var operand = ParseExpression(unaryOperatorPrecedence);
+                var operand = ParseBinaryExpression(unaryOperatorPrecedence);
                 left = new UnaryExpression(opToken, operand);
             }
             else
@@ -88,7 +87,7 @@ namespace Hyper.Compiler.Parser
                     break;
 
                 var opToken = NextToken();
-                var right   = ParseExpression();
+                var right   = ParseBinaryExpression();
 
                 left = new BinaryExpression(left, opToken, right);
             }
@@ -96,6 +95,24 @@ namespace Hyper.Compiler.Parser
             return left;
         }
 
+        private Expression ParseExpression()
+        {
+            return ParseAssignmentExpression();
+        }
+
+        private Expression ParseAssignmentExpression()
+        {
+            if (Peek(0).Kind == SyntaxKind.IdentifierToken && Peek(1).Kind == SyntaxKind.EqualsToken)
+            {
+                var identifierToken = NextToken();
+                var operatorToken   = NextToken();
+                var right           = ParseAssignmentExpression();
+
+                return new AssignmentExpression(identifierToken, operatorToken, right);
+            }
+
+            return ParseBinaryExpression();
+        }
 
         private Expression ParsePrimaryExpression()
         {
@@ -117,6 +134,13 @@ namespace Hyper.Compiler.Parser
                     var value        = (keywordToken.Kind == SyntaxKind.TrueKeyword);
 
                     return new LiteralExpression(keywordToken, value);
+                }
+
+                case SyntaxKind.IdentifierToken:
+                {
+                    var identifierToken = NextToken();
+
+                    return new NameExpression(identifierToken);
                 }
 
                 default:
