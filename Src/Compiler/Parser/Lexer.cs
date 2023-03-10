@@ -93,7 +93,8 @@ namespace Hyper.Compiler.Parser
                         return new Token(SyntaxKind.BangEqualsToken, start, "==");
                     }
 
-                    break;
+                    _position++;
+                    return new Token(SyntaxKind.EqualsToken, start, "=");
                 }
                 case '&':
                 {

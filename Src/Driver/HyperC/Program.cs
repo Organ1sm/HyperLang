@@ -1,4 +1,5 @@
 ﻿using Hyper.Compiler.Parser;
+using Hyper.Compiler.Symbol;
 using Hyper.Compiler.Syntax;
 
 namespace Hyper
@@ -7,7 +8,8 @@ namespace Hyper
     {
         static void Main(string[] args)
         {
-            bool showTree = false;
+            bool showTree  = false;
+            var  variables = new Dictionary<VariableSymbol, object>();
 
             while (true)
             {
@@ -30,7 +32,7 @@ namespace Hyper
 
                 var ast         = AST.Parse(line);
                 var compilation = new Compilation(ast);
-                var result      = compilation.Evaluate();
+                var result      = compilation.Evaluate(variables);
 
                 if (showTree)
                 {

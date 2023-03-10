@@ -1,13 +1,20 @@
 ﻿using System.Diagnostics.SymbolStore;
 using Hyper.Compiler.Diagnostic;
+using Hyper.Compiler.Symbol;
 using Hyper.Compiler.Syntax;
 
 namespace Hyper.Compiler.Binding
 {
     internal sealed class Binder
     {
+        private readonly Dictionary<VariableSymbol, object> _variables;
         private readonly DiagnosticBag                      _diagnostics = new();
         public           IEnumerable<Diagnostic.Diagnostic> Diagnostics => _diagnostics;
+
+        public Binder(Dictionary<VariableSymbol, object> variables)
+        {
+            _variables = variables;
+        }
 
         public BoundExpression BindExpression(Expression syntax)
         {
@@ -16,7 +23,9 @@ namespace Hyper.Compiler.Binding
                 SyntaxKind.LiteralExpression       => BindLiteralExpression((LiteralExpression) syntax),
                 SyntaxKind.UnaryExpression         => BindUnaryExpression((UnaryExpression) syntax),
                 SyntaxKind.BinaryExpression        => BindBinaryExpression((BinaryExpression) syntax),
-                SyntaxKind.ParenthesizedExpression => BindExpression(((ParenthesizedExpression) syntax).Expression),
+                SyntaxKind.ParenthesizedExpression => BindParenthesizedExpression((ParenthesizedExpression) syntax),
+                SyntaxKind.NameExpression          => BindNameExpression((NameExpression) syntax),
+                SyntaxKind.AssignmentExpression    => BindAssignmentExpression((AssignmentExpression) syntax),
                 _                                  => throw new ArgumentException($"Unexpected syntax {syntax.Kind}")
             };
         }
@@ -62,6 +71,40 @@ namespace Hyper.Compiler.Binding
             }
 
             return new BoundBinaryExpression(boundLeft, boundOperator, boundRight);
+        }
+
+        private BoundExpression BindParenthesizedExpression(ParenthesizedExpression syntax)
+        {
+            return BindExpression(syntax.Expression);
+        }
+
+        private BoundExpression BindNameExpression(NameExpression syntax)
+        {
+            var name     = syntax.IdentifierToken.Text;
+            var variable = _variables.Keys.FirstOrDefault(v => v.Name == name);
+
+            if (variable == null)
+            {
+                _diagnostics.ReportUndefinedName(syntax.IdentifierToken.Span, name);
+                return new BoundLiteralExpression(0);
+            }
+
+            return new BoundVariableExpression(variable);
+        }
+
+        private BoundExpression BindAssignmentExpression(AssignmentExpression syntax)
+        {
+            var name            = syntax.IdentifierToken.Text;
+            var boundExpression = BindExpression(syntax.Expression);
+
+            var existingVariable = _variables.Keys.FirstOrDefault(v => v.Name == name);
+            if (existingVariable != null)
+                _variables.Remove(existingVariable);
+
+            var variable = new VariableSymbol(name, boundExpression.Type);
+            _variables[variable] = null;
+
+            return new BoundAssignmentExpression(variable, boundExpression);
         }
     }
 }
