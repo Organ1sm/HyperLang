@@ -8,6 +8,7 @@
 * Print syntax trees.
 
 When parsing the expression `1 + 2 * 3`, the ast like this:
+
 ```
 └──BinaryExpression
     ├──NumberExpression
@@ -22,6 +23,8 @@ When parsing the expression `1 + 2 * 3`, the ast like this:
 ```
 
 ## Stage 2
+
+### Completed items
 
 * Generalized parsing using precedences
 * Support unary operators, such as `+2` and `-3`
@@ -38,3 +41,17 @@ know which types an expression will be evaluating to, which leading to more
 complicated features to impossible. The *bound tree* is created by
 the Binder class by walking the ast and binding the nodes to symbolic information.
 The binder represents the semantic analysis.
+
+## Stage 3
+
+### Completed items
+
+* Extract compiler into a separate library
+* Expose span on diagnostics that indicate where the error occurred
+* Support for assignments and variable
+
+### Compilation API
+
+We have added a class called `Compilation` which holds onto the entire state of the 
+program. For now, it only provide an `Envaluate` API that will interpret the expression.
+
