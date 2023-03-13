@@ -87,7 +87,7 @@ namespace Hyper.Compiler.Parser
                     break;
 
                 var opToken = NextToken();
-                var right   = ParseBinaryExpression();
+                var right   = ParseBinaryExpression(precedence);
 
                 left = new BinaryExpression(left, opToken, right);
             }
