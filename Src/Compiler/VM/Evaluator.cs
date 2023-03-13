@@ -62,7 +62,7 @@ namespace Hyper.Compiler.Parser
                     BoundBinaryOperatorKind.LogicalAnd => (bool) left && (bool) right,
                     BoundBinaryOperatorKind.LogicalOr => (bool) left || (bool) right,
                     BoundBinaryOperatorKind.Equals => Equals(left, right),
-                    BoundBinaryOperatorKind.NotEquals => Equals(left, right),
+                    BoundBinaryOperatorKind.NotEquals => !Equals(left, right),
                     _ => throw new Exception($"Unexpected binary operator {b.Operator}")
                 };
             }

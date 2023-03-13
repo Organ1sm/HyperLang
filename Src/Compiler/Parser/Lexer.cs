@@ -77,7 +77,7 @@ namespace Hyper.Compiler.Parser
                     if (Lookahead == '=')
                     {
                         _position += 2;
-                        return new Token(SyntaxKind.EqualsEqualsToken, start, "!=");
+                        return new Token(SyntaxKind.BangEqualsToken, start, "!=");
                     }
                     else
                     {
@@ -90,7 +90,7 @@ namespace Hyper.Compiler.Parser
                     if (Lookahead == '=')
                     {
                         _position += 2;
-                        return new Token(SyntaxKind.BangEqualsToken, start, "==");
+                        return new Token(SyntaxKind.EqualsEqualsToken, start, "==");
                     }
 
                     _position++;
