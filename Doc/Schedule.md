@@ -52,6 +52,13 @@ The binder represents the semantic analysis.
 
 ### Compilation API
 
-We have added a class called `Compilation` which holds onto the entire state of the 
+We have added a class called `Compilation` which holds onto the entire state of the
 program. For now, it only provide an `Envaluate` API that will interpret the expression.
 
+## Stage 4
+
+### Completed items
+
+* Added tests for lexing all tokens and their combinations
+* Added tests for parsing unary and binary operators
+* Added tests for evaluating
