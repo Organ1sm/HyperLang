@@ -1,4 +1,5 @@
-﻿using Hyper.Compiler.Binding;
+﻿using System.Collections.Immutable;
+using Hyper.Compiler.Binding;
 using Hyper.Compiler.Symbol;
 using Hyper.Compiler.Syntax;
 
@@ -18,14 +19,14 @@ namespace Hyper.Compiler.Parser
             var binder          = new Binder(variables);
             var boundExpression = binder.BindExpression(Ast.Root);
 
-            var diagnostics = Ast.Diagnostics.Concat(binder.Diagnostics).ToArray();
+            var diagnostics = Ast.Diagnostics.Concat(binder.Diagnostics).ToImmutableArray();
             if (diagnostics.Any())
                 return new EvaluationResult(diagnostics, null);
 
             var evaluator = new Evaluator(boundExpression, variables);
             var value     = evaluator.Evaluate();
 
-            return new EvaluationResult(Array.Empty<Diagnostic.Diagnostic>(), value);
+            return new EvaluationResult(ImmutableArray<Diagnostic.Diagnostic>.Empty, value);
         }
     }
 }

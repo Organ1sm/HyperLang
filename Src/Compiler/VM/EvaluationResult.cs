@@ -1,14 +1,16 @@
-﻿namespace Hyper.Compiler.Parser
+﻿using System.Collections.Immutable;
+
+namespace Hyper.Compiler.Parser
 {
     public sealed class EvaluationResult
     {
-        public EvaluationResult(IEnumerable<Diagnostic.Diagnostic> diagnostics, object value)
+        public EvaluationResult(ImmutableArray<Diagnostic.Diagnostic> diagnostics, object value)
         {
-            Diagnostics = diagnostics.ToArray();
+            Diagnostics = diagnostics;
             Value = value;
         }
 
-        public IReadOnlyList<Diagnostic.Diagnostic> Diagnostics { get; }
-        public object                               Value       { get; }
+        public ImmutableArray<Diagnostic.Diagnostic> Diagnostics { get; }
+        public object                                Value       { get; }
     }
 }
