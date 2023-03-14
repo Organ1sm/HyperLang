@@ -13,10 +13,4 @@ public sealed class UnaryExpression : Expression
         Operator = @operator;
         Operand = operand;
     }
-
-    public override IEnumerable<Node> GetChildren()
-    {
-        yield return Operator;
-        yield return Operand;
-    }
 }

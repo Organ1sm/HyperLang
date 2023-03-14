@@ -15,11 +15,4 @@ public sealed class AssignmentExpression : Expression
     public          Token      IdentifierToken { get; }
     public          Token      EqualsToken     { get; }
     public          Expression Expression      { get; }
-
-    public override IEnumerable<Node> GetChildren()
-    {
-        yield return IdentifierToken;
-        yield return EqualsToken;
-        yield return Expression;
-    }
 }

@@ -16,11 +16,4 @@ public sealed class ParenthesizedExpression :
         Expression = expression;
         CloseParenthesisToken = closeParenthesisToken;
     }
-
-    public override IEnumerable<Node> GetChildren()
-    {
-        yield return OpenParenthesisToken;
-        yield return Expression;
-        yield return CloseParenthesisToken;
-    }
 }

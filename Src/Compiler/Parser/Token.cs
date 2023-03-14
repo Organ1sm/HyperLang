@@ -19,10 +19,5 @@ namespace Hyper.Compiler.Parser
         public string   Text     { get; }
         public object?  Value    { get; }
         public TextSpan Span     => new(Position, Text.Length);
-
-        public override IEnumerable<Node> GetChildren()
-        {
-            return Enumerable.Empty<Node>();
-        }
     }
 }

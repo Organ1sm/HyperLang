@@ -16,9 +16,4 @@ public sealed class LiteralExpression : Expression
         LiteralToken = literalToken;
         Value = value;
     }
-
-    public override IEnumerable<Node> GetChildren()
-    {
-        yield return LiteralToken;
-    }
 }

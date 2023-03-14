@@ -15,11 +15,4 @@ public sealed class BinaryExpression : Expression
         Operator = @operator;
         Right = right;
     }
-
-    public override IEnumerable<Node> GetChildren()
-    {
-        yield return Left;
-        yield return Operator;
-        yield return Right;
-    }
 }
