@@ -6,6 +6,22 @@ namespace Hyper.Test.Compiler.Syntax;
 
 public class LexerTests
 {
+    [Fact]
+    public void LexerTestsAllTokens()
+    {
+        var tokenKinds = Enum.GetValues(typeof(SyntaxKind)).Cast<SyntaxKind>()
+                             .Where(k => k.ToString().EndsWith("Keyword") || k.ToString().EndsWith("Token"));
+        var testedTokenKinds = GetTokens().Concat(GetSeparators()).Select(t => t.kind);
+        
+
+        var untestedTokenKinds = new SortedSet<SyntaxKind>(tokenKinds);
+        untestedTokenKinds.Remove(SyntaxKind.BadToken);
+        untestedTokenKinds.Remove(SyntaxKind.EndOfFileToken);
+        untestedTokenKinds.ExceptWith(testedTokenKinds);
+
+        Assert.Empty(untestedTokenKinds);
+    }
+
     [Theory]
     [MemberData(nameof(GetTokensData))]
     public void LexerLexToken(SyntaxKind kind, string text)
