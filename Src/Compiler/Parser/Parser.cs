@@ -6,7 +6,7 @@ namespace Hyper.Compiler.Parser
     internal sealed class Parser
     {
         private readonly Token[]       _tokens;
-        private          DiagnosticBag _diagnostics = new();
+        private readonly DiagnosticBag _diagnostics = new();
         private          int           _position;
 
         public  DiagnosticBag Diagnostics => _diagnostics;
@@ -33,10 +33,7 @@ namespace Hyper.Compiler.Parser
         private Token Peek(int offset)
         {
             var index = _position + offset;
-            if (index >= _tokens.Length)
-                return _tokens[_tokens.Length - 1];
-
-            return _tokens[index];
+            return index >= _tokens.Length ? _tokens[^1] : _tokens[index];
         }
 
         private Token NextToken()
@@ -53,15 +50,15 @@ namespace Hyper.Compiler.Parser
                 return NextToken();
 
             _diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind, kind);
-            return new Token(kind: kind, position: Current.Position, null);
+            return new Token(kind: kind, position: Current.Position);
         }
 
         public AST Parse()
         {
-            var expresion      = ParseExpression();
+            var expression     = ParseExpression();
             var endOfFileToken = Match(SyntaxKind.EndOfFileToken);
 
-            return new AST(expresion, endOfFileToken, _diagnostics);
+            return new AST(expression, endOfFileToken, _diagnostics);
         }
 
         private Expression ParseBinaryExpression(int parentPrecedence = 0)
@@ -71,7 +68,7 @@ namespace Hyper.Compiler.Parser
             var unaryOperatorPrecedence = Current.Kind.GetUnaryOperatorPrecedence();
             if (unaryOperatorPrecedence != 0 && unaryOperatorPrecedence >= parentPrecedence)
             {
-                var opToken = NextToken() ?? throw new ArgumentNullException("NextToken()");
+                var opToken = NextToken();
                 var operand = ParseBinaryExpression(unaryOperatorPrecedence);
                 left = new UnaryExpression(opToken, operand);
             }
@@ -116,39 +113,42 @@ namespace Hyper.Compiler.Parser
 
         private Expression ParsePrimaryExpression()
         {
-            switch (Current.Kind)
+            return Current.Kind switch
             {
-                case SyntaxKind.OpenParenthesisToken:
-                {
-                    var left       = NextToken();
-                    var expression = ParseExpression();
-                    var right      = Match(SyntaxKind.CloseParenthesisToken);
+                SyntaxKind.OpenParenthesisToken                   => ParseParenthesizedExpression(),
+                SyntaxKind.TrueKeyword or SyntaxKind.FalseKeyword => ParseBooleanLiteral(),
+                SyntaxKind.NumberToken                            => ParseNumberLiteral(),
+                SyntaxKind.IdentifierToken or _                   => ParseNameExpression(),
+            };
+        }
 
-                    return new ParenthesizedExpression(left, expression, right);
-                }
+        private Expression ParseParenthesizedExpression()
+        {
+            var left       = NextToken();
+            var expression = ParseExpression();
+            var right      = Match(SyntaxKind.CloseParenthesisToken);
 
-                case SyntaxKind.TrueKeyword:
-                case SyntaxKind.FalseKeyword:
-                {
-                    var keywordToken = NextToken();
-                    var value        = (keywordToken.Kind == SyntaxKind.TrueKeyword);
+            return new ParenthesizedExpression(left, expression, right);
+        }
 
-                    return new LiteralExpression(keywordToken, value);
-                }
+        private Expression ParseBooleanLiteral()
+        {
+            var keywordToken = NextToken();
+            var value        = (keywordToken.Kind == SyntaxKind.TrueKeyword);
 
-                case SyntaxKind.IdentifierToken:
-                {
-                    var identifierToken = NextToken();
+            return new LiteralExpression(keywordToken, value);
+        }
 
-                    return new NameExpression(identifierToken);
-                }
+        private Expression ParseNumberLiteral()
+        {
+            var numberToken = Match(SyntaxKind.NumberToken);
+            return new LiteralExpression(numberToken);
+        }
 
-                default:
-                {
-                    var numberToken = Match(SyntaxKind.NumberToken);
-                    return new LiteralExpression(numberToken);
-                }
-            }
+        private Expression ParseNameExpression()
+        {
+            var identifierToken = NextToken();
+            return new NameExpression(identifierToken);
         }
     }
 }
