@@ -18,90 +18,73 @@ namespace Hyper.Compiler.Parser
 
         public Token Lex()
         {
-            if (_position >= _text.Length)
-                return new Token(kind: SyntaxKind.EndOfFileToken, position: _position, text: "\0", value: null);
-
-            int start = _position;
-            if (char.IsDigit(Current))
-            {
-                while (char.IsDigit(Current))
-                    Next();
-
-                int length = _position - start;
-                var text   = _text.Substring(start, length);
-
-                if (!int.TryParse(text, out var value))
-                    _diagnostics.ReportInvalidNumber(new TextSpan(start, length), _text, typeof(int));
-
-                return new Token(kind: SyntaxKind.NumberToken, position: start, text: text, value: value);
-            }
-
-            if (char.IsWhiteSpace(Current))
-            {
-                while (char.IsWhiteSpace(Current))
-                    Next();
-
-                var length = _position - start;
-                var text   = _text.Substring(start, length);
-                return new Token(SyntaxKind.WhitespaceToken, start, text);
-            }
-
-            if (char.IsLetter(Current))
-            {
-                while (char.IsLetter(Current))
-                    Next();
-
-                var length = _position - start;
-                var text   = _text.Substring(start, length);
-                var kind   = Factors.GetKeywordKind(text);
-
-                return new Token(kind, start, text);
-            }
+            _start = _position;
+            _kind = SyntaxKind.BadToken;
+            _value = null;
 
             switch (Current)
             {
+                case '\0':
+                    _kind = SyntaxKind.EndOfFileToken;
+                    break;
                 case '+':
-                    return new Token(SyntaxKind.PlusToken, _position++, "+");
+                    _kind = SyntaxKind.PlusToken;
+                    _position++;
+                    break;
                 case '-':
-                    return new Token(SyntaxKind.MinusToken, _position++, "-");
+                    _kind = SyntaxKind.MinusToken;
+                    _position++;
+                    break;
                 case '*':
-                    return new Token(SyntaxKind.StarToken, _position++, "*");
+                    _kind = SyntaxKind.StarToken;
+                    _position++;
+                    break;
                 case '/':
-                    return new Token(SyntaxKind.SlashToken, _position++, "/");
+                    _kind = SyntaxKind.SlashToken;
+                    _position++;
+                    break;
                 case '(':
-                    return new Token(SyntaxKind.OpenParenthesisToken, _position++, "(");
+                    _kind = SyntaxKind.OpenParenthesisToken;
+                    _position++;
+                    break;
                 case ')':
-                    return new Token(SyntaxKind.CloseParenthesisToken, _position++, ")");
+                    _kind = SyntaxKind.CloseParenthesisToken;
+                    _position++;
+                    break;
                 case '!':
                 {
                     if (Lookahead == '=')
                     {
                         _position += 2;
-                        return new Token(SyntaxKind.BangEqualsToken, start, "!=");
+                        _kind = SyntaxKind.BangEqualsToken;
                     }
                     else
                     {
                         _position++;
-                        return new Token(SyntaxKind.BangToken, start, "!");
+                        _kind = SyntaxKind.BangToken;
                     }
+
+                    break;
                 }
                 case '=':
                 {
                     if (Lookahead == '=')
                     {
+                        _kind = SyntaxKind.EqualsEqualsToken;
                         _position += 2;
-                        return new Token(SyntaxKind.EqualsEqualsToken, start, "==");
+                        break;
                     }
 
                     _position++;
-                    return new Token(SyntaxKind.EqualsToken, start, "=");
+                    _kind = SyntaxKind.EqualsToken;
+                    break;
                 }
                 case '&':
                 {
                     if (Lookahead == '&')
                     {
+                        _kind = SyntaxKind.AmpersandAmpersandToken;
                         _position += 2;
-                        return new Token(SyntaxKind.AmpersandAmpersandToken, start, "&&");
                     }
 
                     break;
@@ -110,16 +93,83 @@ namespace Hyper.Compiler.Parser
                 {
                     if (Lookahead == '|')
                     {
+                        _kind = SyntaxKind.PipePipeToken;
                         _position += 2;
-                        return new Token(SyntaxKind.PipePipeToken, start, "||");
+                        break;
                     }
 
                     break;
                 }
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    LexNumber();
+                    break;
+                case ' ':
+                case '\t':
+                case '\n':
+                case '\r':
+                    LexWhiteSpace();
+                    break;
+
+                default:
+                    if (char.IsLetter(Current))
+                        LexIdentifierOrKeyword();
+                    else if (char.IsWhiteSpace(Current))
+                        LexWhiteSpace();
+                    else
+                    {
+                        _diagnostics.ReportBadCharacter(_position, Current);
+                        _position++;
+                    }
+
+                    break;
             }
 
-            _diagnostics.ReportBadCharacter(_position, Current);
-            return new Token(SyntaxKind.BadToken, _position++, _text.Substring(_position - 1, 1));
+            var length = _position - _start;
+            var text   = Factors.GetText(_kind) ?? _text.Substring(_start, length);
+
+            return new Token(_kind, _start, text, _value);
+        }
+
+        private void LexNumber()
+        {
+            while (char.IsDigit(Current))
+                _position++;
+
+            var length = _position - _start;
+            var text   = _text.Substring(_start, length);
+
+            if (!int.TryParse(text, out var value))
+                _diagnostics.ReportInvalidNumber(new TextSpan(_start, length), _text, typeof(int));
+
+            _value = value;
+            _kind = SyntaxKind.NumberToken;
+        }
+
+        private void LexWhiteSpace()
+        {
+            while (char.IsWhiteSpace(Current))
+                _position++;
+
+            _kind = SyntaxKind.WhitespaceToken;
+        }
+
+        private void LexIdentifierOrKeyword()
+        {
+            while (char.IsLetter(Current))
+                _position++;
+
+            var length = _position - _start;
+            var text   = _text.Substring(_start, length);
+            _kind = Factors.GetKeywordKind(text);
         }
 
         private char Peek(int offset)
@@ -135,9 +185,12 @@ namespace Hyper.Compiler.Parser
 
         private char Lookahead => Peek(1);
 
-
         private readonly string        _text;
         private          int           _position;
         private          DiagnosticBag _diagnostics = new();
+
+        private int        _start;
+        private SyntaxKind _kind;
+        private object     _value;
     }
 }
