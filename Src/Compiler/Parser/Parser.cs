@@ -1,11 +1,13 @@
 ﻿using System.Collections.Immutable;
 using Hyper.Compiler.Diagnostic;
 using Hyper.Compiler.Syntax;
+using Hyper.Compiler.Text;
 
 namespace Hyper.Compiler.Parser
 {
     internal sealed class Parser
     {
+        private readonly SourceText            _text;
         private readonly ImmutableArray<Token> _tokens;
         private readonly DiagnosticBag         _diagnostics = new();
         private          int                   _position;
@@ -13,7 +15,7 @@ namespace Hyper.Compiler.Parser
         public  DiagnosticBag Diagnostics => _diagnostics;
         private Token         Current     => Peek(0);
 
-        public Parser(string text)
+        public Parser(SourceText text)
         {
             var tokens = new List<Token>();
             var lexer  = new Lexer(text);
@@ -25,8 +27,10 @@ namespace Hyper.Compiler.Parser
 
                 if (token.Kind != SyntaxKind.WhitespaceToken && token.Kind != SyntaxKind.BadToken)
                     tokens.Add(token);
+                
             } while (token.Kind != SyntaxKind.EndOfFileToken);
 
+            _text = text;
             _tokens = tokens.ToImmutableArray();
             _diagnostics.AddRange(lexer.Diagnostics);
         }
@@ -59,7 +63,7 @@ namespace Hyper.Compiler.Parser
             var expression     = ParseExpression();
             var endOfFileToken = Match(SyntaxKind.EndOfFileToken);
 
-            return new AST(expression, endOfFileToken, _diagnostics.ToImmutableArray());
+            return new AST(expression, endOfFileToken, _diagnostics.ToImmutableArray(), _text);
         }
 
         private Expression ParseBinaryExpression(int parentPrecedence = 0)
