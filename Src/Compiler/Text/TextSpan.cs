@@ -8,6 +8,12 @@ public class TextSpan
         Length = length;
     }
 
+    public static TextSpan MakeTextSpanFromBound(int start, int end)
+    {
+        var length = end - start;
+        return new TextSpan(start, length);
+    }
+
     public int Start  { get; }
     public int Length { get; }
     public int End    => Start + Length;

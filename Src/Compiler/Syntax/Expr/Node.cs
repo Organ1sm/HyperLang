@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using Hyper.Compiler.Text;
 
 namespace Hyper.Compiler.Syntax;
 
@@ -23,6 +24,17 @@ public abstract class Node
                 foreach (var child in children)
                     yield return child;
             }
+        }
+    }
+
+    public virtual TextSpan Span
+    {
+        get
+        {
+            var first = GetChildren().First().Span;
+            var last  = GetChildren().Last().Span;
+
+            return TextSpan.MakeTextSpanFromBound(first.Start, last.End);
         }
     }
 }
