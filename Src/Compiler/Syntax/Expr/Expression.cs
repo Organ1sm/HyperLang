@@ -1,3 +1,3 @@
 ﻿namespace Hyper.Compiler.Syntax;
 
-public abstract class Expression : Node { }
+public class Expression : Node { }

@@ -1,11 +1,12 @@
 ﻿using System.Reflection;
+using Hyper.Compiler.Parser;
 using Hyper.Compiler.Text;
 
 namespace Hyper.Compiler.Syntax;
 
-public abstract class Node
+public class Node
 {
-    public abstract SyntaxKind Kind { get; }
+    public virtual SyntaxKind Kind { get; }
 
     public IEnumerable<Node> GetChildren()
     {
@@ -35,6 +36,44 @@ public abstract class Node
             var last  = GetChildren().Last().Span;
 
             return TextSpan.MakeTextSpanFromBound(first.Start, last.End);
+        }
+    }
+
+    public void WriteTo(TextWriter writer)
+    {
+        PrettyPrint(writer, this);
+    }
+
+    private static void PrettyPrint(TextWriter writer, Node node, string indent = "", bool isLast = true)
+    {
+        var marker = isLast ? "└──" : "├──";
+
+        writer.Write(indent);
+        writer.Write(marker);
+        writer.Write(node.Kind);
+
+        if (node is Token t && t.Value != null)
+        {
+            writer.Write(" ");
+            writer.Write(t.Value);
+        }
+
+        writer.WriteLine();
+
+        indent += isLast ? "    " : "│  ";
+
+        var lastChild = node.GetChildren().LastOrDefault();
+
+        foreach (var child in node.GetChildren())
+            PrettyPrint(writer, child, indent, child == lastChild);
+    }
+
+    public override string ToString()
+    {
+        using (var writer = new StringWriter())
+        {
+            WriteTo(writer);
+            return writer.ToString();
         }
     }
 }
