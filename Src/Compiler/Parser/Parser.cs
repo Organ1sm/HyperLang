@@ -27,7 +27,6 @@ namespace Hyper.Compiler.Parser
 
                 if (token.Kind != SyntaxKind.WhitespaceToken && token.Kind != SyntaxKind.BadToken)
                     tokens.Add(token);
-                
             } while (token.Kind != SyntaxKind.EndOfFileToken);
 
             _text = text;
@@ -138,10 +137,10 @@ namespace Hyper.Compiler.Parser
 
         private Expression ParseBooleanLiteral()
         {
-            var keywordToken = NextToken();
-            var value        = (keywordToken.Kind == SyntaxKind.TrueKeyword);
+            var isTrue       = (Current.Kind == SyntaxKind.TrueKeyword);
+            var keywordToken = isTrue ? Match(SyntaxKind.TrueKeyword) : Match(SyntaxKind.FalseKeyword);
 
-            return new LiteralExpression(keywordToken, value);
+            return new LiteralExpression(keywordToken, isTrue);
         }
 
         private Expression ParseNumberLiteral()

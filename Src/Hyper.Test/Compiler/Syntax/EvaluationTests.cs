@@ -29,7 +29,7 @@ public class EvaluationTests
     [InlineData("!true", false)]
     [InlineData("!false", true)]
     [InlineData("(a = 10) * a", 100)]
-    public void SyntaxFactGetText(string text, object expectedValue)
+    public void EvaluatorComputesCorrectValues(string text, object expectedValue)
     {
         var ast         = AST.Parse(text);
         var compilation = new Compilation(ast);

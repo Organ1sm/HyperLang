@@ -90,7 +90,6 @@ namespace Hyper.Compiler.Parser
                     {
                         _kind = SyntaxKind.PipePipeToken;
                         _position += 2;
-                        break;
                     }
 
                     break;
