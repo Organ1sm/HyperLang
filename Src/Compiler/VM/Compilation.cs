@@ -3,7 +3,7 @@ using Hyper.Compiler.Binding;
 using Hyper.Compiler.Symbol;
 using Hyper.Compiler.Syntax;
 
-namespace Hyper.Compiler.Parser
+namespace Hyper.Compiler.VM
 {
     public sealed class Compilation
     {
@@ -17,7 +17,7 @@ namespace Hyper.Compiler.Parser
         public EvaluationResult Evaluate(Dictionary<VariableSymbol, object> variables)
         {
             var binder          = new Binder(variables);
-            var boundExpression = binder.BindExpression(Ast.Root);
+            var boundExpression = binder.BindExpression(Ast.Root.Expression);
 
             var diagnostics = Ast.Diagnostics.Concat(binder.Diagnostics).ToImmutableArray();
             if (diagnostics.Any())

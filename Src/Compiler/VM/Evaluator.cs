@@ -1,7 +1,7 @@
 ﻿using Hyper.Compiler.Binding;
 using Hyper.Compiler.Symbol;
 
-namespace Hyper.Compiler.Parser
+namespace Hyper.Compiler.VM
 {
     internal sealed class Evaluator
     {

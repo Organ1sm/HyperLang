@@ -2,6 +2,7 @@
 using Hyper.Compiler.Diagnostic;
 using Hyper.Compiler.Syntax;
 using Hyper.Compiler.Text;
+using Hyper.Compiler.VM;
 
 namespace Hyper.Compiler.Parser
 {
@@ -57,12 +58,12 @@ namespace Hyper.Compiler.Parser
             return new Token(kind: kind, position: Current.Position);
         }
 
-        public AST Parse()
+        public CompilationUnit ParseCompilationUnit()
         {
             var expression     = ParseExpression();
             var endOfFileToken = Match(SyntaxKind.EndOfFileToken);
 
-            return new AST(expression, endOfFileToken, _diagnostics.ToImmutableArray(), _text);
+            return new CompilationUnit(expression, endOfFileToken);
         }
 
         private Expression ParseBinaryExpression(int parentPrecedence = 0)

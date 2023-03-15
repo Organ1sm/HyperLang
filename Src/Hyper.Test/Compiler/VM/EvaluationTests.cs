@@ -1,6 +1,6 @@
-﻿using Hyper.Compiler.Parser;
-using Hyper.Compiler.Symbol;
+﻿using Hyper.Compiler.Symbol;
 using Hyper.Compiler.Syntax;
+using Hyper.Compiler.VM;
 using Xunit;
 
 namespace Hyper.Test.Compiler.Syntax;
