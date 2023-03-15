@@ -1,5 +1,4 @@
-﻿using System.Net.Mime;
-using Hyper.Compiler.Syntax;
+﻿using Hyper.Compiler.Syntax;
 using Xunit;
 
 namespace Hyper.Test.Compiler.Syntax;
