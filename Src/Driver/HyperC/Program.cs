@@ -16,7 +16,8 @@ namespace Hyper
 
             while (true)
             {
-                Console.Write(textBuilder.Length == 0 ? "> " : "| ");
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write(textBuilder.Length == 0 ? "» " : "· ");
 
                 var input   = Console.ReadLine();
                 var isBlank = string.IsNullOrWhiteSpace(input);
@@ -50,16 +51,13 @@ namespace Hyper
                 var result      = compilation.Evaluate(variables);
 
                 if (showTree)
-                {
-                    var color = Console.ForegroundColor;
-                    Console.ForegroundColor = ConsoleColor.DarkGray;
                     ast.Root.WriteTo(Console.Out);
-                    Console.ForegroundColor = color;
-                }
 
                 if (!result.Diagnostics.Any())
                 {
+                    Console.ForegroundColor = ConsoleColor.Magenta;
                     Console.WriteLine(result.Value);
+                    Console.ResetColor();
                 }
                 else
                 {

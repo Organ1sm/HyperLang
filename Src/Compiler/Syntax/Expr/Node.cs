@@ -46,10 +46,18 @@ public class Node
 
     private static void PrettyPrint(TextWriter writer, Node node, string indent = "", bool isLast = true)
     {
-        var marker = isLast ? "└──" : "├──";
+        var marker      = isLast ? "└──" : "├──";
+        var isToConsole = (writer == Console.Out);
+
+        if (isToConsole)
+            Console.ForegroundColor = ConsoleColor.DarkGray;
 
         writer.Write(indent);
         writer.Write(marker);
+
+        if (isToConsole)
+            Console.ForegroundColor = node is Token ? ConsoleColor.Blue : ConsoleColor.Cyan;
+
         writer.Write(node.Kind);
 
         if (node is Token t && t.Value != null)
@@ -57,6 +65,9 @@ public class Node
             writer.Write(" ");
             writer.Write(t.Value);
         }
+
+        if (isToConsole)
+            Console.ResetColor();
 
         writer.WriteLine();
 
