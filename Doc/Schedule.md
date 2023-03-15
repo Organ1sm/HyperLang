@@ -62,3 +62,9 @@ program. For now, it only provide an `Envaluate` API that will interpret the exp
 * Added tests for lexing all tokens and their combinations
 * Added tests for parsing unary and binary operators
 * Added tests for evaluating
+
+## Stage5
+
+### Completed items
+* Clean-up lexer, parser
+* Added `SourceText`, which allow us to know token line number information.
