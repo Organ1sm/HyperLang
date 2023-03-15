@@ -152,7 +152,7 @@ namespace Hyper.Compiler.Parser
 
         private Expression ParseNameExpression()
         {
-            var identifierToken = NextToken();
+            var identifierToken = Match(SyntaxKind.IdentifierToken);
             return new NameExpression(identifierToken);
         }
     }

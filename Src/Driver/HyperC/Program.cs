@@ -1,6 +1,8 @@
-﻿using Hyper.Compiler.Parser;
+﻿using System.Text;
+using Hyper.Compiler.Parser;
 using Hyper.Compiler.Symbol;
 using Hyper.Compiler.Syntax;
+using Hyper.Compiler.Text;
 
 namespace Hyper
 {
@@ -8,29 +10,42 @@ namespace Hyper
     {
         static void Main(string[] args)
         {
-            bool showTree  = false;
-            var  variables = new Dictionary<VariableSymbol, object>();
+            bool showTree    = false;
+            var  variables   = new Dictionary<VariableSymbol, object>();
+            var  textBuilder = new StringBuilder();
 
             while (true)
             {
-                Console.Write("> ");
-                var line = Console.ReadLine();
-                if (string.IsNullOrWhiteSpace(line))
-                    return;
+                Console.Write(textBuilder.Length == 0 ? "> " : "| ");
 
-                if (line == "#showTree")
+                var input   = Console.ReadLine();
+                var isBlank = string.IsNullOrWhiteSpace(input);
+
+                if (textBuilder.Length == 0)
                 {
-                    showTree = !showTree;
-                    Console.WriteLine(showTree ? "Showing parse trees." : "Not showing parse trees");
-                    continue;
-                }
-                else if (line == "#cls")
-                {
-                    Console.Clear();
-                    continue;
+                    if (isBlank)
+                        break;
+                    else if (input == "#showTree")
+                    {
+                        showTree = !showTree;
+                        Console.WriteLine(showTree ? "Showing parse trees." : "Not showing parse trees");
+                        continue;
+                    }
+                    else if (input == "#cls")
+                    {
+                        Console.Clear();
+                        continue;
+                    }
                 }
 
-                var ast         = AST.Parse(line);
+                textBuilder.AppendLine(input);
+                var text = textBuilder.ToString();
+
+                var ast = AST.Parse(text);
+
+                if (!isBlank && ast.Diagnostics.Any())
+                    continue;
+
                 var compilation = new Compilation(ast);
                 var result      = compilation.Evaluate(variables);
 
@@ -50,15 +65,24 @@ namespace Hyper
                 {
                     foreach (var diagnostic in result.Diagnostics)
                     {
+                        var lineIndex  = ast.Text.GetLineIndex(diagnostic.Span.Start);
+                        var line       = ast.Text.Lines[lineIndex];
+                        var lineNumber = lineIndex + 1;
+                        var character  = diagnostic.Span.Start - line.Start + 1;
+
                         Console.WriteLine();
 
                         Console.ForegroundColor = ConsoleColor.DarkRed;
+                        Console.Write($"({lineNumber}, {character}): ");
                         Console.WriteLine(diagnostic);
                         Console.ResetColor();
 
-                        var prefix = line.Substring(0, diagnostic.Span.Start);
-                        var error  = line.Substring(diagnostic.Span.Start, diagnostic.Span.Length);
-                        var suffix = line.Substring(diagnostic.Span.End);
+                        var prefixSpan = TextSpan.MakeTextSpanFromBound(line.Start, diagnostic.Span.Start);
+                        var suffixSpan = TextSpan.MakeTextSpanFromBound(diagnostic.Span.End, line.End);
+
+                        var prefix = ast.Text.ToString(prefixSpan);
+                        var error  = ast.Text.ToString(diagnostic.Span);
+                        var suffix = ast.Text.ToString(suffixSpan);
 
                         Console.Write("     ");
                         Console.Write(prefix);
@@ -74,6 +98,8 @@ namespace Hyper
 
                     Console.WriteLine();
                 }
+
+                textBuilder.Clear();
             }
         }
     }

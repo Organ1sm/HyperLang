@@ -10,6 +10,32 @@ public sealed class SourceText
         Lines = ParseLines(this, text);
     }
 
+    public int GetLineIndex(int position)
+    {
+        var lower = 0;
+        var upper = Lines.Length - 1;
+
+        while (lower <= upper)
+        {
+            var index = lower + (upper - lower) / 2;
+            var start = Lines[index].Start;
+
+            if (position == start)
+                return index;
+
+            if (start > position)
+            {
+                upper = index - 1;
+            }
+            else
+            {
+                lower = index + 1;
+            }
+        }
+
+        return lower - 1;
+    }
+
     private static ImmutableArray<TextLine> ParseLines(SourceText sourceText, string text)
     {
         var result    = ImmutableArray.CreateBuilder<TextLine>();
