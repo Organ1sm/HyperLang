@@ -66,5 +66,43 @@ program. For now, it only provide an `Envaluate` API that will interpret the exp
 ## Stage5
 
 ### Completed items
+
 * Clean-up lexer, parser
 * Added `SourceText`, which allow us to know token line number information.
+
+## Stage6
+
+### Completed items
+
+* Add colorization to REPL
+* Add compilation unit
+* Add chaining to compilations
+* Add statements
+* Add variable declaration statements
+
+### Scoping and shadowing ;
+
+Logically, scopes are a tree and mirror the structure of the code, for example:
+
+```
+{
+    var x = 10
+    {
+        var y = x * 2
+        {
+            var z = x * y
+        }
+        {
+            var result = x + y
+        }
+    }
+}
+```
+
+### Variable Declaration
+```
+var b = true // variable `b` 's type is boolean.
+
+let a = 1
+a = 2 // error, let keyword indicates that the variable is a read-only variable.
+```
