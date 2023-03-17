@@ -9,12 +9,10 @@ public sealed class AST
 {
     private AST(SourceText text)
     {
-        var parser      = new Parser.Parser(text);
-        var root        = parser.ParseCompilationUnit();
-        var diagnostics = parser.Diagnostics.ToImmutableArray();
+        var parser = new Parser.Parser(text);
 
-        Root = root;
-        Diagnostics = diagnostics;
+        Root = parser.ParseCompilationUnit();
+        Diagnostics = parser.Diagnostics.ToImmutableArray();
         Text = text;
     }
 
