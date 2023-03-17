@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using Hyper.Compiler.Diagnostic;
 using Hyper.Compiler.Syntax;
+using Hyper.Compiler.Syntax.Stmt;
 using Hyper.Compiler.Text;
 using Hyper.Compiler.VM;
 
@@ -60,10 +61,43 @@ namespace Hyper.Compiler.Parser
 
         public CompilationUnit ParseCompilationUnit()
         {
-            var expression     = ParseExpression();
+            var statement      = ParseStatement();
             var endOfFileToken = Match(SyntaxKind.EndOfFileToken);
 
-            return new CompilationUnit(expression, endOfFileToken);
+            return new CompilationUnit(statement, endOfFileToken);
+        }
+
+
+        private Statement ParseStatement()
+        {
+            if (Current.Kind == SyntaxKind.OpenBraceToken)
+                return ParseBlockStatement();
+
+            return ParseExpressionStatement();
+        }
+
+        private BlockStatement ParseBlockStatement()
+        {
+            var statements = ImmutableArray.CreateBuilder<Statement>();
+
+            var openBraceToken = Match(SyntaxKind.OpenBraceToken);
+
+            while (Current.Kind != SyntaxKind.EndOfFileToken &&
+                   Current.Kind != SyntaxKind.CloseBraceToken)
+            {
+                var statement = ParseStatement();
+                statements.Add(statement);
+            }
+
+            var closeBraceToken = Match(SyntaxKind.CloseBraceToken);
+
+            return new BlockStatement(openBraceToken, statements.ToImmutable(), closeBraceToken);
+        }
+
+        private ExpressionStatement ParseExpressionStatement()
+        {
+            var expression = ParseExpression();
+            return new ExpressionStatement(expression);
         }
 
         private Expression ParseBinaryExpression(int parentPrecedence = 0)

@@ -1,19 +1,20 @@
 ﻿using Hyper.Compiler.Parser;
 using Hyper.Compiler.Syntax;
+using Hyper.Compiler.Syntax.Stmt;
 
 namespace Hyper.Compiler.VM
 {
     public sealed class CompilationUnit : Node
     {
-        public CompilationUnit(Expression expression, Token endOfFileToken)
+        public CompilationUnit(Statement statement, Token endOfFileToken)
         {
-            Expression = expression;
+            Statement = statement;
             EndOfFileToken = endOfFileToken;
         }
 
         public override SyntaxKind Kind => SyntaxKind.CompilationUnit;
 
-        public Expression Expression     { get; }
-        public Token      EndOfFileToken { get; }
+        public Statement Statement      { get; }
+        public Token     EndOfFileToken { get; }
     }
 }

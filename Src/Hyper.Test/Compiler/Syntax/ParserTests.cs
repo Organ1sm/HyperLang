@@ -1,5 +1,6 @@
 ﻿using System.Collections.Specialized;
 using Hyper.Compiler.Syntax;
+using Hyper.Compiler.Syntax.Stmt;
 using Xunit;
 
 namespace Hyper.Test.Compiler.Syntax;
@@ -143,6 +144,8 @@ public class ParserTests
     {
         var syntaxTree = AST.Parse(text);
         var root       = syntaxTree.Root;
-        return root.Expression;
+        var statement  = root.Statement;
+
+        return Assert.IsType<ExpressionStatement>(statement).Expression;
     }
 }

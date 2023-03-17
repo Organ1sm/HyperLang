@@ -1,8 +1,8 @@
 ﻿using System.Collections.Immutable;
-using System.Diagnostics.SymbolStore;
 using Hyper.Compiler.Diagnostic;
 using Hyper.Compiler.Symbol;
 using Hyper.Compiler.Syntax;
+using Hyper.Compiler.Syntax.Stmt;
 using Hyper.Compiler.VM;
 
 namespace Hyper.Compiler.Binding
@@ -23,7 +23,7 @@ namespace Hyper.Compiler.Binding
             var parentScope = CreateParentScope(previous);
             var binder      = new Binder(parentScope);
 
-            var expression  = binder.BindExpression(unit.Expression);
+            var expression  = binder.BindStatement(unit.Statement);
             var variables   = binder._scope.GetDeclaredVariables();
             var diagnostics = binder.Diagnostics.ToImmutableArray();
 
@@ -56,6 +56,38 @@ namespace Hyper.Compiler.Binding
             }
 
             return parent;
+        }
+
+        private BoundStatement BindStatement(Statement syntax)
+        {
+            return syntax.Kind switch
+            {
+                SyntaxKind.BlockStatement      => BindBlockStatement((BlockStatement) syntax),
+                SyntaxKind.ExpressionStatement => BindExpressionStatement((ExpressionStatement) syntax),
+                _                              => throw new Exception($"Unexpected syntax {syntax.Kind}")
+            };
+        }
+
+        private BoundStatement BindBlockStatement(BlockStatement syntax)
+        {
+            var statements = ImmutableArray.CreateBuilder<BoundStatement>();
+            _scope = new BoundScope(_scope);
+
+            foreach (var statementSyntax in syntax.Statements)
+            {
+                var statement = BindStatement(statementSyntax);
+                statements.Add(statement);
+            }
+
+            _scope = _scope.Parent;
+
+            return new BoundBlockStatement(statements.ToImmutable());
+        }
+
+        private BoundStatement BindExpressionStatement(ExpressionStatement syntax)
+        {
+            var expression = BindExpression(syntax.Expression);
+            return new BoundExpressionStatement(expression);
         }
 
         public BoundExpression BindExpression(Expression syntax)
