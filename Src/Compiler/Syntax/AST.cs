@@ -1,26 +1,24 @@
 ﻿using System.Collections.Immutable;
-using System.Security.Cryptography;
 using Hyper.Compiler.Parser;
-using Hyper.Compiler.Diagnostic;
 using Hyper.Compiler.Text;
+using Hyper.Compiler.VM;
 
 namespace Hyper.Compiler.Syntax;
 
 public sealed class AST
 {
-    public AST(Expression root, Token eofToken, ImmutableArray<Diagnostic.Diagnostic> diagnostics, SourceText text)
+    private AST(SourceText text)
     {
+        var parser      = new Parser.Parser(text);
+        var root        = parser.ParseCompilationUnit();
+        var diagnostics = parser.Diagnostics.ToImmutableArray();
+
         Root = root;
-        EOFToken = eofToken;
         Diagnostics = diagnostics;
         Text = text;
     }
 
-    public static AST Parse(SourceText text)
-    {
-        var parser = new Parser.Parser(text);
-        return parser.Parse();
-    }
+    public static AST Parse(SourceText text) => new AST(text);
 
     public static AST Parse(string text)
     {
@@ -47,8 +45,7 @@ public sealed class AST
         }
     }
 
-    public Expression                            Root        { get; }
-    public Token                                 EOFToken    { get; }
+    public CompilationUnit                       Root        { get; }
     public ImmutableArray<Diagnostic.Diagnostic> Diagnostics { get; }
     public SourceText                            Text;
 }

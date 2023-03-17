@@ -1,8 +1,8 @@
 ﻿using System.Text;
-using Hyper.Compiler.Parser;
 using Hyper.Compiler.Symbol;
 using Hyper.Compiler.Syntax;
 using Hyper.Compiler.Text;
+using Hyper.Compiler.VM;
 
 namespace Hyper
 {
@@ -14,9 +14,12 @@ namespace Hyper
             var  variables   = new Dictionary<VariableSymbol, object>();
             var  textBuilder = new StringBuilder();
 
+            Compilation previous = null;
+
             while (true)
             {
-                Console.Write(textBuilder.Length == 0 ? "> " : "| ");
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write(textBuilder.Length == 0 ? ">> " : "·· ");
 
                 var input   = Console.ReadLine();
                 var isBlank = string.IsNullOrWhiteSpace(input);
@@ -36,6 +39,12 @@ namespace Hyper
                         Console.Clear();
                         continue;
                     }
+                    else if (input == "#reset")
+                    {
+                        previous = null;
+                        variables.Clear();
+                        continue;
+                    }
                 }
 
                 textBuilder.AppendLine(input);
@@ -46,20 +55,18 @@ namespace Hyper
                 if (!isBlank && ast.Diagnostics.Any())
                     continue;
 
-                var compilation = new Compilation(ast);
+                var compilation = previous == null ? new Compilation(ast) : previous.ContinueWith(ast);
                 var result      = compilation.Evaluate(variables);
 
                 if (showTree)
-                {
-                    var color = Console.ForegroundColor;
-                    Console.ForegroundColor = ConsoleColor.DarkGray;
                     ast.Root.WriteTo(Console.Out);
-                    Console.ForegroundColor = color;
-                }
 
                 if (!result.Diagnostics.Any())
                 {
+                    Console.ForegroundColor = ConsoleColor.Magenta;
                     Console.WriteLine(result.Value);
+                    Console.ResetColor();
+                    previous = compilation;
                 }
                 else
                 {

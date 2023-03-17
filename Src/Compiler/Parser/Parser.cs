@@ -1,7 +1,9 @@
 ﻿using System.Collections.Immutable;
 using Hyper.Compiler.Diagnostic;
 using Hyper.Compiler.Syntax;
+using Hyper.Compiler.Syntax.Stmt;
 using Hyper.Compiler.Text;
+using Hyper.Compiler.VM;
 
 namespace Hyper.Compiler.Parser
 {
@@ -57,12 +59,58 @@ namespace Hyper.Compiler.Parser
             return new Token(kind: kind, position: Current.Position);
         }
 
-        public AST Parse()
+        public CompilationUnit ParseCompilationUnit()
         {
-            var expression     = ParseExpression();
+            var statement      = ParseStatement();
             var endOfFileToken = Match(SyntaxKind.EndOfFileToken);
 
-            return new AST(expression, endOfFileToken, _diagnostics.ToImmutableArray(), _text);
+            return new CompilationUnit(statement, endOfFileToken);
+        }
+
+
+        private Statement ParseStatement()
+        {
+            return Current.Kind switch
+            {
+                SyntaxKind.OpenBraceToken                      => ParseBlockStatement(),
+                SyntaxKind.LetKeyword or SyntaxKind.VarKeyword => ParseVariableDeclaration(),
+                _                                              => ParseExpressionStatement()
+            };
+        }
+
+        private BlockStatement ParseBlockStatement()
+        {
+            var statements = ImmutableArray.CreateBuilder<Statement>();
+
+            var openBraceToken = Match(SyntaxKind.OpenBraceToken);
+
+            while (Current.Kind != SyntaxKind.EndOfFileToken &&
+                   Current.Kind != SyntaxKind.CloseBraceToken)
+            {
+                var statement = ParseStatement();
+                statements.Add(statement);
+            }
+
+            var closeBraceToken = Match(SyntaxKind.CloseBraceToken);
+
+            return new BlockStatement(openBraceToken, statements.ToImmutable(), closeBraceToken);
+        }
+
+        private Statement ParseVariableDeclaration()
+        {
+            var expected    = Current.Kind == SyntaxKind.LetKeyword ? SyntaxKind.LetKeyword : SyntaxKind.VarKeyword;
+            var keyword     = Match(expected);
+            var identifier  = Match(SyntaxKind.IdentifierToken);
+            var equals      = Match(SyntaxKind.EqualsToken);
+            var initializer = ParseExpression();
+
+            return new VariableDeclaration(keyword, identifier, equals, initializer);
+        }
+
+        private ExpressionStatement ParseExpressionStatement()
+        {
+            var expression = ParseExpression();
+            return new ExpressionStatement(expression);
         }
 
         private Expression ParseBinaryExpression(int parentPrecedence = 0)

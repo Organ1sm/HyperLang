@@ -1,5 +1,6 @@
 ﻿using System.Collections.Specialized;
 using Hyper.Compiler.Syntax;
+using Hyper.Compiler.Syntax.Stmt;
 using Xunit;
 
 namespace Hyper.Test.Compiler.Syntax;
@@ -16,7 +17,7 @@ public class ParserTests
         var op2Text       = Factors.GetText(op2);
 
         var text       = $"a {op1Text} b {op2Text} c";
-        var expression = AST.Parse(text).Root;
+        var expression = ParseExpression(text);
 
         if (op1Precedence >= op2Precedence)
         {
@@ -73,7 +74,7 @@ public class ParserTests
         var binaryOpText       = Factors.GetText(binaryKind);
 
         var text       = $"{unaryOpText} a {binaryOpText} b";
-        var expression = AST.Parse(text).Root;
+        var expression = ParseExpression(text);
 
         if (unaryOpPrecedence >= binaryOpPrecedence)
         {
@@ -137,5 +138,14 @@ public class ParserTests
                 yield return new object[] {unaryOp, binaryOp};
             }
         }
+    }
+
+    private static Expression ParseExpression(string text)
+    {
+        var syntaxTree = AST.Parse(text);
+        var root       = syntaxTree.Root;
+        var statement  = root.Statement;
+
+        return Assert.IsType<ExpressionStatement>(statement).Expression;
     }
 }

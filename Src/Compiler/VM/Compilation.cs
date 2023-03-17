@@ -3,30 +3,51 @@ using Hyper.Compiler.Binding;
 using Hyper.Compiler.Symbol;
 using Hyper.Compiler.Syntax;
 
-namespace Hyper.Compiler.Parser
+namespace Hyper.Compiler.VM
 {
     public sealed class Compilation
     {
-        public AST Ast { get; }
+        public  AST              Ast      { get; }
+        public  Compilation?     Previous { get; }
+        private BoundGlobalScope _globalScope;
 
-        public Compilation(AST ast)
+        public Compilation(AST ast) : this(null, ast) { }
+
+        private Compilation(Compilation? previous, AST ast)
         {
+            Previous = previous;
             Ast = ast;
         }
 
         public EvaluationResult Evaluate(Dictionary<VariableSymbol, object> variables)
         {
-            var binder          = new Binder(variables);
-            var boundExpression = binder.BindExpression(Ast.Root);
-
-            var diagnostics = Ast.Diagnostics.Concat(binder.Diagnostics).ToImmutableArray();
+            var diagnostics = Ast.Diagnostics.Concat(GlobalScope.Diagnostics).ToImmutableArray();
             if (diagnostics.Any())
                 return new EvaluationResult(diagnostics, null);
 
-            var evaluator = new Evaluator(boundExpression, variables);
+            var evaluator = new Evaluator(GlobalScope.Statement, variables);
             var value     = evaluator.Evaluate();
 
             return new EvaluationResult(ImmutableArray<Diagnostic.Diagnostic>.Empty, value);
+        }
+
+        internal BoundGlobalScope GlobalScope
+        {
+            get
+            {
+                if (_globalScope == null)
+                {
+                    var globalScope = Binder.BindGlobalScope(Previous?.GlobalScope, Ast.Root);
+                    Interlocked.CompareExchange(ref _globalScope, globalScope, null);
+                }
+
+                return _globalScope;
+            }
+        }
+
+        public Compilation ContinueWith(AST ast)
+        {
+            return new Compilation(this, ast);
         }
     }
 }
