@@ -1,6 +1,6 @@
 ﻿namespace Hyper.Compiler.Text;
 
-public class TextSpan
+public struct TextSpan
 {
     public TextSpan(int start, int length)
     {
@@ -17,4 +17,6 @@ public class TextSpan
     public int Start  { get; }
     public int Length { get; }
     public int End    => Start + Length;
+
+    public override string ToString() => $"{Start}...{End}";
 }
