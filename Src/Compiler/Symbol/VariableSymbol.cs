@@ -1,12 +1,17 @@
-﻿namespace Hyper.Compiler.Symbol;
+﻿using System.Runtime.CompilerServices;
+
+namespace Hyper.Compiler.Symbol;
 
 public sealed class VariableSymbol
 {
-    public VariableSymbol(string name, Type type)
+    public VariableSymbol(string name, Type type, bool isReadOnly)
     {
         Name = name;
         Type = type;
+        IsReadOnly = isReadOnly;
     }
-    public string Name { get; }
-    public Type   Type { get; }
+
+    public string Name       { get; }
+    public Type   Type       { get; }
+    public bool   IsReadOnly { get; }
 }

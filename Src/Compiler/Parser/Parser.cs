@@ -70,10 +70,12 @@ namespace Hyper.Compiler.Parser
 
         private Statement ParseStatement()
         {
-            if (Current.Kind == SyntaxKind.OpenBraceToken)
-                return ParseBlockStatement();
-
-            return ParseExpressionStatement();
+            return Current.Kind switch
+            {
+                SyntaxKind.OpenBraceToken                      => ParseBlockStatement(),
+                SyntaxKind.LetKeyword or SyntaxKind.VarKeyword => ParseVariableDeclaration(),
+                _                                              => ParseExpressionStatement()
+            };
         }
 
         private BlockStatement ParseBlockStatement()
@@ -92,6 +94,17 @@ namespace Hyper.Compiler.Parser
             var closeBraceToken = Match(SyntaxKind.CloseBraceToken);
 
             return new BlockStatement(openBraceToken, statements.ToImmutable(), closeBraceToken);
+        }
+
+        private Statement ParseVariableDeclaration()
+        {
+            var expected    = Current.Kind == SyntaxKind.LetKeyword ? SyntaxKind.LetKeyword : SyntaxKind.VarKeyword;
+            var keyword     = Match(expected);
+            var identifier  = Match(SyntaxKind.IdentifierToken);
+            var equals      = Match(SyntaxKind.EqualsToken);
+            var initializer = ParseExpression();
+
+            return new VariableDeclaration(keyword, identifier, equals, initializer);
         }
 
         private ExpressionStatement ParseExpressionStatement()

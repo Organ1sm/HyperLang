@@ -28,12 +28,15 @@ public enum SyntaxKind
     // Keywords
     TrueKeyword,
     FalseKeyword,
+    LetKeyword,
+    VarKeyword,
 
     // Nodes
     CompilationUnit,
 
     // Statements
     BlockStatement,
+    VariableDeclaration,
     ExpressionStatement,
     
     // Expression

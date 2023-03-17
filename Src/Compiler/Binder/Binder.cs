@@ -64,6 +64,7 @@ namespace Hyper.Compiler.Binding
             {
                 SyntaxKind.BlockStatement      => BindBlockStatement((BlockStatement) syntax),
                 SyntaxKind.ExpressionStatement => BindExpressionStatement((ExpressionStatement) syntax),
+                SyntaxKind.VariableDeclaration => BindVariableDeclaration((VariableDeclaration) syntax),
                 _                              => throw new Exception($"Unexpected syntax {syntax.Kind}")
             };
         }
@@ -88,6 +89,19 @@ namespace Hyper.Compiler.Binding
         {
             var expression = BindExpression(syntax.Expression);
             return new BoundExpressionStatement(expression);
+        }
+
+        private BoundStatement BindVariableDeclaration(VariableDeclaration syntax)
+        {
+            var name        = syntax.Identifier.Text;
+            var isReadOnly  = syntax.Keyword.Kind == SyntaxKind.LetKeyword;
+            var initializer = BindExpression(syntax.Initializer);
+            var variable    = new VariableSymbol(name, initializer.Type, isReadOnly);
+
+            if (!_scope.TryDeclare(variable))
+                _diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
+
+            return new BoundVariableDeclaration(variable, initializer);
         }
 
         public BoundExpression BindExpression(Expression syntax)
@@ -172,9 +186,12 @@ namespace Hyper.Compiler.Binding
 
             if (!_scope.TryLookUp(name, out var variable))
             {
-                variable = new VariableSymbol(name, boundExpression.Type);
-                _scope.TryDeclare(variable);
+                _diagnostics.ReportUndefinedName(syntax.IdentifierToken.Span, name);
+                return boundExpression;
             }
+
+            if (variable.IsReadOnly)
+                _diagnostics.ReportCannotAssign(syntax.EqualsToken.Span, name);
 
             if (boundExpression.Type != variable.Type)
             {
