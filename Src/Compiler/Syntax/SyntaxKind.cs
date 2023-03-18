@@ -18,10 +18,14 @@ public enum SyntaxKind
     PipePipeToken,           // '||'
     EqualsEqualsToken,       // '=='
     BangEqualsToken,         // '!='
+    LessToken,               // '<'
+    LessOrEqualsToken,       // '<='
+    GreaterToken,            // '>'
+    GreaterOrEqualsToken,    // '>='
     OpenParenthesisToken,    // '('
     CloseParenthesisToken,   // ')'
     OpenBraceToken,          // '{'
-    CloseBraceToken,          // '}'
+    CloseBraceToken,         // '}'
 
     IdentifierToken,
 
@@ -38,7 +42,7 @@ public enum SyntaxKind
     BlockStatement,
     VariableDeclaration,
     ExpressionStatement,
-    
+
     // Expression
     LiteralExpression,
     NameExpression,
