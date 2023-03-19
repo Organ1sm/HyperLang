@@ -26,6 +26,7 @@ public enum SyntaxKind
     CloseParenthesisToken,   // ')'
     OpenBraceToken,          // '{'
     CloseBraceToken,         // '}'
+    ColonToken,
 
     IdentifierToken,
 
@@ -34,14 +35,20 @@ public enum SyntaxKind
     FalseKeyword,
     LetKeyword,
     VarKeyword,
+    IfKeyword,
+    ElseKeyword,
 
     // Nodes
     CompilationUnit,
+    ElseClause,
+    
 
     // Statements
     BlockStatement,
     VariableDeclaration,
     ExpressionStatement,
+    IfStatement,
+    
 
     // Expression
     LiteralExpression,

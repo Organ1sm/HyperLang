@@ -44,6 +44,8 @@ public static class Factors
             "false" => SyntaxKind.FalseKeyword,
             "let"   => SyntaxKind.LetKeyword,
             "var"   => SyntaxKind.VarKeyword,
+            "if"    => SyntaxKind.IfKeyword,
+            "else"  => SyntaxKind.ElseKeyword,
             _       => SyntaxKind.IdentifierToken
         };
     }
@@ -90,10 +92,13 @@ public static class Factors
             SyntaxKind.CloseParenthesisToken   => ")",
             SyntaxKind.OpenBraceToken          => "{",
             SyntaxKind.CloseBraceToken         => "}",
+            SyntaxKind.ColonToken              => ":",
             SyntaxKind.FalseKeyword            => "false",
             SyntaxKind.TrueKeyword             => "true",
             SyntaxKind.LetKeyword              => "let",
             SyntaxKind.VarKeyword              => "var",
+            SyntaxKind.IfKeyword               => "if",
+            SyntaxKind.ElseKeyword             => "else",
             _                                  => null
         };
     }
