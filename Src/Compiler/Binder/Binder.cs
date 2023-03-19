@@ -65,6 +65,7 @@ namespace Hyper.Compiler.Binding
                 SyntaxKind.BlockStatement      => BindBlockStatement((BlockStatement) syntax),
                 SyntaxKind.ExpressionStatement => BindExpressionStatement((ExpressionStatement) syntax),
                 SyntaxKind.IfStatement         => BindIfStatement((IfStatement) syntax),
+                SyntaxKind.WhileStatement      => BindWhileStatement((WhileStatement) syntax),
                 SyntaxKind.VariableDeclaration => BindVariableDeclaration((VariableDeclaration) syntax),
                 _                              => throw new Exception($"Unexpected syntax {syntax.Kind}")
             };
@@ -112,6 +113,14 @@ namespace Hyper.Compiler.Binding
             var elseStatement = syntax.ElseClause == null ? null : BindStatement(syntax.ElseClause.ElseStatement);
 
             return new BoundIfStatement(condition, thenStatement, elseStatement);
+        }
+
+        private BoundStatement BindWhileStatement(WhileStatement syntax)
+        {
+            var condition = BindExpression(syntax.Condition, typeof(bool));
+            var body      = BindStatement(syntax.Body);
+
+            return new BoundWhileStatement(condition, body);
         }
 
         private BoundExpression BindExpression(Expression syntax, Type targetType)

@@ -75,6 +75,7 @@ namespace Hyper.Compiler.Parser
                 SyntaxKind.OpenBraceToken                      => ParseBlockStatement(),
                 SyntaxKind.LetKeyword or SyntaxKind.VarKeyword => ParseVariableDeclaration(),
                 SyntaxKind.IfKeyword                           => ParseIfStatement(),
+                SyntaxKind.WhileKeyword                        => ParseWhileStatement(),
                 _                                              => ParseExpressionStatement()
             };
         }
@@ -117,6 +118,16 @@ namespace Hyper.Compiler.Parser
             var elseClause = ParseElseClause();
 
             return new IfStatement(keyword, condition, statement, elseClause);
+        }
+
+        private Statement ParseWhileStatement()
+        {
+            var keyword   = Match(SyntaxKind.WhileKeyword);
+            var condition = ParseExpression();
+            Match(SyntaxKind.ColonToken);
+            var body = ParseStatement();
+
+            return new WhileStatement(keyword, condition, body);
         }
 
         private ElseClause? ParseElseClause()
