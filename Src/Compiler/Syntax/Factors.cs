@@ -47,6 +47,8 @@ public static class Factors
             "if"    => SyntaxKind.IfKeyword,
             "else"  => SyntaxKind.ElseKeyword,
             "while" => SyntaxKind.WhileKeyword,
+            "for"   => SyntaxKind.ForKeyword,
+            "to"    => SyntaxKind.ToKeyword,
             _       => SyntaxKind.IdentifierToken
         };
     }
@@ -101,6 +103,8 @@ public static class Factors
             SyntaxKind.IfKeyword               => "if",
             SyntaxKind.ElseKeyword             => "else",
             SyntaxKind.WhileKeyword            => "while",
+            SyntaxKind.ForKeyword              => "for",
+            SyntaxKind.ToKeyword               => "to",
             _                                  => null
         };
     }
