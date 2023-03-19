@@ -17,13 +17,16 @@ public class Node
             if (typeof(Node).IsAssignableFrom(property.PropertyType))
             {
                 var child = (Node) property.GetValue(this);
-                yield return child;
+                if (child != null) yield return child;
             }
             else if (typeof(IEnumerable<Node>).IsAssignableFrom(property.PropertyType))
             {
                 var children = (IEnumerable<Node>) property.GetValue(this);
                 foreach (var child in children)
-                    yield return child;
+                {
+                    if (child != null)
+                        yield return child;
+                }
             }
         }
     }

@@ -12,7 +12,6 @@ public class LexerTests
                              .Where(k => k.ToString().EndsWith("Keyword") || k.ToString().EndsWith("Token"));
         var testedTokenKinds = GetTokens().Concat(GetSeparators()).Select(t => t.kind);
 
-
         var untestedTokenKinds = new SortedSet<SyntaxKind>(tokenKinds);
         untestedTokenKinds.Remove(SyntaxKind.BadToken);
         untestedTokenKinds.Remove(SyntaxKind.EndOfFileToken);

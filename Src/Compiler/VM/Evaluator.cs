@@ -35,6 +35,9 @@ namespace Hyper.Compiler.VM
                 case BoundNodeKind.VariableDeclaration:
                     EvaluateVariableDeclaration((BoundVariableDeclaration) node);
                     break;
+                case BoundNodeKind.IfStatement:
+                    EvaluateIfStatement((BoundIfStatement) node);
+                    break;
                 default:
                     throw new Exception($"Unexpected node {node.Kind}");
             }
@@ -56,6 +59,15 @@ namespace Hyper.Compiler.VM
         private void EvaluateExpressionStatement(BoundExpressionStatement node)
         {
             _lastValue = EvaluateExpression(node.Expression);
+        }
+
+        private void EvaluateIfStatement(BoundIfStatement node)
+        {
+            var condition = (bool) EvaluateExpression(node.Condition);
+            if (condition)
+                EvaluateStatement(node.ThenStatement);
+            else if (node.ElseStatement != null)
+                EvaluateStatement(node.ElseStatement);
         }
 
         private static object EvaluateLiteralExpression(BoundLiteralExpression n) => n.Value;
