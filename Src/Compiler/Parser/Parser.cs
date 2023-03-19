@@ -76,6 +76,7 @@ namespace Hyper.Compiler.Parser
                 SyntaxKind.LetKeyword or SyntaxKind.VarKeyword => ParseVariableDeclaration(),
                 SyntaxKind.IfKeyword                           => ParseIfStatement(),
                 SyntaxKind.WhileKeyword                        => ParseWhileStatement(),
+                SyntaxKind.ForKeyword                          => ParseForStatement(),
                 _                                              => ParseExpressionStatement()
             };
         }
@@ -140,6 +141,19 @@ namespace Hyper.Compiler.Parser
             var statement = ParseStatement();
 
             return new ElseClause(keyword, statement);
+        }
+
+        private Statement ParseForStatement()
+        {
+            var keyword     = Match(SyntaxKind.ForKeyword);
+            var identifier  = Match(SyntaxKind.IdentifierToken);
+            var equalsToken = Match(SyntaxKind.EqualsToken);
+            var lowerBound  = ParseExpression();
+            var toKeyword   = Match(SyntaxKind.ToKeyword);
+            var upperBound  = ParseExpression();
+            var body        = ParseStatement();
+
+            return new ForStatement(keyword, identifier, equalsToken, lowerBound, toKeyword, upperBound, body);
         }
 
         private ExpressionStatement ParseExpressionStatement()

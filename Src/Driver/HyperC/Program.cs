@@ -52,7 +52,7 @@ namespace Hyper
 
                 var ast = AST.Parse(text);
 
-                if (!isBlank && ast.Diagnostics.Any())
+                if (ast.Diagnostics.Any())
                     continue;
 
                 var compilation = previous == null ? new Compilation(ast) : previous.ContinueWith(ast);

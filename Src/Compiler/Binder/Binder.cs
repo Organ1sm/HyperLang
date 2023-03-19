@@ -66,6 +66,7 @@ namespace Hyper.Compiler.Binding
                 SyntaxKind.ExpressionStatement => BindExpressionStatement((ExpressionStatement) syntax),
                 SyntaxKind.IfStatement         => BindIfStatement((IfStatement) syntax),
                 SyntaxKind.WhileStatement      => BindWhileStatement((WhileStatement) syntax),
+                SyntaxKind.ForStatement        => BindForStatement((ForStatement) syntax),
                 SyntaxKind.VariableDeclaration => BindVariableDeclaration((VariableDeclaration) syntax),
                 _                              => throw new Exception($"Unexpected syntax {syntax.Kind}")
             };
@@ -121,6 +122,25 @@ namespace Hyper.Compiler.Binding
             var body      = BindStatement(syntax.Body);
 
             return new BoundWhileStatement(condition, body);
+        }
+
+        private BoundStatement BindForStatement(ForStatement syntax)
+        {
+            var lowerBound = BindExpression(syntax.LowerBound, typeof(int));
+            var upperBound = BindExpression(syntax.UpperBound, typeof(int));
+
+            _scope = new BoundScope(_scope);
+
+            var name     = syntax.Identifier.Text;
+            var variable = new VariableSymbol(name, typeof(int), true);
+            if (!_scope.TryDeclare(variable))
+                _diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
+
+            var body = BindStatement(syntax.Body);
+            
+            _scope = _scope.Parent;
+
+            return new BoundForStatement(variable, lowerBound, upperBound, body);
         }
 
         private BoundExpression BindExpression(Expression syntax, Type targetType)
