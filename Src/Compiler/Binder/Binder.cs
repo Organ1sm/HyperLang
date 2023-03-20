@@ -137,7 +137,7 @@ namespace Hyper.Compiler.Binding
                 _diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
 
             var body = BindStatement(syntax.Body);
-            
+
             _scope = _scope.Parent;
 
             return new BoundForStatement(variable, lowerBound, upperBound, body);
@@ -217,6 +217,12 @@ namespace Hyper.Compiler.Binding
         private BoundExpression BindNameExpression(NameExpression syntax)
         {
             var name = syntax.IdentifierToken.Text;
+            if (string.IsNullOrEmpty(name))
+            {
+                // This means the token was inserted by the parser. We already
+                // reported error so we can just return an error expression.
+                return new BoundLiteralExpression(0);
+            }
 
             if (!_scope.TryLookUp(name, out var variable))
             {
