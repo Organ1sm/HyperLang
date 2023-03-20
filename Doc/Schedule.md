@@ -100,9 +100,60 @@ Logically, scopes are a tree and mirror the structure of the code, for example:
 ```
 
 ### Variable Declaration
+
 ```
 var b = true // variable `b` 's type is boolean.
 
 let a = 1
 a = 2 // error, let keyword indicates that the variable is a read-only variable.
+```
+
+# Stage 7
+
+## Completed items
+
+* Make evaluation tests more declarative, especially for diagnostics
+* Add support for `<,` `<=`, `>=`, and `>`
+* Add support for if-statements
+* Add support for while-statements
+* Add support for for-statements
+* Ensure parser doesn't loop infinitely on malformed block
+* Ensure binder doesn't crash when binding fabricated identifiers
+
+### If-statement
+
+```js
+var a = 1
+if a == 1:
+    a = 10
+else:
+    a = 100
+    
+ a  // output: 10
+```
+
+### While-statement
+
+```js
+var i = 10 
+var result = 0 
+while i > 0: 
+{ 
+    result = result + i 
+    i = i - 1
+}
+
+result          // output 55
+```
+
+### For-Statement
+```js
+var result = 0 
+for i = 1 to 10 
+{ 
+    result = result + i 
+} 
+
+result // output: 55
+
 ```
