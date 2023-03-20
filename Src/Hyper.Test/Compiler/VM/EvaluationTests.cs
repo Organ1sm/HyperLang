@@ -71,6 +71,22 @@ public class EvaluationTests
     }
 
     [Fact]
+    public void EvaluatorBlockStatementNoInfiniteLoop()
+    {
+        var text = @"
+            {
+            [)][]
+        ";
+
+        var diagnostics = @"
+            Unexpected token <CloseParenthesisToken>, expected <IdentifierToken>.
+            Unexpected token <EndOfFileToken>, expected <CloseBraceToken>.
+        ";
+
+        AssertValue(text, diagnostics);
+    }
+
+    [Fact]
     public void EvaluatorIfStatementReportsCannotConvert()
     {
         var text = @"
