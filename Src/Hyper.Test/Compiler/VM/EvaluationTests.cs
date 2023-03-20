@@ -87,6 +87,18 @@ public class EvaluationTests
     }
 
     [Fact]
+    public void EvaluatorNameExpressionReportsNoErrorForInsertedToken()
+    {
+        var text = @"[]";
+
+        var diagnostics = @"
+                Unexpected token <EndOfFileToken>, expected <IdentifierToken>.
+            ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
+    [Fact]
     public void EvaluatorIfStatementReportsCannotConvert()
     {
         var text = @"
