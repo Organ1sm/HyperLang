@@ -70,6 +70,115 @@ public class EvaluationTests
         AssertDiagnostics(text, diagnostics);
     }
 
+    [Fact]
+    public void EvaluatorIfStatementReportsCannotConvert()
+    {
+        var text = @"
+            {
+                var x = 0
+                if [10]:
+                    x = 10
+            }
+        ";
+
+        var diagnostics = @"
+                Cannot convert type 'System.Int32' to 'System.Boolean'.
+        ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
+    [Fact]
+    public void EvaluatorWhileStatementReportsCannotConvert()
+    {
+        var text = @"
+            {
+                var x = 0
+                while [10]:
+                    x = 10
+        }";
+
+        var diagnostics = @"
+                Cannot convert type 'System.Int32' to 'System.Boolean'.
+        ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
+    [Fact]
+    public void EvaluatorForStatementReportsCannotConvert()
+    {
+        var text = @"
+            {
+                var result = 0
+                for i = 1 to [true]
+                    result = result + i
+            }";
+
+        var diagnostics = @"
+                Cannot convert type 'System.Boolean' to 'System.Int32'.
+        ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
+    [Fact]
+    public void EvaluatorNameExpressionReportsUndefined()
+    {
+        var text = @"[x] * 10";
+        var diagnostics = @"
+                Variable 'x' doesn't exist.
+            ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
+    [Fact]
+    public void EvaluatorBinaryExpressionReportsUndefined()
+    {
+        var text = @"10 [*] false";
+
+        var diagnostics = @"
+                Binary operator '*' is not defined for types 'System.Int32' and 'System.Boolean'.
+            ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
+    [Fact]
+    public void EvaluatorAssignmentExpressionReportsCannotAssign()
+    {
+        var text = @"
+                {
+                    let x = 10
+                    x [=] 0
+                }
+            ";
+
+        var diagnostics = @"
+                Variable 'x' is read-only and cannot be assigned to.
+            ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
+    [Fact]
+    public void EvaluatorAssignmentExpressionReportsCannotConvert()
+    {
+        var text = @"
+                {
+                    var x = 10
+                    x = [true]
+                }
+            ";
+
+        var diagnostics = @"
+                Cannot convert type 'System.Boolean' to 'System.Int32'.
+            ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
     private static void AssertValue(string text, object expectedValue)
     {
         var ast         = AST.Parse(text);
