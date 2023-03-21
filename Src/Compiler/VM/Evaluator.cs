@@ -5,12 +5,12 @@ namespace Hyper.Compiler.VM
 {
     internal sealed class Evaluator
     {
-        private readonly BoundStatement                     _root;
+        private readonly BoundStatement?                    _root;
         private readonly Dictionary<VariableSymbol, object> _variables;
 
         private object _lastValue;
 
-        public Evaluator(BoundStatement root, Dictionary<VariableSymbol, object> variables)
+        public Evaluator(BoundStatement? root, Dictionary<VariableSymbol, object> variables)
         {
             this._root = root;
             _variables = variables;
@@ -22,7 +22,7 @@ namespace Hyper.Compiler.VM
             return _lastValue;
         }
 
-        private void EvaluateStatement(BoundStatement node)
+        private void EvaluateStatement(BoundStatement? node)
         {
             switch (node.Kind)
             {

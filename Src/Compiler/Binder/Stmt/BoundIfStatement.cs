@@ -2,7 +2,7 @@
 
 internal sealed class BoundIfStatement : BoundStatement
 {
-    public BoundIfStatement(BoundExpression condition, BoundStatement thenStatement, BoundStatement? elseStatement)
+    public BoundIfStatement(BoundExpression condition, BoundStatement? thenStatement, BoundStatement? elseStatement)
     {
         Condition = condition;
         ThenStatement = thenStatement;
