@@ -1,6 +1,5 @@
 ﻿using Hyper.Compiler.Binding;
 using Hyper.Compiler.Symbol;
-using Hyper.Compiler.Syntax.Stmt;
 
 namespace Hyper.Compiler.VM
 {
@@ -115,7 +114,9 @@ namespace Hyper.Compiler.VM
                 BoundUnaryOperatorKind.Identity        => (int) operand,
                 BoundUnaryOperatorKind.Negation        => -(int) operand,
                 BoundUnaryOperatorKind.LogicalNegation => !(bool) operand,
-                _                                      => throw new Exception($"Unexpected unary operator {u.Operator}")
+                BoundUnaryOperatorKind.OnesComplement  => ~(int) operand,
+
+                _ => throw new Exception($"Unexpected unary operator {u.Operator}")
             };
         }
 
@@ -126,10 +127,20 @@ namespace Hyper.Compiler.VM
 
             return b.Operator.OpKind switch
             {
-                BoundBinaryOperatorKind.Addition        => (int) left + (int) right,
-                BoundBinaryOperatorKind.Subtraction     => (int) left - (int) right,
-                BoundBinaryOperatorKind.Multiplication  => (int) left * (int) right,
-                BoundBinaryOperatorKind.Division        => (int) left / (int) right,
+                BoundBinaryOperatorKind.Addition       => (int) left + (int) right,
+                BoundBinaryOperatorKind.Subtraction    => (int) left - (int) right,
+                BoundBinaryOperatorKind.Multiplication => (int) left * (int) right,
+                BoundBinaryOperatorKind.Division       => (int) left / (int) right,
+
+                BoundBinaryOperatorKind.BitwiseAnd when b.Type == (typeof(int))  => (int) left & (int) right,
+                BoundBinaryOperatorKind.BitwiseAnd when b.Type == (typeof(bool)) => (bool) left & (bool) right,
+
+                BoundBinaryOperatorKind.BitwiseOr when b.Type == (typeof(int))  => (int) left | (int) right,
+                BoundBinaryOperatorKind.BitwiseOr when b.Type == (typeof(bool)) => (bool) left | (bool) right,
+
+                BoundBinaryOperatorKind.BitwiseXor when b.Type == (typeof(int)) => (int) left ^ (int) right,
+                BoundBinaryOperatorKind.BitwiseXor when b.Type == (typeof(bool)) => (bool) left ^ (bool) right,
+
                 BoundBinaryOperatorKind.LogicalAnd      => (bool) left && (bool) right,
                 BoundBinaryOperatorKind.LogicalOr       => (bool) left || (bool) right,
                 BoundBinaryOperatorKind.Equals          => Equals(left, right),
