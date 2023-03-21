@@ -91,7 +91,7 @@ internal class BoundTreeRewriter
         return new BoundWhileStatement(condition, body);
     }
 
-    protected virtual BoundForStatement RewriteForStatement(BoundForStatement node)
+    protected virtual BoundStatement? RewriteForStatement(BoundForStatement node)
     {
         var lowerBound = RewriteExpression(node.LowerBound);
         var upperBound = RewriteExpression(node.UpperBound);
