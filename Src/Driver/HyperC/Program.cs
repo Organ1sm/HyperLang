@@ -11,6 +11,7 @@ namespace Hyper
         static void Main(string[] args)
         {
             bool showTree    = false;
+            bool showProgram = false;
             var  variables   = new Dictionary<VariableSymbol, object>();
             var  textBuilder = new StringBuilder();
 
@@ -32,6 +33,12 @@ namespace Hyper
                     {
                         showTree = !showTree;
                         Console.WriteLine(showTree ? "Showing parse trees." : "Not showing parse trees");
+                        continue;
+                    }
+                    else if (input == "#showProgram")
+                    {
+                        showProgram = !showProgram;
+                        Console.WriteLine(showProgram ? "Showing bound tree." : "Not showing bound tree.");
                         continue;
                     }
                     else if (input == "#cls")
@@ -60,6 +67,9 @@ namespace Hyper
 
                 if (showTree)
                     ast.Root.WriteTo(Console.Out);
+                
+                if (showProgram)
+                    compilation.EmitTree(Console.Out);
 
                 if (!result.Diagnostics.Any())
                 {

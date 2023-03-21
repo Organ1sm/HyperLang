@@ -49,5 +49,10 @@ namespace Hyper.Compiler.VM
         {
             return new Compilation(this, ast);
         }
+
+        public void EmitTree(TextWriter writer)
+        {
+            GlobalScope.Statement.WriteTo(writer);
+        }
     }
 }
