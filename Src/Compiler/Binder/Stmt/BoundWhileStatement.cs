@@ -2,7 +2,7 @@
 
 internal sealed class BoundWhileStatement : BoundStatement
 {
-    public BoundWhileStatement(BoundExpression condition, BoundStatement body)
+    public BoundWhileStatement(BoundExpression condition, BoundStatement? body)
     {
         Condition = condition;
         Body = body;
@@ -10,5 +10,5 @@ internal sealed class BoundWhileStatement : BoundStatement
 
     public override BoundNodeKind   Kind      => BoundNodeKind.WhileStatement;
     public          BoundExpression Condition { get; }
-    public          BoundStatement  Body      { get; }
+    public          BoundStatement?  Body      { get; }
 }

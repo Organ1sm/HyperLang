@@ -14,7 +14,11 @@ public enum SyntaxKind
     SlashToken,              // /
     BangToken,               // '!'
     EqualsToken,             // '='
+    TildeToken,              // '~'
+    HatToken,                // '^'
+    AmpersandToken,          // '&'
     AmpersandAmpersandToken, // '&&'
+    PipeToken,               // '|'
     PipePipeToken,           // '||'
     EqualsEqualsToken,       // '=='
     BangEqualsToken,         // '!='
@@ -40,12 +44,12 @@ public enum SyntaxKind
     WhileKeyword,
     ForKeyword,
     ToKeyword,
-    
+
 
     // Nodes
     CompilationUnit,
     ElseClause,
-    
+
 
     // Statements
     BlockStatement,
@@ -54,7 +58,7 @@ public enum SyntaxKind
     IfStatement,
     WhileStatement,
     ForStatement,
-    
+
 
     // Expression
     LiteralExpression,

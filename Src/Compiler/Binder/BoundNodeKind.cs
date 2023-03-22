@@ -7,9 +7,12 @@ internal enum BoundNodeKind
     ExpressionStatement,
     IfStatement,
     WhileStatement,
-    ForStatement, 
+    ForStatement,
+    LabelStatement,
+    GotoStatement,
+    ConditionalGotoStatement,
     VariableDeclaration,
-    
+
     // Expressions
     LiteralExpression,
     VariableExpression,

@@ -1,17 +1,17 @@
-﻿using Hyper.Compiler.Binding;
+﻿using System.ComponentModel;
+using Hyper.Compiler.Binding;
 using Hyper.Compiler.Symbol;
-using Hyper.Compiler.Syntax.Stmt;
 
 namespace Hyper.Compiler.VM
 {
     internal sealed class Evaluator
     {
-        private readonly BoundStatement                     _root;
+        private readonly BoundBlockStatement?               _root;
         private readonly Dictionary<VariableSymbol, object> _variables;
 
         private object _lastValue;
 
-        public Evaluator(BoundStatement root, Dictionary<VariableSymbol, object> variables)
+        public Evaluator(BoundBlockStatement? root, Dictionary<VariableSymbol, object> variables)
         {
             this._root = root;
             _variables = variables;
@@ -19,35 +19,54 @@ namespace Hyper.Compiler.VM
 
         public object Evaluate()
         {
-            EvaluateStatement(_root);
-            return _lastValue;
-        }
-
-        private void EvaluateStatement(BoundStatement node)
-        {
-            switch (node.Kind)
+            var labelToIndex = new Dictionary<LabelSymbol, int>();
+            for (var i = 0; i < _root.Statements.Length; i++)
             {
-                case BoundNodeKind.BlockStatement:
-                    EvaluateBlockStatement((BoundBlockStatement) node);
-                    break;
-                case BoundNodeKind.ExpressionStatement:
-                    EvaluateExpressionStatement((BoundExpressionStatement) node);
-                    break;
-                case BoundNodeKind.VariableDeclaration:
-                    EvaluateVariableDeclaration((BoundVariableDeclaration) node);
-                    break;
-                case BoundNodeKind.IfStatement:
-                    EvaluateIfStatement((BoundIfStatement) node);
-                    break;
-                case BoundNodeKind.WhileStatement:
-                    EvaluateWhileStatement((BoundWhileStatement) node);
-                    break;
-                case BoundNodeKind.ForStatement:
-                    EvaluateForStatement((BoundForStatement) node);
-                    break;
-                default:
-                    throw new Exception($"Unexpected node {node.Kind}");
+                if (_root.Statements[i] is BoundLabelStatement l)
+                    labelToIndex.Add(l.Label, i + 1);
             }
+
+            var index = 0;
+
+            while (index < _root.Statements.Length)
+            {
+                var s = _root.Statements[index];
+                switch (s.Kind)
+                {
+                    case BoundNodeKind.ExpressionStatement:
+                        EvaluateExpressionStatement((BoundExpressionStatement) s);
+                        index++;
+                        break;
+                    case BoundNodeKind.VariableDeclaration:
+                        EvaluateVariableDeclaration((BoundVariableDeclaration) s);
+                        index++;
+                        break;
+                    case BoundNodeKind.GotoStatement:
+                        var gs = (BoundGotoStatement) s;
+                        index = labelToIndex[gs.Label];
+                        break;
+                    case BoundNodeKind.ConditionalGotoStatement:
+                    {
+                        var cgs       = (BoundConditionalGotoStatement) s;
+                        var condition = (bool) EvaluateExpression(cgs.Condition);
+
+                        if (condition == cgs.JumpIfTrue)
+                            index = labelToIndex[cgs.Label];
+                        else
+                            index++;
+
+                        break;
+                    }
+                    case BoundNodeKind.LabelStatement:
+                        index++;
+                        break;
+
+                    default:
+                        throw new Exception($"Unexpected s {s.Kind}");
+                }
+            }
+
+            return _lastValue;
         }
 
         private void EvaluateVariableDeclaration(BoundVariableDeclaration node)
@@ -57,42 +76,9 @@ namespace Hyper.Compiler.VM
             _lastValue = value;
         }
 
-        private void EvaluateBlockStatement(BoundBlockStatement node)
-        {
-            foreach (var statement in node.Statements)
-                EvaluateStatement(statement);
-        }
-
         private void EvaluateExpressionStatement(BoundExpressionStatement node)
         {
             _lastValue = EvaluateExpression(node.Expression);
-        }
-
-        private void EvaluateIfStatement(BoundIfStatement node)
-        {
-            var condition = (bool) EvaluateExpression(node.Condition);
-            if (condition)
-                EvaluateStatement(node.ThenStatement);
-            else if (node.ElseStatement != null)
-                EvaluateStatement(node.ElseStatement);
-        }
-
-        private void EvaluateWhileStatement(BoundWhileStatement node)
-        {
-            while ((bool) EvaluateExpression(node.Condition))
-                EvaluateStatement(node.Body);
-        }
-
-        private void EvaluateForStatement(BoundForStatement node)
-        {
-            var lowerBound = (int) EvaluateExpression(node.LowerBound);
-            var upperBound = (int) EvaluateExpression(node.UpperBound);
-
-            for (var i = lowerBound; i <= upperBound; i++)
-            {
-                _variables[node.Variable] = i;
-                EvaluateStatement(node.Body);
-            }
         }
 
         private static object EvaluateLiteralExpression(BoundLiteralExpression n) => n.Value;
@@ -115,7 +101,9 @@ namespace Hyper.Compiler.VM
                 BoundUnaryOperatorKind.Identity        => (int) operand,
                 BoundUnaryOperatorKind.Negation        => -(int) operand,
                 BoundUnaryOperatorKind.LogicalNegation => !(bool) operand,
-                _                                      => throw new Exception($"Unexpected unary operator {u.Operator}")
+                BoundUnaryOperatorKind.OnesComplement  => ~(int) operand,
+
+                _ => throw new Exception($"Unexpected unary operator {u.Operator}")
             };
         }
 
@@ -126,10 +114,20 @@ namespace Hyper.Compiler.VM
 
             return b.Operator.OpKind switch
             {
-                BoundBinaryOperatorKind.Addition        => (int) left + (int) right,
-                BoundBinaryOperatorKind.Subtraction     => (int) left - (int) right,
-                BoundBinaryOperatorKind.Multiplication  => (int) left * (int) right,
-                BoundBinaryOperatorKind.Division        => (int) left / (int) right,
+                BoundBinaryOperatorKind.Addition       => (int) left + (int) right,
+                BoundBinaryOperatorKind.Subtraction    => (int) left - (int) right,
+                BoundBinaryOperatorKind.Multiplication => (int) left * (int) right,
+                BoundBinaryOperatorKind.Division       => (int) left / (int) right,
+
+                BoundBinaryOperatorKind.BitwiseAnd when b.Type == (typeof(int))  => (int) left & (int) right,
+                BoundBinaryOperatorKind.BitwiseAnd when b.Type == (typeof(bool)) => (bool) left & (bool) right,
+
+                BoundBinaryOperatorKind.BitwiseOr when b.Type == (typeof(int))  => (int) left | (int) right,
+                BoundBinaryOperatorKind.BitwiseOr when b.Type == (typeof(bool)) => (bool) left | (bool) right,
+
+                BoundBinaryOperatorKind.BitwiseXor when b.Type == (typeof(int))  => (int) left ^ (int) right,
+                BoundBinaryOperatorKind.BitwiseXor when b.Type == (typeof(bool)) => (bool) left ^ (bool) right,
+
                 BoundBinaryOperatorKind.LogicalAnd      => (bool) left && (bool) right,
                 BoundBinaryOperatorKind.LogicalOr       => (bool) left || (bool) right,
                 BoundBinaryOperatorKind.Equals          => Equals(left, right),
@@ -152,7 +150,7 @@ namespace Hyper.Compiler.VM
                 BoundAssignmentExpression a => EvaluateAssignmentExpression(a),
                 BoundUnaryExpression u      => EvaluateUnaryExpression(u),
                 BoundBinaryExpression b     => EvaluateBinaryExpression(b),
-                _                           => throw new Exception($"Unexpected node {node.Kind}")
+                _                           => throw new Exception($"Unexpected s {node.Kind}")
             };
         }
     }

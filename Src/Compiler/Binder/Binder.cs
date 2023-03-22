@@ -58,7 +58,7 @@ namespace Hyper.Compiler.Binding
             return parent;
         }
 
-        private BoundStatement BindStatement(Statement syntax)
+        private BoundStatement? BindStatement(Statement syntax)
         {
             return syntax.Kind switch
             {
@@ -72,9 +72,9 @@ namespace Hyper.Compiler.Binding
             };
         }
 
-        private BoundStatement BindBlockStatement(BlockStatement syntax)
+        private BoundStatement? BindBlockStatement(BlockStatement syntax)
         {
-            var statements = ImmutableArray.CreateBuilder<BoundStatement>();
+            ImmutableArray<BoundStatement?>.Builder statements = ImmutableArray.CreateBuilder<BoundStatement>();
             _scope = new BoundScope(_scope);
 
             foreach (var statementSyntax in syntax.Statements)
@@ -88,13 +88,13 @@ namespace Hyper.Compiler.Binding
             return new BoundBlockStatement(statements.ToImmutable());
         }
 
-        private BoundStatement BindExpressionStatement(ExpressionStatement syntax)
+        private BoundStatement? BindExpressionStatement(ExpressionStatement syntax)
         {
             var expression = BindExpression(syntax.Expression);
             return new BoundExpressionStatement(expression);
         }
 
-        private BoundStatement BindVariableDeclaration(VariableDeclaration syntax)
+        private BoundStatement? BindVariableDeclaration(VariableDeclaration syntax)
         {
             var name        = syntax.Identifier.Text;
             var isReadOnly  = syntax.Keyword.Kind == SyntaxKind.LetKeyword;
@@ -107,7 +107,7 @@ namespace Hyper.Compiler.Binding
             return new BoundVariableDeclaration(variable, initializer);
         }
 
-        private BoundStatement BindIfStatement(IfStatement syntax)
+        private BoundStatement? BindIfStatement(IfStatement syntax)
         {
             var condition     = BindExpression(syntax.Condition, typeof(bool));
             var thenStatement = BindStatement(syntax.ThenStatement);
@@ -116,15 +116,15 @@ namespace Hyper.Compiler.Binding
             return new BoundIfStatement(condition, thenStatement, elseStatement);
         }
 
-        private BoundStatement BindWhileStatement(WhileStatement syntax)
+        private BoundStatement? BindWhileStatement(WhileStatement syntax)
         {
-            var condition = BindExpression(syntax.Condition, typeof(bool));
+            var             condition = BindExpression(syntax.Condition, typeof(bool));
             var body      = BindStatement(syntax.Body);
 
             return new BoundWhileStatement(condition, body);
         }
 
-        private BoundStatement BindForStatement(ForStatement syntax)
+        private BoundStatement? BindForStatement(ForStatement syntax)
         {
             var lowerBound = BindExpression(syntax.LowerBound, typeof(int));
             var upperBound = BindExpression(syntax.UpperBound, typeof(int));

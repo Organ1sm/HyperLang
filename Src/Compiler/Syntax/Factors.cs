@@ -19,9 +19,11 @@ public static class Factors
             SyntaxKind.GreaterToken         => 3,
             SyntaxKind.GreaterOrEqualsToken => 3,
 
-            SyntaxKind.AmpersandAmpersandToken => 2,
-            SyntaxKind.PipePipeToken           => 1,
-            _                                  => 0
+            SyntaxKind.AmpersandToken or SyntaxKind.AmpersandAmpersandToken => 2,
+
+            SyntaxKind.HatToken or SyntaxKind.PipeToken or SyntaxKind.PipePipeToken  => 1,
+
+            _ => 0
         };
     }
 
@@ -32,6 +34,7 @@ public static class Factors
             SyntaxKind.PlusToken  => 6,
             SyntaxKind.MinusToken => 6,
             SyntaxKind.BangToken  => 6,
+            SyntaxKind.TildeToken => 6,
             _                     => 0
         };
     }
@@ -83,8 +86,12 @@ public static class Factors
             SyntaxKind.SlashToken              => "/",
             SyntaxKind.BangToken               => "!",
             SyntaxKind.EqualsToken             => "=",
+            SyntaxKind.TildeToken              => "~",
+            SyntaxKind.AmpersandToken          => "&",
             SyntaxKind.AmpersandAmpersandToken => "&&",
+            SyntaxKind.PipeToken               => "|",
             SyntaxKind.PipePipeToken           => "||",
+            SyntaxKind.HatToken                => "^",
             SyntaxKind.EqualsEqualsToken       => "==",
             SyntaxKind.BangEqualsToken         => "!=",
             SyntaxKind.LessToken               => "<",

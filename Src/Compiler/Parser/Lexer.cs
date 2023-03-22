@@ -86,13 +86,27 @@ namespace Hyper.Compiler.Parser
                     _kind = SyntaxKind.EqualsToken;
                     break;
                 }
+                case '~':
+                    _kind = SyntaxKind.TildeToken;
+                    _position++;
+                    break;
+
+                case '^':
+                    _kind = SyntaxKind.HatToken;
+                    _position++;
+                    break;
+
                 case '&':
                 {
                     if (Lookahead == '&')
                     {
                         _kind = SyntaxKind.AmpersandAmpersandToken;
                         _position += 2;
+                        break;
                     }
+
+                    _position++;
+                    _kind = SyntaxKind.AmpersandToken;
 
                     break;
                 }
@@ -102,7 +116,11 @@ namespace Hyper.Compiler.Parser
                     {
                         _kind = SyntaxKind.PipePipeToken;
                         _position += 2;
+                        break;
                     }
+
+                    _position++;
+                    _kind = SyntaxKind.PipeToken;
 
                     break;
                 }
