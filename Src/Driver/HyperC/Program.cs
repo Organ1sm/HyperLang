@@ -63,13 +63,14 @@ namespace Hyper
                     continue;
 
                 var compilation = previous == null ? new Compilation(ast) : previous.ContinueWith(ast);
-                var result      = compilation.Evaluate(variables);
 
                 if (showTree)
                     ast.Root.WriteTo(Console.Out);
-                
+
                 if (showProgram)
                     compilation.EmitTree(Console.Out);
+
+                var result = compilation.Evaluate(variables);
 
                 if (!result.Diagnostics.Any())
                 {

@@ -81,7 +81,7 @@ internal abstract class BoundNode
             else
             {
                 if (isToConsole)
-                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    Console.ForegroundColor = ConsoleColor.White;
 
                 writer.Write(",");
             }
@@ -94,7 +94,7 @@ internal abstract class BoundNode
             writer.Write(p.Name);
 
             if (isToConsole)
-                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.ForegroundColor = ConsoleColor.White;
 
             writer.Write(" = ");
 
