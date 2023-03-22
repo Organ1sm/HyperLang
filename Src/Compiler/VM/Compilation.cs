@@ -32,7 +32,7 @@ namespace Hyper.Compiler.VM
             return new EvaluationResult(ImmutableArray<Diagnostic.Diagnostic>.Empty, value);
         }
 
-        private BoundStatement? GetStatements()
+        private BoundBlockStatement? GetStatements()
         {
             var result = GlobalScope.Statement;
             return Lowerer.Lower(result);

@@ -13,6 +13,10 @@ internal class BoundTreeRewriter
             BoundNodeKind.IfStatement         => RewriteIfStatement((BoundIfStatement) node),
             BoundNodeKind.WhileStatement      => RewriteWhileStatement((BoundWhileStatement) node),
             BoundNodeKind.ForStatement        => RewriteForStatement((BoundForStatement) node),
+            BoundNodeKind.LabelStatement      => RewriteLabelStatement((BoundLabelStatement) node),
+            BoundNodeKind.GotoStatement       => RewriteGotoStatement((BoundGotoStatement) node),
+            BoundNodeKind.ConditionalGotoStatement =>
+                RewriteConditionalGotoStatement((BoundConditionalGotoStatement) node),
             BoundNodeKind.ExpressionStatement => RewriteExpressionStatement((BoundExpressionStatement) node),
             _                                 => throw new Exception($"Unexpected node: {node.Kind}")
         };
@@ -31,7 +35,7 @@ internal class BoundTreeRewriter
         };
     }
 
-    protected virtual BoundStatement RewriteBlockStatement(BoundBlockStatement node)
+    protected virtual BoundStatement? RewriteBlockStatement(BoundBlockStatement node)
     {
         ImmutableArray<BoundStatement?>.Builder builder = null;
 
@@ -61,14 +65,14 @@ internal class BoundTreeRewriter
         return new BoundBlockStatement(builder.MoveToImmutable());
     }
 
-    protected virtual BoundStatement RewriteVariableDeclaration(BoundVariableDeclaration node)
+    protected virtual BoundStatement? RewriteVariableDeclaration(BoundVariableDeclaration node)
     {
         var initializer = RewriteExpression(node.Initializer);
 
         return initializer == node.Initializer ? node : new BoundVariableDeclaration(node.Variable, initializer);
     }
 
-    protected virtual BoundIfStatement RewriteIfStatement(BoundIfStatement node)
+    protected virtual BoundStatement? RewriteIfStatement(BoundIfStatement node)
     {
         var condition     = RewriteExpression(node.Condition);
         var thenStatement = RewriteStatement(node.ThenStatement);
@@ -80,7 +84,7 @@ internal class BoundTreeRewriter
         return new BoundIfStatement(condition, thenStatement, elseStatement);
     }
 
-    protected virtual BoundWhileStatement RewriteWhileStatement(BoundWhileStatement node)
+    protected virtual BoundStatement? RewriteWhileStatement(BoundWhileStatement node)
     {
         var condition = RewriteExpression(node.Condition);
         var body      = RewriteStatement(node.Body);
@@ -103,11 +107,23 @@ internal class BoundTreeRewriter
         return new BoundForStatement(node.Variable, lowerBound, upperBound, body);
     }
 
-    protected virtual BoundStatement RewriteExpressionStatement(BoundExpressionStatement node)
+    protected virtual BoundStatement? RewriteExpressionStatement(BoundExpressionStatement node)
     {
         var expression = RewriteExpression(node.Expression);
         return expression == node.Expression ? node : new BoundExpressionStatement(expression);
     }
+
+    protected virtual BoundStatement? RewriteConditionalGotoStatement(BoundConditionalGotoStatement node)
+    {
+        var condition = RewriteExpression(node.Condition);
+        return condition == node.Condition
+            ? node
+            : new BoundConditionalGotoStatement(node.Label, condition, node.JumpIfFalse);
+    }
+
+    protected virtual BoundStatement RewriteLabelStatement(BoundLabelStatement node) => node;
+    protected virtual BoundStatement RewriteGotoStatement(BoundGotoStatement node) => node;
+
 
     protected virtual BoundExpression RewriteLiteralExpression(BoundLiteralExpression node) => node;
     protected virtual BoundExpression RewriteVariableExpression(BoundVariableExpression node) => node;
