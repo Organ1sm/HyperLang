@@ -61,7 +61,6 @@ namespace Hyper.Compiler.VM
                         index++;
                         break;
 
-
                     default:
                         throw new Exception($"Unexpected s {s.Kind}");
                 }
