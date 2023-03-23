@@ -189,8 +189,7 @@ called *lowered*, to other constructs. That's because languages often provide
 syntactic sugar that is merely a shorthand for other constructs. For example:
 
 ```js
-for i = 1 to
-100
+for i = 1 to 100
 < statement >
 ```
 
@@ -201,8 +200,8 @@ let i = 1
 while i <= 100:
 {
     <statement>
-        i = i + 1
-        }
+    i = i + 1
+}
 ```
 
 Instead of having to generate code for both, `for`- and `while`-statements, it's
