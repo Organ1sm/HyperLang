@@ -62,6 +62,15 @@ internal sealed class HyperREPL : REPL
         if (string.IsNullOrEmpty(text))
             return true;
 
+        var lastTwoLinesAreBlank = text.Split(Environment.NewLine)
+                                       .Reverse()
+                                       .TakeWhile(s => string.IsNullOrEmpty(s))
+                                       .Take(2)
+                                       .Count() == 2;
+
+        if (lastTwoLinesAreBlank)
+            return true;
+
         var syntaxTree = AST.Parse(text);
 
         // Use Statement because we need to exclude the EndOfFileToken.
