@@ -234,6 +234,7 @@ internal abstract class REPL
     private void HandleTab(ObservableCollection<string> document, SubmissionView view)
     {
         const int TabWidth        = 4;
+        
         var       start           = view.CurrentCharacter;
         var       remainingSpaces = TabWidth - start % TabWidth;
         var       line            = document[view.CurrentLine];
@@ -344,9 +345,8 @@ internal abstract class REPL
         private void UpdateCursorPosition()
         {
             Console.CursorTop = _cursorTop + _currentLine;
-            Console.CursorLeft = 2 + _currentCharacter;
+            Console.CursorLeft = 3 + _currentCharacter;
         }
-
 
         public int CurrentLine
         {
