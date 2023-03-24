@@ -160,9 +160,9 @@ result // output: 55
 
 ```
 
-# Stage 8
+## Stage 8
 
-## Completed items
+### Completed items
 
 * Add support for bitwise operators
 * Add ability to output the bound tree
@@ -189,8 +189,7 @@ called *lowered*, to other constructs. That's because languages often provide
 syntactic sugar that is merely a shorthand for other constructs. For example:
 
 ```js
-for i = 1 to
-100
+for i = 1 to 100
 < statement >
 ```
 
@@ -201,8 +200,8 @@ let i = 1
 while i <= 100:
 {
     <statement>
-        i = i + 1
-        }
+    i = i + 1
+}
 ```
 
 Instead of having to generate code for both, `for`- and `while`-statements, it's
@@ -238,3 +237,10 @@ that the label it references applies to the next statement.
 
 With these primitives, it's pretty straightforward to replace the flow-control
 elements.
+
+## Stage9
+
+## Completed items
+
+We just improve the REPL, This includes the ability to edit multiple lines, have
+history, and syntax highlighting.
