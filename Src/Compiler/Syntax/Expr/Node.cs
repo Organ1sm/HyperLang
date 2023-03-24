@@ -42,6 +42,16 @@ public class Node
         }
     }
 
+    public Token GetLastToken()
+    {
+        if (this is Token t)
+            return t;
+
+        // A syntax node should always contain at least 1 token.
+        return GetChildren().Last().GetLastToken();
+    }
+
+
     public void WriteTo(TextWriter writer)
     {
         PrettyPrint(writer, this);

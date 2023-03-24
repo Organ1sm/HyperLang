@@ -1,4 +1,5 @@
-﻿using Hyper.Compiler.Symbol;
+﻿using Hyper.Compiler.Parser;
+using Hyper.Compiler.Symbol;
 using Hyper.Compiler.Syntax;
 using Hyper.Compiler.Text;
 using Hyper.Compiler.VM;
@@ -43,7 +44,6 @@ internal sealed class HyperREPL : REPL
                 _showProgram = !_showProgram;
                 Console.WriteLine(_showProgram ? "Showing bound tree." : "Not showing bound tree.");
                 break;
-                break;
             case "#reset":
                 _previous = null;
                 _variables.Clear();
@@ -61,7 +61,8 @@ internal sealed class HyperREPL : REPL
 
         var syntaxTree = AST.Parse(text);
 
-        if (syntaxTree.Diagnostics.Any())
+        // Use Statement because we need to exclude the EndOfFileToken.
+        if (syntaxTree.Root.Statement.GetLastToken().IsMissing)
             return false;
 
         return true;
