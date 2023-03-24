@@ -160,9 +160,9 @@ result // output: 55
 
 ```
 
-# Stage 8
+## Stage 8
 
-## Completed items
+### Completed items
 
 * Add support for bitwise operators
 * Add ability to output the bound tree
@@ -237,3 +237,10 @@ that the label it references applies to the next statement.
 
 With these primitives, it's pretty straightforward to replace the flow-control
 elements.
+
+## Stage9
+
+## Completed items
+
+We just improve the REPL, This includes the ability to edit multiple lines, have
+history, and syntax highlighting.
