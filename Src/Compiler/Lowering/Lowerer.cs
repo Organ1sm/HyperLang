@@ -159,21 +159,21 @@ internal sealed class Lowerer : BoundTreeRewriter
         var varDecl = new BoundVariableDeclaration(node.Variable, node.LowerBound);
         var varExpr = new BoundVariableExpression(node.Variable);
 
-        var upperBoundSymbol = new VariableSymbol("upperBound", typeof(int), true);
+        var upperBoundSymbol = new VariableSymbol("upperBound", TypeSymbol.Int, true);
         var upperBoundDecl   = new BoundVariableDeclaration(upperBoundSymbol, node.UpperBound);
 
         var condition = new BoundBinaryExpression(varExpr,
                                                   BoundBinaryOperator.Bind(SyntaxKind.LessOrEqualsToken,
-                                                                           typeof(int),
-                                                                           typeof(int)),
+                                                                           TypeSymbol.Int,
+                                                                           TypeSymbol.Int),
                                                   new BoundVariableExpression(upperBoundSymbol));
 
         var increment = new BoundExpressionStatement(new BoundAssignmentExpression(node.Variable,
                                                       new BoundBinaryExpression(varExpr,
                                                                                 BoundBinaryOperator
-                                                                                    .Bind(SyntaxKind.PlusToken,
-                                                                                     typeof(int),
-                                                                                     typeof(int)),
+                                                                                   .Bind(SyntaxKind.PlusToken,
+                                                                                     TypeSymbol.Int,
+                                                                                     TypeSymbol.Int),
                                                                                 new BoundLiteralExpression(1))));
 
         var whileBody       = new BoundBlockStatement(ImmutableArray.Create(node.Body, increment));

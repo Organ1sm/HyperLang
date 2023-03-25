@@ -109,7 +109,7 @@ namespace Hyper.Compiler.Binding
 
         private BoundStatement? BindIfStatement(IfStatement syntax)
         {
-            var condition     = BindExpression(syntax.Condition, typeof(bool));
+            var condition     = BindExpression(syntax.Condition, TypeSymbol.Bool);
             var thenStatement = BindStatement(syntax.ThenStatement);
             var elseStatement = syntax.ElseClause == null ? null : BindStatement(syntax.ElseClause.ElseStatement);
 
@@ -118,7 +118,7 @@ namespace Hyper.Compiler.Binding
 
         private BoundStatement? BindWhileStatement(WhileStatement syntax)
         {
-            var             condition = BindExpression(syntax.Condition, typeof(bool));
+            var condition = BindExpression(syntax.Condition, TypeSymbol.Bool);
             var body      = BindStatement(syntax.Body);
 
             return new BoundWhileStatement(condition, body);
@@ -126,13 +126,13 @@ namespace Hyper.Compiler.Binding
 
         private BoundStatement? BindForStatement(ForStatement syntax)
         {
-            var lowerBound = BindExpression(syntax.LowerBound, typeof(int));
-            var upperBound = BindExpression(syntax.UpperBound, typeof(int));
+            var lowerBound = BindExpression(syntax.LowerBound, TypeSymbol.Int);
+            var upperBound = BindExpression(syntax.UpperBound, TypeSymbol.Int);
 
             _scope = new BoundScope(_scope);
 
             var name     = syntax.Identifier.Text;
-            var variable = new VariableSymbol(name, typeof(int), true);
+            var variable = new VariableSymbol(name, TypeSymbol.Int, true);
             if (!_scope.TryDeclare(variable))
                 _diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
 
@@ -143,7 +143,7 @@ namespace Hyper.Compiler.Binding
             return new BoundForStatement(variable, lowerBound, upperBound, body);
         }
 
-        private BoundExpression BindExpression(Expression syntax, Type targetType)
+        private BoundExpression BindExpression(Expression syntax, TypeSymbol targetType)
         {
             var result = BindExpression(syntax);
             if (result.Type != targetType)
@@ -181,9 +181,9 @@ namespace Hyper.Compiler.Binding
             if (boundOperator == null)
             {
                 _diagnostics
-                    .ReportUndefinedUnaryOperator(syntax.Operator.Span,
-                                                  syntax.Operator.Text,
-                                                  boundOperand.Type);
+                   .ReportUndefinedUnaryOperator(syntax.Operator.Span,
+                                                 syntax.Operator.Text,
+                                                 boundOperand.Type);
                 return boundOperand;
             }
 
@@ -199,10 +199,10 @@ namespace Hyper.Compiler.Binding
             if (boundOperator == null)
             {
                 _diagnostics
-                    .ReportUndefinedBinaryOperator(syntax.Operator.Span,
-                                                   syntax.Operator.Text,
-                                                   boundLeft.Type,
-                                                   boundRight.Type);
+                   .ReportUndefinedBinaryOperator(syntax.Operator.Span,
+                                                  syntax.Operator.Text,
+                                                  boundLeft.Type,
+                                                  boundRight.Type);
                 return boundLeft;
             }
 

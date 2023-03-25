@@ -1,6 +1,8 @@
-﻿namespace Hyper.Compiler.Binding;
+﻿using Hyper.Compiler.Symbols;
 
-internal abstract  class BoundExpression : BoundNode
+namespace Hyper.Compiler.Binding;
+
+internal abstract class BoundExpression : BoundNode
 {
-    public abstract Type Type { get; }
+    public abstract TypeSymbol Type { get; }
 }

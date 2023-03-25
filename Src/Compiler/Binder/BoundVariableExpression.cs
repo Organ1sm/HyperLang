@@ -10,8 +10,7 @@ internal sealed class BoundVariableExpression : BoundExpression
     }
 
     public override BoundNodeKind Kind => BoundNodeKind.VariableExpression;
-    public          string        Name { get; }
 
-    public override Type           Type     => Variable.Type;
+    public override TypeSymbol     Type     => Variable.Type;
     public          VariableSymbol Variable { get; }
 }
