@@ -61,7 +61,7 @@ namespace Hyper.Compiler.Diagnostic
             Report(span, message);
         }
 
-        public void ReportUndefinedName(TextSpan span, string name)
+        public void ReportUndefinedName(TextSpan span, string? name)
         {
             var message = $"Variable '{name}' doesn't exist.";
             Report(span, message);
@@ -79,7 +79,7 @@ namespace Hyper.Compiler.Diagnostic
             Report(span, message);
         }
 
-        public void ReportCannotAssign(TextSpan span, string name)
+        public void ReportCannotAssign(TextSpan span, string? name)
         {
             var message = $"Variable '{name}' is read-only and cannot be assigned to.";
             Report(span, message);

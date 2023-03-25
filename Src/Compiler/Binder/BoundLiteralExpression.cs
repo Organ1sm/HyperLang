@@ -17,7 +17,7 @@ namespace Hyper.Compiler.Binding
                 bool   => TypeSymbol.Bool,
                 int    => TypeSymbol.Int,
                 string => TypeSymbol.String,
-                _      => throw new Exception($"Unexpected literal '{value}' of type {value.GetType()}")
+                _      => throw new Exception($"Unexpected literal '{value}' of type {value?.GetType()}")
             };
         }
     }

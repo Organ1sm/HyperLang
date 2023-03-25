@@ -11,7 +11,7 @@ internal sealed class Lowerer : BoundTreeRewriter
 
     private BoundLabel GenerateLabel() => new BoundLabel($"Label{++_labelCount}");
 
-    public static BoundBlockStatement Lower(BoundStatement statement)
+    public static BoundBlockStatement Lower(BoundStatement? statement)
     {
         var lowerer = new Lowerer();
         var result  = lowerer.RewriteStatement(statement);

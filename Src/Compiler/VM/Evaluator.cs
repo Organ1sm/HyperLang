@@ -13,14 +13,14 @@ namespace Hyper.Compiler.VM
 
         public Evaluator(BoundBlockStatement? root, Dictionary<VariableSymbol, object> variables)
         {
-            this._root = root;
+            _root = root;
             _variables = variables;
         }
 
         public object Evaluate()
         {
             var labelToIndex = new Dictionary<BoundLabel, int>();
-            for (var i = 0; i < _root.Statements.Length; i++)
+            for (var i = 0; i < _root?.Statements.Length; i++)
             {
                 if (_root.Statements[i] is BoundLabelStatement l)
                     labelToIndex.Add(l.Label, i + 1);
@@ -28,10 +28,10 @@ namespace Hyper.Compiler.VM
 
             var index = 0;
 
-            while (index < _root.Statements.Length)
+            while (index < _root?.Statements.Length)
             {
                 var s = _root.Statements[index];
-                switch (s.Kind)
+                switch (s?.Kind)
                 {
                     case BoundNodeKind.ExpressionStatement:
                         EvaluateExpressionStatement((BoundExpressionStatement) s);
@@ -62,7 +62,7 @@ namespace Hyper.Compiler.VM
                         break;
 
                     default:
-                        throw new Exception($"Unexpected s {s.Kind}");
+                        throw new Exception($"Unexpected s {s?.Kind}");
                 }
             }
 

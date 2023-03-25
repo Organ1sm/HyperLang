@@ -19,7 +19,7 @@ internal sealed class BoundScope
         return true;
     }
 
-    public bool TryLookUp(string name, out VariableSymbol variable)
+    public bool TryLookUp(string? name, out VariableSymbol? variable)
     {
         if (_variables.TryGetValue(name, out variable))
             return true;
@@ -35,7 +35,7 @@ internal sealed class BoundScope
         return _variables.Values.ToImmutableArray();
     }
 
-    private Dictionary<string, VariableSymbol> _variables = new();
+    private Dictionary<string?, VariableSymbol> _variables = new();
 
     public BoundScope? Parent { get; }
 }

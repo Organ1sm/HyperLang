@@ -8,9 +8,9 @@ namespace Hyper.Compiler.VM
 {
     public sealed class Compilation
     {
-        public  AST              Ast      { get; }
-        public  Compilation?     Previous { get; }
-        private BoundGlobalScope _globalScope;
+        public  AST               Ast      { get; }
+        public  Compilation?      Previous { get; }
+        private BoundGlobalScope? _globalScope;
 
         public Compilation(AST ast) : this(null, ast) { }
 

@@ -4,7 +4,7 @@ namespace Hyper.Compiler.Syntax.Stmt;
 
 public class IfStatement : Statement
 {
-    public IfStatement(Token ifKeyword, Expression condition, Statement thenStatement, ElseClause elseClause)
+    public IfStatement(Token ifKeyword, Expression condition, Statement thenStatement, ElseClause? elseClause)
     {
         IfKeyword = ifKeyword;
         Condition = condition;

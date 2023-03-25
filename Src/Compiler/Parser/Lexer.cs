@@ -299,6 +299,6 @@ namespace Hyper.Compiler.Parser
 
         private int        _start;
         private SyntaxKind _kind;
-        private object     _value;
+        private object?    _value;
     }
 }
