@@ -1,6 +1,4 @@
 ﻿using Hyper.Compiler.Symbols;
-using Hyper.Compiler.Syntax;
-using Expression = System.Linq.Expressions.Expression;
 
 namespace Hyper.Compiler.Binding;
 

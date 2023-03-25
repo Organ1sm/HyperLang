@@ -6,9 +6,9 @@ namespace Hyper.Compiler.Binding
     {
         public override BoundNodeKind Kind  => BoundNodeKind.LiteralExpression;
         public override TypeSymbol    Type  { get; }
-        public          object        Value { get; }
+        public          object?       Value { get; }
 
-        public BoundLiteralExpression(object value)
+        public BoundLiteralExpression(object? value)
         {
             Value = value;
 

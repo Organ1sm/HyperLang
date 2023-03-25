@@ -5,7 +5,7 @@ namespace Hyper.Compiler.Binding;
 
 internal sealed class BoundScope
 {
-    public BoundScope(BoundScope parent)
+    public BoundScope(BoundScope? parent)
     {
         Parent = parent;
     }

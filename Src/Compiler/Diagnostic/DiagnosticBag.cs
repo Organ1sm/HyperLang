@@ -40,7 +40,7 @@ namespace Hyper.Compiler.Diagnostic
             Report(span, message);
         }
 
-        public void ReportUndefinedUnaryOperator(TextSpan span, string operatorText, TypeSymbol operandType)
+        public void ReportUndefinedUnaryOperator(TextSpan span, string? operatorText, TypeSymbol operandType)
         {
             var message = $"Unary operator '{operatorText}' is not defined for type '{operandType}'.";
             Report(span, message);
@@ -53,7 +53,7 @@ namespace Hyper.Compiler.Diagnostic
         }
 
         public void ReportUndefinedBinaryOperator(TextSpan span,
-                                                  string operatorText,
+                                                  string? operatorText,
                                                   TypeSymbol leftType,
                                                   TypeSymbol rightType)
         {
@@ -73,7 +73,7 @@ namespace Hyper.Compiler.Diagnostic
             Report(span, message);
         }
 
-        public void ReportVariableAlreadyDeclared(TextSpan span, string name)
+        public void ReportVariableAlreadyDeclared(TextSpan span, string? name)
         {
             var message = $"Variable '{name}' is already declared.";
             Report(span, message);

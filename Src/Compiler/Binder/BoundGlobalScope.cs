@@ -6,9 +6,9 @@ namespace Hyper.Compiler.Binding;
 internal sealed class BoundGlobalScope
 
 {
-    public BoundGlobalScope(BoundGlobalScope previous,
+    public BoundGlobalScope(BoundGlobalScope? previous,
                             ImmutableArray<Diagnostic.Diagnostic> diagnostics,
-                            ImmutableArray<VariableSymbol> variables,
+                            ImmutableArray<VariableSymbol>? variables,
                             BoundStatement? statement)
     {
         Previous = previous;
@@ -17,8 +17,8 @@ internal sealed class BoundGlobalScope
         Statement = statement;
     }
 
-    public BoundGlobalScope                      Previous    { get; }
+    public BoundGlobalScope?                     Previous    { get; }
     public ImmutableArray<Diagnostic.Diagnostic> Diagnostics { get; }
-    public ImmutableArray<VariableSymbol>        Variables   { get; }
-    public BoundStatement?                        Statement   { get; }
+    public ImmutableArray<VariableSymbol>?       Variables   { get; }
+    public BoundStatement?                       Statement   { get; }
 }
