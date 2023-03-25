@@ -1,5 +1,5 @@
 ﻿using System.Collections.Immutable;
-using Hyper.Compiler.Symbol;
+using Hyper.Compiler.Symbols;
 
 namespace Hyper.Compiler.Binding;
 

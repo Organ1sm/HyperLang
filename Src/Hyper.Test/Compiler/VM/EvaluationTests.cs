@@ -1,4 +1,4 @@
-﻿using Hyper.Compiler.Symbol;
+﻿using Hyper.Compiler.Symbols;
 using Hyper.Compiler.Syntax;
 using Hyper.Compiler.VM;
 using Hyper.Test.Compiler.Text;

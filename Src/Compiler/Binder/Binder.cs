@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 using Hyper.Compiler.Diagnostic;
-using Hyper.Compiler.Symbol;
+using Hyper.Compiler.Symbols;
 using Hyper.Compiler.Syntax;
 using Hyper.Compiler.Syntax.Stmt;
 using Hyper.Compiler.VM;

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 using Hyper.Compiler.Binding;
-using Hyper.Compiler.Symbol;
+using Hyper.Compiler.Symbols;
 using Hyper.Compiler.Syntax;
 
 namespace Compiler.Lowering;

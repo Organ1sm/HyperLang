@@ -1,5 +1,5 @@
 ﻿using Hyper.Compiler.Parser;
-using Hyper.Compiler.Symbol;
+using Hyper.Compiler.Symbols;
 using Hyper.Compiler.Syntax;
 using Hyper.Compiler.Text;
 using Hyper.Compiler.VM;

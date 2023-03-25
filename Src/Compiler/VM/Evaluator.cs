@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 using Hyper.Compiler.Binding;
-using Hyper.Compiler.Symbol;
+using Hyper.Compiler.Symbols;
 
 namespace Hyper.Compiler.VM
 {
