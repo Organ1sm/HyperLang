@@ -9,7 +9,7 @@ internal sealed class Lowerer : BoundTreeRewriter
 {
     private Lowerer() { }
 
-    private LabelSymbol GenerateLabel() => new LabelSymbol($"Label{++_labelCount}");
+    private BoundLabel GenerateLabel() => new BoundLabel($"Label{++_labelCount}");
 
     public static BoundBlockStatement Lower(BoundStatement statement)
     {
