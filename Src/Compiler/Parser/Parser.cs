@@ -231,6 +231,7 @@ namespace Hyper.Compiler.Parser
                 SyntaxKind.OpenParenthesisToken                   => ParseParenthesizedExpression(),
                 SyntaxKind.TrueKeyword or SyntaxKind.FalseKeyword => ParseBooleanLiteral(),
                 SyntaxKind.NumberToken                            => ParseNumberLiteral(),
+                SyntaxKind.StringToken                            => ParseStringLiteral(),
                 SyntaxKind.IdentifierToken or _                   => ParseNameExpression(),
             };
         }
@@ -242,6 +243,12 @@ namespace Hyper.Compiler.Parser
             var right      = Match(SyntaxKind.CloseParenthesisToken);
 
             return new ParenthesizedExpression(left, expression, right);
+        }
+
+        private Expression ParseStringLiteral()
+        {
+            var stringToken = Match(SyntaxKind.StringToken);
+            return new LiteralExpression(stringToken);
         }
 
         private Expression ParseBooleanLiteral()

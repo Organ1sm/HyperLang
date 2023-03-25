@@ -1,4 +1,5 @@
 ﻿using Hyper.Compiler.Syntax;
+using Hyper.Compiler.Text;
 using Xunit;
 
 namespace Hyper.Test.Compiler.Syntax;
@@ -8,7 +9,8 @@ public class LexerTests
     [Fact]
     public void LexerTestsAllTokens()
     {
-        var tokenKinds = Enum.GetValues(typeof(SyntaxKind)).Cast<SyntaxKind>()
+        var tokenKinds = Enum.GetValues(typeof(SyntaxKind))
+                             .Cast<SyntaxKind>()
                              .Where(k => k.ToString().EndsWith("Keyword") || k.ToString().EndsWith("Token"));
         var testedTokenKinds = GetTokens().Concat(GetSeparators()).Select(t => t.kind);
 
@@ -18,6 +20,21 @@ public class LexerTests
         untestedTokenKinds.ExceptWith(testedTokenKinds);
 
         Assert.Empty(untestedTokenKinds);
+    }
+
+    [Fact]
+    public void LexerLexUnterminatedString()
+    {
+        var text   = "\"text";
+        var tokens = AST.ParseTokens(text, out var diagnostics);
+
+        var token = Assert.Single(tokens);
+        Assert.Equal(SyntaxKind.StringToken, token.Kind);
+        Assert.Equal(text, token.Text);
+
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Equal(new TextSpan(0, 1), diagnostic.Span);
+        Assert.Equal("Unterminated string literal.", diagnostic.Message);
     }
 
     [Theory]
@@ -91,10 +108,11 @@ public class LexerTests
 
     public static IEnumerable<object[]> GetTokenPairsWithSeparatorData()
     {
-        return GetTokenPairsWithSeparator().Select(t => new object[]
-        {
-            t.t1Kind, t.t1Text, t.separatorKind, t.separatorText, t.t2Kind, t.t2Text
-        });
+        return GetTokenPairsWithSeparator()
+           .Select(t => new object[]
+            {
+                t.t1Kind, t.t1Text, t.separatorKind, t.separatorText, t.t2Kind, t.t2Text
+            });
     }
 
     private static bool RequiresSeparator(SyntaxKind t1Kind, SyntaxKind t2Kind)
@@ -115,6 +133,9 @@ public class LexerTests
             return true;
 
         if (t1Kind == SyntaxKind.NumberToken && t2Kind == SyntaxKind.NumberToken)
+            return true;
+
+        if (t1Kind == SyntaxKind.StringToken && t2Kind == SyntaxKind.StringToken)
             return true;
 
         if (t1Kind == SyntaxKind.BangToken && t2Kind == SyntaxKind.EqualsToken)
@@ -152,14 +173,16 @@ public class LexerTests
 
         if (t1Kind == SyntaxKind.PipeToken && t2Kind == SyntaxKind.PipePipeToken)
             return true;
-        
+
         return false;
     }
 
     private static IEnumerable<(SyntaxKind kind, string text)> GetTokens()
     {
-        var fixedTokens = Enum.GetValues(typeof(SyntaxKind)).Cast<SyntaxKind>()
-                              .Select(k => (SyntaxKind: k, text: Factors.GetText(k))).Where(t => t.text != null);
+        var fixedTokens = Enum.GetValues(typeof(SyntaxKind))
+                              .Cast<SyntaxKind>()
+                              .Select(k => (SyntaxKind: k, text: Factors.GetText(k)))
+                              .Where(t => t.text != null);
 
         var dynamicTokens = new[]
         {
@@ -168,6 +191,8 @@ public class LexerTests
             (SyntaxKind.NumberToken, "123"),
             (SyntaxKind.IdentifierToken, "a"),
             (SyntaxKind.IdentifierToken, "abc"),
+            (SyntaxKind.StringToken, "\"Test\""),
+            (SyntaxKind.StringToken, "\"Te\"\"st\""),
         };
 
         return fixedTokens.Concat(dynamicTokens);

@@ -1,4 +1,5 @@
-﻿using Hyper.Compiler.Diagnostic;
+﻿using System.Text;
+using Hyper.Compiler.Diagnostic;
 using Hyper.Compiler.Syntax;
 using Hyper.Compiler.Text;
 
@@ -154,6 +155,10 @@ namespace Hyper.Compiler.Parser
 
                     break;
                 }
+
+                case '"':
+                    LexString();
+                    break;
                 case '0':
                 case '1':
                 case '2':
@@ -191,6 +196,54 @@ namespace Hyper.Compiler.Parser
             var text   = Factors.GetText(_kind) ?? _text.ToString(_start, length);
 
             return new Token(_kind, _start, text, _value);
+        }
+
+        private void LexString()
+        {
+            _position++; // eat '"'
+
+            var sb   = new StringBuilder();
+            var done = false;
+
+            while (!done)
+            {
+                switch (Current)
+                {
+                    case '\0':
+                    case '\r':
+                    case '\n':
+                    {
+                        var span = new TextSpan(_start, 1);
+                        _diagnostics.ReportUnterminatedString(span);
+                        done = true;
+                        break;
+                    }
+
+                    case '"':
+                    {
+                        if (Lookahead == '"')
+                        {
+                            sb.Append(Current);
+                            _position += 2;
+                        }
+                        else
+                        {
+                            _position++;
+                            done = true;
+                        }
+
+                        break;
+                    }
+
+                    default:
+                        sb.Append(Current);
+                        _position++;
+                        break;
+                }
+            }
+
+            _kind = SyntaxKind.StringToken;
+            _value = sb.ToString();
         }
 
         private void LexNumber()
