@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using Hyper.Compiler.Diagnostic;
+using Hyper.Compiler.Parser;
 using Hyper.Compiler.Symbols;
 using Hyper.Compiler.Syntax;
 using Hyper.Compiler.Syntax.Stmt;
@@ -96,13 +97,9 @@ namespace Hyper.Compiler.Binding
 
         private BoundStatement BindVariableDeclaration(VariableDeclaration syntax)
         {
-            var name        = syntax.Identifier.Text;
             var isReadOnly  = syntax.Keyword.Kind == SyntaxKind.LetKeyword;
             var initializer = BindExpression(syntax.Initializer);
-            var variable    = new VariableSymbol(name, initializer.Type, isReadOnly);
-
-            if (_scope != null && !_scope.TryDeclare(variable))
-                _diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
+            var variable    = BindVariable(syntax.Identifier, isReadOnly, initializer.Type);
 
             return new BoundVariableDeclaration(variable, initializer);
         }
@@ -131,12 +128,8 @@ namespace Hyper.Compiler.Binding
 
             _scope = new BoundScope(_scope);
 
-            var name     = syntax.Identifier.Text;
-            var variable = new VariableSymbol(name, TypeSymbol.Int, true);
-            if (!_scope.TryDeclare(variable))
-                _diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
-
-            var body = BindStatement(syntax.Body);
+            var variable = BindVariable(syntax.Identifier, true, TypeSymbol.Int);
+            var body     = BindStatement(syntax.Body);
 
             _scope = _scope.Parent;
 
@@ -217,7 +210,7 @@ namespace Hyper.Compiler.Binding
         private BoundExpression BindNameExpression(NameExpression syntax)
         {
             var name = syntax.IdentifierToken.Text;
-            if (string.IsNullOrEmpty(name))
+            if (syntax.IdentifierToken.IsMissing)
             {
                 // This means the token was inserted by the parser. We already
                 // reported error so we can just return an error expression.
@@ -254,6 +247,18 @@ namespace Hyper.Compiler.Binding
             }
 
             return new BoundAssignmentExpression(variable, boundExpression);
+        }
+
+        private VariableSymbol BindVariable(Token identifier, bool isReadOnly, TypeSymbol type)
+        {
+            var name     = identifier.Text ?? "?";
+            var declare  = !identifier.IsMissing;
+            var variable = new VariableSymbol(name, type, isReadOnly);
+
+            if (declare && _scope != null && !_scope.TryDeclare(variable))
+                _diagnostics.ReportVariableAlreadyDeclared(identifier.Span, name);
+
+            return variable;
         }
     }
 }
