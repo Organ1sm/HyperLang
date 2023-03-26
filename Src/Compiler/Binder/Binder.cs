@@ -146,7 +146,7 @@ namespace Hyper.Compiler.Binding
         private BoundExpression BindExpression(Expression syntax, TypeSymbol targetType)
         {
             var result = BindExpression(syntax);
-            if (result.Type != targetType)
+            if (targetType != TypeSymbol.Error && result.Type != TypeSymbol.Error && result.Type != targetType)
                 _diagnostics.ReportCannotConvert(syntax.Span, result.Type, targetType);
 
             return result;
@@ -175,7 +175,10 @@ namespace Hyper.Compiler.Binding
 
         private BoundExpression BindUnaryExpression(UnaryExpression syntax)
         {
-            var boundOperand  = BindExpression(syntax.Operand);
+            var boundOperand = BindExpression(syntax.Operand);
+            if (boundOperand.Type == TypeSymbol.Error)
+                return new BoundErrorExpression();
+
             var boundOperator = BoundUnaryOperator.Bind(syntax.Operator.Kind, boundOperand.Type);
 
             if (boundOperator != null)
@@ -184,7 +187,7 @@ namespace Hyper.Compiler.Binding
             _diagnostics.ReportUndefinedUnaryOperator(syntax.Operator.Span,
                                                       syntax.Operator.Text,
                                                       boundOperand.Type);
-            return boundOperand;
+            return new BoundErrorExpression();
         }
 
         private BoundExpression BindBinaryExpression(BinaryExpression syntax)
@@ -193,6 +196,9 @@ namespace Hyper.Compiler.Binding
             var boundRight    = BindExpression(syntax.Right);
             var boundOperator = BoundBinaryOperator.Bind(syntax.Operator.Kind, boundLeft.Type, boundRight.Type);
 
+            if (boundLeft.Type == TypeSymbol.Error || boundRight.Type == TypeSymbol.Error)
+                return new BoundErrorExpression();
+
             if (boundOperator != null)
                 return new BoundBinaryExpression(boundLeft, boundOperator, boundRight);
 
@@ -200,7 +206,7 @@ namespace Hyper.Compiler.Binding
                                                        syntax.Operator.Text,
                                                        boundLeft.Type,
                                                        boundRight.Type);
-            return boundLeft;
+            return new BoundErrorExpression();
         }
 
         private BoundExpression BindParenthesizedExpression(ParenthesizedExpression syntax)
@@ -215,13 +221,13 @@ namespace Hyper.Compiler.Binding
             {
                 // This means the token was inserted by the parser. We already
                 // reported error so we can just return an error expression.
-                return new BoundLiteralExpression(0);
+                return new BoundErrorExpression();
             }
 
             if (!_scope.TryLookUp(name, out var variable))
             {
                 _diagnostics.ReportUndefinedName(syntax.IdentifierToken.Span, name);
-                return new BoundLiteralExpression(0);
+                return new BoundErrorExpression();
             }
 
             return new BoundVariableExpression(variable);

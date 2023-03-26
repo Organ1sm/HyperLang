@@ -125,6 +125,7 @@ internal class BoundTreeRewriter
     protected virtual BoundStatement RewriteGotoStatement(BoundGotoStatement node) => node;
 
 
+    protected virtual BoundExpression RewriteErrorExpression(BoundErrorExpression node) => node;
     protected virtual BoundExpression RewriteLiteralExpression(BoundLiteralExpression node) => node;
     protected virtual BoundExpression RewriteVariableExpression(BoundVariableExpression node) => node;
 
