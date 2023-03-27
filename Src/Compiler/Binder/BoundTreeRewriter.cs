@@ -6,7 +6,7 @@ internal class BoundTreeRewriter
 {
     public virtual BoundStatement? RewriteStatement(BoundStatement? node)
     {
-        return node.Kind switch
+        return node?.Kind switch
         {
             BoundNodeKind.BlockStatement      => RewriteBlockStatement((BoundBlockStatement) node),
             BoundNodeKind.VariableDeclaration => RewriteVariableDeclaration((BoundVariableDeclaration) node),
@@ -18,7 +18,7 @@ internal class BoundTreeRewriter
             BoundNodeKind.ConditionalGotoStatement =>
                 RewriteConditionalGotoStatement((BoundConditionalGotoStatement) node),
             BoundNodeKind.ExpressionStatement => RewriteExpressionStatement((BoundExpressionStatement) node),
-            _                                 => throw new Exception($"Unexpected node: {node.Kind}")
+            _                                 => throw new Exception($"Unexpected node: {node?.Kind}")
         };
     }
 
@@ -37,7 +37,7 @@ internal class BoundTreeRewriter
 
     protected virtual BoundStatement? RewriteBlockStatement(BoundBlockStatement node)
     {
-        ImmutableArray<BoundStatement?>.Builder builder = null;
+        ImmutableArray<BoundStatement?>.Builder? builder = null;
 
         for (var i = 0; i < node.Statements.Length; i++)
         {
@@ -48,7 +48,7 @@ internal class BoundTreeRewriter
             {
                 if (builder == null)
                 {
-                    builder = ImmutableArray.CreateBuilder<BoundStatement>(node.Statements.Length);
+                    builder = ImmutableArray.CreateBuilder<BoundStatement?>(node.Statements.Length);
 
                     for (var j = 0; j < i; j++)
                         builder.Add(node.Statements[j]);
@@ -125,6 +125,7 @@ internal class BoundTreeRewriter
     protected virtual BoundStatement RewriteGotoStatement(BoundGotoStatement node) => node;
 
 
+    protected virtual BoundExpression RewriteErrorExpression(BoundErrorExpression node) => node;
     protected virtual BoundExpression RewriteLiteralExpression(BoundLiteralExpression node) => node;
     protected virtual BoundExpression RewriteVariableExpression(BoundVariableExpression node) => node;
 

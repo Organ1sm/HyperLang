@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using Hyper.Compiler.Diagnostic;
-using Hyper.Compiler.Symbol;
+using Hyper.Compiler.Parser;
+using Hyper.Compiler.Symbols;
 using Hyper.Compiler.Syntax;
 using Hyper.Compiler.Syntax.Stmt;
 using Hyper.Compiler.VM;
@@ -9,22 +10,22 @@ namespace Hyper.Compiler.Binding
 {
     internal sealed class Binder
     {
-        private          BoundScope                         _scope;
+        private          BoundScope?                        _scope;
         private readonly DiagnosticBag                      _diagnostics = new();
-        public           IEnumerable<Diagnostic.Diagnostic> Diagnostics => _diagnostics;
+        private          IEnumerable<Diagnostic.Diagnostic> Diagnostics => _diagnostics;
 
-        public Binder(BoundScope parent)
+        public Binder(BoundScope? parent)
         {
             _scope = new BoundScope(parent);
         }
 
-        public static BoundGlobalScope BindGlobalScope(BoundGlobalScope previous, CompilationUnit unit)
+        public static BoundGlobalScope BindGlobalScope(BoundGlobalScope? previous, CompilationUnit unit)
         {
             var parentScope = CreateParentScope(previous);
             var binder      = new Binder(parentScope);
 
             var expression  = binder.BindStatement(unit.Statement);
-            var variables   = binder._scope.GetDeclaredVariables();
+            var variables   = binder._scope?.GetDeclaredVariables() ?? null;
             var diagnostics = binder.Diagnostics.ToImmutableArray();
 
             if (previous != null)
@@ -33,7 +34,7 @@ namespace Hyper.Compiler.Binding
             return new BoundGlobalScope(previous, diagnostics, variables, expression);
         }
 
-        private static BoundScope CreateParentScope(BoundGlobalScope previous)
+        private static BoundScope? CreateParentScope(BoundGlobalScope? previous)
         {
             var stack = new Stack<BoundGlobalScope>();
             while (previous != null)
@@ -42,15 +43,18 @@ namespace Hyper.Compiler.Binding
                 previous = previous.Previous;
             }
 
-            BoundScope parent = null;
+            BoundScope? parent = null;
 
             while (stack.Count > 0)
             {
                 previous = stack.Pop();
                 var scope = new BoundScope(parent);
 
-                foreach (var v in previous.Variables)
-                    scope.TryDeclare(v);
+                if (previous.Variables != null)
+                {
+                    foreach (var v in previous.Variables)
+                        scope.TryDeclare(v);
+                }
 
                 parent = scope;
             }
@@ -72,81 +76,70 @@ namespace Hyper.Compiler.Binding
             };
         }
 
-        private BoundStatement? BindBlockStatement(BlockStatement syntax)
+        private BoundStatement BindBlockStatement(BlockStatement syntax)
         {
-            ImmutableArray<BoundStatement?>.Builder statements = ImmutableArray.CreateBuilder<BoundStatement>();
+            var statements = ImmutableArray.CreateBuilder<BoundStatement?>();
             _scope = new BoundScope(_scope);
 
-            foreach (var statementSyntax in syntax.Statements)
-            {
-                var statement = BindStatement(statementSyntax);
+            foreach (var statement in syntax.Statements.Select(statementSyntax => BindStatement(statementSyntax)))
                 statements.Add(statement);
-            }
 
             _scope = _scope.Parent;
 
             return new BoundBlockStatement(statements.ToImmutable());
         }
 
-        private BoundStatement? BindExpressionStatement(ExpressionStatement syntax)
+        private BoundStatement BindExpressionStatement(ExpressionStatement syntax)
         {
             var expression = BindExpression(syntax.Expression);
             return new BoundExpressionStatement(expression);
         }
 
-        private BoundStatement? BindVariableDeclaration(VariableDeclaration syntax)
+        private BoundStatement BindVariableDeclaration(VariableDeclaration syntax)
         {
-            var name        = syntax.Identifier.Text;
             var isReadOnly  = syntax.Keyword.Kind == SyntaxKind.LetKeyword;
             var initializer = BindExpression(syntax.Initializer);
-            var variable    = new VariableSymbol(name, initializer.Type, isReadOnly);
-
-            if (!_scope.TryDeclare(variable))
-                _diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
+            var variable    = BindVariable(syntax.Identifier, isReadOnly, initializer.Type);
 
             return new BoundVariableDeclaration(variable, initializer);
         }
 
-        private BoundStatement? BindIfStatement(IfStatement syntax)
+        private BoundStatement BindIfStatement(IfStatement syntax)
         {
-            var condition     = BindExpression(syntax.Condition, typeof(bool));
+            var condition     = BindExpression(syntax.Condition, TypeSymbol.Bool);
             var thenStatement = BindStatement(syntax.ThenStatement);
             var elseStatement = syntax.ElseClause == null ? null : BindStatement(syntax.ElseClause.ElseStatement);
 
             return new BoundIfStatement(condition, thenStatement, elseStatement);
         }
 
-        private BoundStatement? BindWhileStatement(WhileStatement syntax)
+        private BoundStatement BindWhileStatement(WhileStatement syntax)
         {
-            var             condition = BindExpression(syntax.Condition, typeof(bool));
+            var condition = BindExpression(syntax.Condition, TypeSymbol.Bool);
             var body      = BindStatement(syntax.Body);
 
             return new BoundWhileStatement(condition, body);
         }
 
-        private BoundStatement? BindForStatement(ForStatement syntax)
+        private BoundStatement BindForStatement(ForStatement syntax)
         {
-            var lowerBound = BindExpression(syntax.LowerBound, typeof(int));
-            var upperBound = BindExpression(syntax.UpperBound, typeof(int));
+            var lowerBound = BindExpression(syntax.LowerBound, TypeSymbol.Int);
+            var upperBound = BindExpression(syntax.UpperBound, TypeSymbol.Int);
 
             _scope = new BoundScope(_scope);
 
-            var name     = syntax.Identifier.Text;
-            var variable = new VariableSymbol(name, typeof(int), true);
-            if (!_scope.TryDeclare(variable))
-                _diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
-
-            var body = BindStatement(syntax.Body);
+            var variable = BindVariable(syntax.Identifier, true, TypeSymbol.Int);
+            var body     = BindStatement(syntax.Body);
 
             _scope = _scope.Parent;
 
             return new BoundForStatement(variable, lowerBound, upperBound, body);
         }
 
-        private BoundExpression BindExpression(Expression syntax, Type targetType)
+        private BoundExpression BindExpression(Expression syntax, TypeSymbol targetType)
         {
             var result = BindExpression(syntax);
-            if (result.Type != targetType)
+            if (targetType != TypeSymbol.Error && result.Type != TypeSymbol.Error && result.Type != targetType)
                 _diagnostics.ReportCannotConvert(syntax.Span, result.Type, targetType);
 
             return result;
@@ -175,19 +168,19 @@ namespace Hyper.Compiler.Binding
 
         private BoundExpression BindUnaryExpression(UnaryExpression syntax)
         {
-            var boundOperand  = BindExpression(syntax.Operand);
+            var boundOperand = BindExpression(syntax.Operand);
+            if (boundOperand.Type == TypeSymbol.Error)
+                return new BoundErrorExpression();
+
             var boundOperator = BoundUnaryOperator.Bind(syntax.Operator.Kind, boundOperand.Type);
 
-            if (boundOperator == null)
-            {
-                _diagnostics
-                    .ReportUndefinedUnaryOperator(syntax.Operator.Span,
-                                                  syntax.Operator.Text,
-                                                  boundOperand.Type);
-                return boundOperand;
-            }
+            if (boundOperator != null)
+                return new BoundUnaryExpression(boundOperator, boundOperand);
 
-            return new BoundUnaryExpression(boundOperator, boundOperand);
+            _diagnostics.ReportUndefinedUnaryOperator(syntax.Operator.Span,
+                                                      syntax.Operator.Text,
+                                                      boundOperand.Type);
+            return new BoundErrorExpression();
         }
 
         private BoundExpression BindBinaryExpression(BinaryExpression syntax)
@@ -196,17 +189,17 @@ namespace Hyper.Compiler.Binding
             var boundRight    = BindExpression(syntax.Right);
             var boundOperator = BoundBinaryOperator.Bind(syntax.Operator.Kind, boundLeft.Type, boundRight.Type);
 
-            if (boundOperator == null)
-            {
-                _diagnostics
-                    .ReportUndefinedBinaryOperator(syntax.Operator.Span,
-                                                   syntax.Operator.Text,
-                                                   boundLeft.Type,
-                                                   boundRight.Type);
-                return boundLeft;
-            }
+            if (boundLeft.Type == TypeSymbol.Error || boundRight.Type == TypeSymbol.Error)
+                return new BoundErrorExpression();
 
-            return new BoundBinaryExpression(boundLeft, boundOperator, boundRight);
+            if (boundOperator != null)
+                return new BoundBinaryExpression(boundLeft, boundOperator, boundRight);
+
+            _diagnostics.ReportUndefinedBinaryOperator(syntax.Operator.Span,
+                                                       syntax.Operator.Text,
+                                                       boundLeft.Type,
+                                                       boundRight.Type);
+            return new BoundErrorExpression();
         }
 
         private BoundExpression BindParenthesizedExpression(ParenthesizedExpression syntax)
@@ -217,17 +210,17 @@ namespace Hyper.Compiler.Binding
         private BoundExpression BindNameExpression(NameExpression syntax)
         {
             var name = syntax.IdentifierToken.Text;
-            if (string.IsNullOrEmpty(name))
+            if (syntax.IdentifierToken.IsMissing)
             {
                 // This means the token was inserted by the parser. We already
                 // reported error so we can just return an error expression.
-                return new BoundLiteralExpression(0);
+                return new BoundErrorExpression();
             }
 
             if (!_scope.TryLookUp(name, out var variable))
             {
                 _diagnostics.ReportUndefinedName(syntax.IdentifierToken.Span, name);
-                return new BoundLiteralExpression(0);
+                return new BoundErrorExpression();
             }
 
             return new BoundVariableExpression(variable);
@@ -254,6 +247,18 @@ namespace Hyper.Compiler.Binding
             }
 
             return new BoundAssignmentExpression(variable, boundExpression);
+        }
+
+        private VariableSymbol BindVariable(Token identifier, bool isReadOnly, TypeSymbol type)
+        {
+            var name     = identifier.Text ?? "?";
+            var declare  = !identifier.IsMissing;
+            var variable = new VariableSymbol(name, type, isReadOnly);
+
+            if (declare && _scope != null && !_scope.TryDeclare(variable))
+                _diagnostics.ReportVariableAlreadyDeclared(identifier.Span, name);
+
+            return variable;
         }
     }
 }

@@ -214,7 +214,16 @@ internal abstract class REPL
         var line      = document[lineIndex];
         var start     = view.CurrentCharacter;
         if (start >= line.Length)
+        {
+            if (view.CurrentLine == document.Count - 1)
+                return;
+
+            var nextLine = document[view.CurrentLine + 1];
+            document[view.CurrentLine] += nextLine;
+            document.RemoveAt(view.CurrentLine + 1);
+
             return;
+        }
 
         var before = line.Substring(0, start);
         var after  = line.Substring(start + 1);
@@ -233,11 +242,11 @@ internal abstract class REPL
 
     private void HandleTab(ObservableCollection<string> document, SubmissionView view)
     {
-        const int TabWidth        = 4;
-        
-        var       start           = view.CurrentCharacter;
-        var       remainingSpaces = TabWidth - start % TabWidth;
-        var       line            = document[view.CurrentLine];
+        const int TabWidth = 4;
+
+        var start           = view.CurrentCharacter;
+        var remainingSpaces = TabWidth - start % TabWidth;
+        var line            = document[view.CurrentLine];
         document[view.CurrentLine] = line.Insert(start, new string(' ', remainingSpaces));
         view.CurrentCharacter += remainingSpaces;
     }

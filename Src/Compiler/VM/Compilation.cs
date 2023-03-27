@@ -1,16 +1,16 @@
 ﻿using System.Collections.Immutable;
 using Compiler.Lowering;
 using Hyper.Compiler.Binding;
-using Hyper.Compiler.Symbol;
+using Hyper.Compiler.Symbols;
 using Hyper.Compiler.Syntax;
 
 namespace Hyper.Compiler.VM
 {
     public sealed class Compilation
     {
-        public  AST              Ast      { get; }
-        public  Compilation?     Previous { get; }
-        private BoundGlobalScope _globalScope;
+        public  AST               Ast      { get; }
+        public  Compilation?      Previous { get; }
+        private BoundGlobalScope? _globalScope;
 
         public Compilation(AST ast) : this(null, ast) { }
 

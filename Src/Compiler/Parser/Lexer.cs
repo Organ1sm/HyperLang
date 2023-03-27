@@ -1,4 +1,6 @@
-﻿using Hyper.Compiler.Diagnostic;
+﻿using System.Text;
+using Hyper.Compiler.Diagnostic;
+using Hyper.Compiler.Symbols;
 using Hyper.Compiler.Syntax;
 using Hyper.Compiler.Text;
 
@@ -154,6 +156,10 @@ namespace Hyper.Compiler.Parser
 
                     break;
                 }
+
+                case '"':
+                    LexString();
+                    break;
                 case '0':
                 case '1':
                 case '2':
@@ -193,6 +199,54 @@ namespace Hyper.Compiler.Parser
             return new Token(_kind, _start, text, _value);
         }
 
+        private void LexString()
+        {
+            _position++; // eat '"'
+
+            var sb   = new StringBuilder();
+            var done = false;
+
+            while (!done)
+            {
+                switch (Current)
+                {
+                    case '\0':
+                    case '\r':
+                    case '\n':
+                    {
+                        var span = new TextSpan(_start, 1);
+                        _diagnostics.ReportUnterminatedString(span);
+                        done = true;
+                        break;
+                    }
+
+                    case '"':
+                    {
+                        if (Lookahead == '"')
+                        {
+                            sb.Append(Current);
+                            _position += 2;
+                        }
+                        else
+                        {
+                            _position++;
+                            done = true;
+                        }
+
+                        break;
+                    }
+
+                    default:
+                        sb.Append(Current);
+                        _position++;
+                        break;
+                }
+            }
+
+            _kind = SyntaxKind.StringToken;
+            _value = sb.ToString();
+        }
+
         private void LexNumber()
         {
             while (char.IsDigit(Current))
@@ -202,7 +256,7 @@ namespace Hyper.Compiler.Parser
             var text   = _text.ToString(_start, length);
 
             if (!int.TryParse(text, out var value))
-                _diagnostics.ReportInvalidNumber(new TextSpan(_start, length), text, typeof(int));
+                _diagnostics.ReportInvalidNumber(new TextSpan(_start, length), text, TypeSymbol.Int);
 
             _value = value;
             _kind = SyntaxKind.NumberToken;
@@ -245,6 +299,6 @@ namespace Hyper.Compiler.Parser
 
         private int        _start;
         private SyntaxKind _kind;
-        private object     _value;
+        private object?    _value;
     }
 }

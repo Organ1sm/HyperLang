@@ -1,6 +1,4 @@
-﻿using Hyper.Compiler.Symbol;
-using Hyper.Compiler.Syntax;
-using Expression = System.Linq.Expressions.Expression;
+﻿using Hyper.Compiler.Symbols;
 
 namespace Hyper.Compiler.Binding;
 
@@ -13,7 +11,7 @@ internal class BoundAssignmentExpression : BoundExpression
     }
 
     public override BoundNodeKind   Kind       => BoundNodeKind.AssignmentExpression;
-    public override Type            Type       => Expression.Type;
+    public override TypeSymbol      Type       => Expression.Type;
     public          VariableSymbol  Variable   { get; }
     public          BoundExpression Expression { get; }
 }

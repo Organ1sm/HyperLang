@@ -1,4 +1,5 @@
-﻿using Hyper.Compiler.Symbol;
+﻿using Hyper.Compiler.Parser;
+using Hyper.Compiler.Symbols;
 using Hyper.Compiler.Syntax;
 using Hyper.Compiler.Text;
 using Hyper.Compiler.VM;
@@ -18,13 +19,16 @@ internal sealed class HyperREPL : REPL
 
         foreach (var token in tokens)
         {
-            var isKeyword = token.Kind.ToString().EndsWith("Keyword");
-            var isNumber  = token.Kind == SyntaxKind.NumberToken;
+            var isKeyword    = token.Kind.ToString().EndsWith("Keyword");
+            var isNumber     = token.Kind == SyntaxKind.NumberToken;
+            var isIdentifier = token.Kind == SyntaxKind.IdentifierToken;
 
             if (isKeyword)
                 Console.ForegroundColor = ConsoleColor.Blue;
             else if (isNumber)
                 Console.ForegroundColor = ConsoleColor.DarkMagenta;
+            else if (isIdentifier)
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
 
             Console.Write(token.Text);
             Console.ResetColor();
@@ -43,7 +47,6 @@ internal sealed class HyperREPL : REPL
                 _showProgram = !_showProgram;
                 Console.WriteLine(_showProgram ? "Showing bound tree." : "Not showing bound tree.");
                 break;
-                break;
             case "#reset":
                 _previous = null;
                 _variables.Clear();
@@ -59,9 +62,19 @@ internal sealed class HyperREPL : REPL
         if (string.IsNullOrEmpty(text))
             return true;
 
+        var lastTwoLinesAreBlank = text.Split(Environment.NewLine)
+                                       .Reverse()
+                                       .TakeWhile(s => string.IsNullOrEmpty(s))
+                                       .Take(2)
+                                       .Count() == 2;
+
+        if (lastTwoLinesAreBlank)
+            return true;
+
         var syntaxTree = AST.Parse(text);
 
-        if (syntaxTree.Diagnostics.Any())
+        // Use Statement because we need to exclude the EndOfFileToken.
+        if (syntaxTree.Root.Statement.GetLastToken().IsMissing)
             return false;
 
         return true;

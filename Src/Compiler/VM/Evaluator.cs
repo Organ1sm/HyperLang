@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 using Hyper.Compiler.Binding;
-using Hyper.Compiler.Symbol;
+using Hyper.Compiler.Symbols;
 
 namespace Hyper.Compiler.VM
 {
@@ -13,14 +13,14 @@ namespace Hyper.Compiler.VM
 
         public Evaluator(BoundBlockStatement? root, Dictionary<VariableSymbol, object> variables)
         {
-            this._root = root;
+            _root = root;
             _variables = variables;
         }
 
         public object Evaluate()
         {
-            var labelToIndex = new Dictionary<LabelSymbol, int>();
-            for (var i = 0; i < _root.Statements.Length; i++)
+            var labelToIndex = new Dictionary<BoundLabel, int>();
+            for (var i = 0; i < _root?.Statements.Length; i++)
             {
                 if (_root.Statements[i] is BoundLabelStatement l)
                     labelToIndex.Add(l.Label, i + 1);
@@ -28,10 +28,10 @@ namespace Hyper.Compiler.VM
 
             var index = 0;
 
-            while (index < _root.Statements.Length)
+            while (index < _root?.Statements.Length)
             {
                 var s = _root.Statements[index];
-                switch (s.Kind)
+                switch (s?.Kind)
                 {
                     case BoundNodeKind.ExpressionStatement:
                         EvaluateExpressionStatement((BoundExpressionStatement) s);
@@ -62,7 +62,7 @@ namespace Hyper.Compiler.VM
                         break;
 
                     default:
-                        throw new Exception($"Unexpected s {s.Kind}");
+                        throw new Exception($"Unexpected s {s?.Kind}");
                 }
             }
 
@@ -119,14 +119,14 @@ namespace Hyper.Compiler.VM
                 BoundBinaryOperatorKind.Multiplication => (int) left * (int) right,
                 BoundBinaryOperatorKind.Division       => (int) left / (int) right,
 
-                BoundBinaryOperatorKind.BitwiseAnd when b.Type == (typeof(int))  => (int) left & (int) right,
-                BoundBinaryOperatorKind.BitwiseAnd when b.Type == (typeof(bool)) => (bool) left & (bool) right,
+                BoundBinaryOperatorKind.BitwiseAnd when b.Type == TypeSymbol.Int  => (int) left & (int) right,
+                BoundBinaryOperatorKind.BitwiseAnd when b.Type == TypeSymbol.Bool => (bool) left & (bool) right,
 
-                BoundBinaryOperatorKind.BitwiseOr when b.Type == (typeof(int))  => (int) left | (int) right,
-                BoundBinaryOperatorKind.BitwiseOr when b.Type == (typeof(bool)) => (bool) left | (bool) right,
+                BoundBinaryOperatorKind.BitwiseOr when b.Type == TypeSymbol.Int  => (int) left | (int) right,
+                BoundBinaryOperatorKind.BitwiseOr when b.Type == TypeSymbol.Bool => (bool) left | (bool) right,
 
-                BoundBinaryOperatorKind.BitwiseXor when b.Type == (typeof(int))  => (int) left ^ (int) right,
-                BoundBinaryOperatorKind.BitwiseXor when b.Type == (typeof(bool)) => (bool) left ^ (bool) right,
+                BoundBinaryOperatorKind.BitwiseXor when b.Type == TypeSymbol.Int  => (int) left ^ (int) right,
+                BoundBinaryOperatorKind.BitwiseXor when b.Type == TypeSymbol.Bool => (bool) left ^ (bool) right,
 
                 BoundBinaryOperatorKind.LogicalAnd      => (bool) left && (bool) right,
                 BoundBinaryOperatorKind.LogicalOr       => (bool) left || (bool) right,

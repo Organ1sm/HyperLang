@@ -1,8 +1,8 @@
-﻿namespace Hyper.Compiler.Symbol;
+﻿namespace Hyper.Compiler.Binding;
 
-internal sealed class LabelSymbol
+internal sealed class BoundLabel
 {
-    public LabelSymbol(string name)
+    public BoundLabel(string name)
     {
         Name = name;
     }

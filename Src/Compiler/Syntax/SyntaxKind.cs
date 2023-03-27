@@ -7,6 +7,7 @@ public enum SyntaxKind
 
     WhitespaceToken,
     NumberToken,
+    StringToken,
 
     PlusToken,               // +
     MinusToken,              // -

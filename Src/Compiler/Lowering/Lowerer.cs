@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 using Hyper.Compiler.Binding;
-using Hyper.Compiler.Symbol;
+using Hyper.Compiler.Symbols;
 using Hyper.Compiler.Syntax;
 
 namespace Compiler.Lowering;
@@ -9,9 +9,9 @@ internal sealed class Lowerer : BoundTreeRewriter
 {
     private Lowerer() { }
 
-    private LabelSymbol GenerateLabel() => new LabelSymbol($"Label{++_labelCount}");
+    private BoundLabel GenerateLabel() => new BoundLabel($"Label{++_labelCount}");
 
-    public static BoundBlockStatement Lower(BoundStatement statement)
+    public static BoundBlockStatement Lower(BoundStatement? statement)
     {
         var lowerer = new Lowerer();
         var result  = lowerer.RewriteStatement(statement);
@@ -159,21 +159,21 @@ internal sealed class Lowerer : BoundTreeRewriter
         var varDecl = new BoundVariableDeclaration(node.Variable, node.LowerBound);
         var varExpr = new BoundVariableExpression(node.Variable);
 
-        var upperBoundSymbol = new VariableSymbol("upperBound", typeof(int), true);
+        var upperBoundSymbol = new VariableSymbol("upperBound", TypeSymbol.Int, true);
         var upperBoundDecl   = new BoundVariableDeclaration(upperBoundSymbol, node.UpperBound);
 
         var condition = new BoundBinaryExpression(varExpr,
                                                   BoundBinaryOperator.Bind(SyntaxKind.LessOrEqualsToken,
-                                                                           typeof(int),
-                                                                           typeof(int)),
+                                                                           TypeSymbol.Int,
+                                                                           TypeSymbol.Int),
                                                   new BoundVariableExpression(upperBoundSymbol));
 
         var increment = new BoundExpressionStatement(new BoundAssignmentExpression(node.Variable,
                                                       new BoundBinaryExpression(varExpr,
                                                                                 BoundBinaryOperator
-                                                                                    .Bind(SyntaxKind.PlusToken,
-                                                                                     typeof(int),
-                                                                                     typeof(int)),
+                                                                                   .Bind(SyntaxKind.PlusToken,
+                                                                                     TypeSymbol.Int,
+                                                                                     TypeSymbol.Int),
                                                                                 new BoundLiteralExpression(1))));
 
         var whileBody       = new BoundBlockStatement(ImmutableArray.Create(node.Body, increment));
