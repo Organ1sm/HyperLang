@@ -114,7 +114,9 @@ namespace Hyper.Compiler.VM
 
             return b.Operator.OpKind switch
             {
-                BoundBinaryOperatorKind.Addition       => (int) left + (int) right,
+                BoundBinaryOperatorKind.Addition when b.Type == TypeSymbol.Int    => (int) left + (int) right,
+                BoundBinaryOperatorKind.Addition when b.Type == TypeSymbol.String => (string) left + (string) right,
+
                 BoundBinaryOperatorKind.Subtraction    => (int) left - (int) right,
                 BoundBinaryOperatorKind.Multiplication => (int) left * (int) right,
                 BoundBinaryOperatorKind.Division       => (int) left / (int) right,
