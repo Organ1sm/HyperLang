@@ -240,7 +240,69 @@ elements.
 
 ## Stage9
 
-## Completed items
+### Completed items
 
 We just improve the REPL, This includes the ability to edit multiple lines, have
 history, and syntax highlighting.
+
+
+## Stage10
+
+### Completed items
+* We added support for string literals and type symbols.
+
+
+### String Literals
+we now support strings like so:
+```js
+let hello = "Hello"
+```
+String need to be terminated on the same line(In other words, we don't support line breaks in them).
+We also don't support any escape sequences yet (such as '\n', '\t'). However, supporting quotes 
+which are escaped by doubling them.
+```
+// output hello "World"!
+let message = "Hello, ""World""!"
+```
+
+### Cascading errors
+Expressions are generally bound inside-out. For example, in order to bind a
+binary expression, one first binds the left hand side and right hand side in
+order to know their types so that the operator can be resolved. This can lead to
+cascading errors, like in this case:
+```js
+(10 * false) - 10
+```
+
+There is no `*` operator defined for `int` and `bool`, so the left hand side cannot be bound.
+This makes it impossible to bind `-` operator as well. In general, as a developer, you don't want to drown in
+error messages so a good compiler will try to avoid generating cascading errors.
+For example, you don't want to generate two errors but only one for the above expression.
+so that the `*` cannot be bound because that's the root cause. 
+
+In the past, we have returned the left hand side when a binary expression cannot be bound or fabricated a fake literal
+expression with a value of `0`, this can lead to cascading error. To fix this problem, we have introduced an `ErrorType`
+to indicate the absence of type information. we also add a `BoundErrorExpression` that is returned whenever we cannot 
+resolve an expression. This is handle a binary expression as follows:
+
+```c#
+private BoundExpression BindBinaryExpression(BinaryExpression syntax)
+{
+    var boundLeft     = BindExpression(syntax.Left);
+    var boundRight    = BindExpression(syntax.Right);
+    var boundOperator = BoundBinaryOperator.Bind(syntax.Operator.Kind, boundLeft.Type, boundRight.Type);
+
+    if (boundLeft.Type == TypeSymbol.Error || boundRight.Type == TypeSymbol.Error)
+        return new BoundErrorExpression();
+
+    if (boundOperator != null)
+        return new BoundBinaryExpression(boundLeft, boundOperator, boundRight);
+
+    _diagnostics.ReportUndefinedBinaryOperator(syntax.Operator.Span,
+                                               syntax.Operator.Text,
+                                               boundLeft.Type,
+                                               boundRight.Type);
+                                                
+    return new BoundErrorExpression();
+}
+```
