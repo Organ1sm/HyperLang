@@ -31,7 +31,8 @@ public enum SyntaxKind
     CloseParenthesisToken,   // ')'
     OpenBraceToken,          // '{'
     CloseBraceToken,         // '}'
-    ColonToken,
+    ColonToken,              // ':',
+    CommaToken,              // ','
 
     IdentifierToken,
 
@@ -60,7 +61,6 @@ public enum SyntaxKind
     WhileStatement,
     ForStatement,
 
-
     // Expression
     LiteralExpression,
     NameExpression,
@@ -68,4 +68,5 @@ public enum SyntaxKind
     UnaryExpression,
     ParenthesizedExpression,
     AssignmentExpression,
+    CallExpression,
 }

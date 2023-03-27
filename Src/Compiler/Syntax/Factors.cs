@@ -21,7 +21,7 @@ public static class Factors
 
             SyntaxKind.AmpersandToken or SyntaxKind.AmpersandAmpersandToken => 2,
 
-            SyntaxKind.HatToken or SyntaxKind.PipeToken or SyntaxKind.PipePipeToken  => 1,
+            SyntaxKind.HatToken or SyntaxKind.PipeToken or SyntaxKind.PipePipeToken => 1,
 
             _ => 0
         };
@@ -103,6 +103,7 @@ public static class Factors
             SyntaxKind.OpenBraceToken          => "{",
             SyntaxKind.CloseBraceToken         => "}",
             SyntaxKind.ColonToken              => ":",
+            SyntaxKind.CommaToken              => ",",
             SyntaxKind.FalseKeyword            => "false",
             SyntaxKind.TrueKeyword             => "true",
             SyntaxKind.LetKeyword              => "let",

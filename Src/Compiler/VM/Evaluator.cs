@@ -143,17 +143,34 @@ namespace Hyper.Compiler.VM
             };
         }
 
+        private object? EvaluateCallExpression(BoundCallExpression node)
+        {
+            if (node.Function == BuiltinFunctions.Input)
+                return Console.ReadLine();
+            else if (node.Function == BuiltinFunctions.Print)
+            {
+                var message = (string) EvaluateExpression(node.Arguments[0]);
+                Console.WriteLine(message);
+                return null;
+            }
+            else
+            {
+                throw new Exception($"Unexpected function {node.Function}");
+            }
+        }
+
         private object EvaluateExpression(BoundExpression node)
         {
-            return node switch
+            return (node switch
             {
                 BoundLiteralExpression n    => EvaluateLiteralExpression(n),
                 BoundVariableExpression v   => EvaluateVariableExpression(v),
                 BoundAssignmentExpression a => EvaluateAssignmentExpression(a),
                 BoundUnaryExpression u      => EvaluateUnaryExpression(u),
                 BoundBinaryExpression b     => EvaluateBinaryExpression(b),
-                _                           => throw new Exception($"Unexpected s {node.Kind}")
-            };
+                BoundCallExpression c       => EvaluateCallExpression(c) ,
+                _                           => throw new Exception($"Unexpected node {node.Kind}")
+            })!;
         }
     }
 }

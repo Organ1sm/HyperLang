@@ -1,5 +1,4 @@
-﻿using Hyper.Compiler.Parser;
-using Hyper.Compiler.Symbols;
+﻿using Hyper.Compiler.Symbols;
 using Hyper.Compiler.Syntax;
 using Hyper.Compiler.Text;
 using Hyper.Compiler.VM;
@@ -11,7 +10,7 @@ internal sealed class HyperREPL : REPL
     private          Compilation                        _previous;
     private          bool                               _showTree;
     private          bool                               _showProgram;
-    private readonly Dictionary<VariableSymbol, object> _variables = new Dictionary<VariableSymbol, object>();
+    private readonly Dictionary<VariableSymbol, object> _variables = new();
 
     protected override void RenderLine(string line)
     {
