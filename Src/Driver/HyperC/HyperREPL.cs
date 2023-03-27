@@ -22,11 +22,14 @@ internal sealed class HyperREPL : REPL
             var isKeyword    = token.Kind.ToString().EndsWith("Keyword");
             var isNumber     = token.Kind == SyntaxKind.NumberToken;
             var isIdentifier = token.Kind == SyntaxKind.IdentifierToken;
+            var isString     = token.Kind == SyntaxKind.StringToken;
 
             if (isKeyword)
                 Console.ForegroundColor = ConsoleColor.Blue;
             else if (isNumber)
                 Console.ForegroundColor = ConsoleColor.DarkMagenta;
+            else if (isString)
+                Console.ForegroundColor = ConsoleColor.Magenta;
             else if (isIdentifier)
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
 
