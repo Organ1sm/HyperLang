@@ -99,9 +99,13 @@ internal sealed class HyperREPL : REPL
 
         if (!result.Diagnostics.Any())
         {
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine(result.Value);
-            Console.ResetColor();
+            if (result.Value != null)
+            {
+                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.WriteLine(result.Value);
+                Console.ResetColor();
+            }
+
             _previous = compilation;
         }
         else
