@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using Hyper.Compiler.Binding;
+﻿using Hyper.Compiler.Binding;
 using Hyper.Compiler.Symbols;
 
 namespace Hyper.Compiler.VM
@@ -8,6 +7,7 @@ namespace Hyper.Compiler.VM
     {
         private readonly BoundBlockStatement?               _root;
         private readonly Dictionary<VariableSymbol, object> _variables;
+        private          Random?                            _random;
 
         private object _lastValue;
 
@@ -147,16 +147,25 @@ namespace Hyper.Compiler.VM
         {
             if (node.Function == BuiltinFunctions.Input)
                 return Console.ReadLine();
-            else if (node.Function == BuiltinFunctions.Print)
+
+            if (node.Function == BuiltinFunctions.Print)
             {
                 var message = (string) EvaluateExpression(node.Arguments[0]);
                 Console.WriteLine(message);
                 return null;
             }
-            else
+
+            if (node.Function == BuiltinFunctions.Rnd)
             {
-                throw new Exception($"Unexpected function {node.Function}");
+                var max = (int) EvaluateExpression(node.Arguments[0]);
+
+                if (_random == null)
+                    _random = new Random();
+
+                return _random.Next(max);
             }
+
+            throw new Exception($"Unexpected function {node.Function}");
         }
 
         private object EvaluateExpression(BoundExpression node)
@@ -168,7 +177,7 @@ namespace Hyper.Compiler.VM
                 BoundAssignmentExpression a => EvaluateAssignmentExpression(a),
                 BoundUnaryExpression u      => EvaluateUnaryExpression(u),
                 BoundBinaryExpression b     => EvaluateBinaryExpression(b),
-                BoundCallExpression c       => EvaluateCallExpression(c) ,
+                BoundCallExpression c       => EvaluateCallExpression(c),
                 _                           => throw new Exception($"Unexpected node {node.Kind}")
             })!;
         }
