@@ -2,13 +2,13 @@
 
 public abstract class Symbol
 {
-    protected Symbol(string? name)
+    protected Symbol(string name)
     {
         Name = name;
     }
 
     public abstract SymbolKind Kind { get; }
-    public          string?    Name { get; }
+    public          string     Name { get; }
 
-    public override string? ToString() => Name;
+    public override string ToString() => Name;
 }

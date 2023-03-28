@@ -85,7 +85,7 @@ namespace Hyper.Compiler.Diagnostic
             Report(span, message);
         }
 
-        public void ReportUndefinedFunction(TextSpan span, string name)
+        public void ReportUndefinedFunction(TextSpan span, string? name)
         {
             var message = $"Function '{name}' doesn't exist.";
             Report(span, message);

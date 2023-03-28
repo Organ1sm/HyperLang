@@ -10,8 +10,10 @@ internal sealed class BoundScope
         Parent = parent;
     }
 
-    public bool TryDeclare(VariableSymbol variable)
+    public bool TryDeclareVariable(VariableSymbol variable)
     {
+        _variables ??= new Dictionary<string, VariableSymbol>();
+
         if (_variables.ContainsKey(variable.Name))
             return false;
 
@@ -19,23 +21,55 @@ internal sealed class BoundScope
         return true;
     }
 
-    public bool TryLookUp(string? name, out VariableSymbol? variable)
+    public bool TryLookUpVariable(string name, out VariableSymbol? variable)
     {
-        if (_variables.TryGetValue(name, out variable))
+        variable = null;
+        
+        if (_variables != null && _variables.TryGetValue(name, out variable))
             return true;
 
         if (Parent == null)
             return false;
 
-        return Parent.TryLookUp(name, out variable);
+        return Parent.TryLookUpVariable(name, out variable);
+    }
+
+    public bool TryDeclareFunction(FunctionSymbol? function)
+    {
+        _functions ??= new Dictionary<string, FunctionSymbol>();
+
+        if (_functions.ContainsKey(function.Name))
+            return false;
+
+        _functions.Add(function.Name, function);
+        return true;
+    }
+
+    public bool TryLookupFunction(string? name, out FunctionSymbol function)
+    {
+        function = null;
+
+        if (_functions != null && _functions.TryGetValue(name, out function))
+            return true;
+
+        if (Parent == null)
+            return false;
+
+        return Parent.TryLookupFunction(name, out function);
     }
 
     public ImmutableArray<VariableSymbol> GetDeclaredVariables()
     {
-        return _variables.Values.ToImmutableArray();
+        return _variables == null ? ImmutableArray<VariableSymbol>.Empty : _variables.Values.ToImmutableArray();
     }
 
-    private Dictionary<string?, VariableSymbol> _variables = new();
+    public ImmutableArray<FunctionSymbol> GetDeclaredFunctions()
+    {
+        return _functions == null ? ImmutableArray<FunctionSymbol>.Empty : _functions.Values.ToImmutableArray();
+    }
+
+    private Dictionary<string, VariableSymbol>? _variables;
+    private Dictionary<string, FunctionSymbol>? _functions;
 
     public BoundScope? Parent { get; }
 }
