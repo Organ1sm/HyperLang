@@ -275,6 +275,9 @@ namespace Hyper.Compiler.Binding
 
         private BoundExpression BindCallExpression(CallExpression syntax)
         {
+            if (syntax.Arguments.Count == 1 && LookupType(syntax.Identifier.Text) is TypeSymbol type)
+                return BindConversion(type, syntax.Arguments[0]);
+
             var boundArguments = ImmutableArray.CreateBuilder<BoundExpression>();
 
             foreach (var arg in syntax.Arguments)
@@ -282,7 +285,6 @@ namespace Hyper.Compiler.Binding
                 var boundArgument = BindExpression(arg);
                 boundArguments.Add(boundArgument);
             }
-
 
             if (!_scope.TryLookupFunction(syntax.Identifier.Text, out var function))
             {
@@ -314,6 +316,20 @@ namespace Hyper.Compiler.Binding
             return new BoundCallExpression(function, boundArguments.ToImmutable());
         }
 
+        private BoundExpression BindConversion(TypeSymbol type, Expression syntax)
+        {
+            var expression = BindExpression(syntax);
+            var conversion = Conversion.Classify(expression.Type, type);
+
+            if (!conversion.Exists)
+            {
+                _diagnostics.ReportCannotConvert(syntax.Span, expression.Type, type);
+                return new BoundErrorExpression();
+            }
+
+            return new BoundConversionExpression(type, expression);
+        }
+
         private VariableSymbol BindVariable(Token identifier, bool isReadOnly, TypeSymbol type)
         {
             var name     = identifier.Text ?? "?";
@@ -324,6 +340,17 @@ namespace Hyper.Compiler.Binding
                 _diagnostics.ReportVariableAlreadyDeclared(identifier.Span, name);
 
             return variable;
+        }
+
+        private TypeSymbol? LookupType(string? name)
+        {
+            return name switch
+            {
+                "bool"   => TypeSymbol.Bool,
+                "int"    => TypeSymbol.Int,
+                "string" => TypeSymbol.String,
+                _        => null
+            };
         }
     }
 }

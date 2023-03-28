@@ -168,17 +168,34 @@ namespace Hyper.Compiler.VM
             throw new Exception($"Unexpected function {node.Function}");
         }
 
+        private object? EvaluateConversionExpression(BoundConversionExpression node)
+        {
+            var value = EvaluateExpression(node.Expression);
+
+            if (node.Type == TypeSymbol.Bool)
+                return Convert.ToBoolean(value);
+
+            if (node.Type == TypeSymbol.Int)
+                return Convert.ToInt32(value);
+
+            if (node.Type == TypeSymbol.String)
+                return Convert.ToString(value);
+
+            throw new Exception($"Unexpected type {node.Type}");
+        }
+
         private object EvaluateExpression(BoundExpression node)
         {
             return (node switch
             {
-                BoundLiteralExpression n    => EvaluateLiteralExpression(n),
-                BoundVariableExpression v   => EvaluateVariableExpression(v),
-                BoundAssignmentExpression a => EvaluateAssignmentExpression(a),
-                BoundUnaryExpression u      => EvaluateUnaryExpression(u),
-                BoundBinaryExpression b     => EvaluateBinaryExpression(b),
-                BoundCallExpression c       => EvaluateCallExpression(c),
-                _                           => throw new Exception($"Unexpected node {node.Kind}")
+                BoundLiteralExpression n     => EvaluateLiteralExpression(n),
+                BoundVariableExpression v    => EvaluateVariableExpression(v),
+                BoundAssignmentExpression a  => EvaluateAssignmentExpression(a),
+                BoundUnaryExpression u       => EvaluateUnaryExpression(u),
+                BoundBinaryExpression b      => EvaluateBinaryExpression(b),
+                BoundCallExpression c        => EvaluateCallExpression(c),
+                BoundConversionExpression cv => EvaluateConversionExpression(cv),
+                _                            => throw new Exception($"Unexpected node {node.Kind}")
             })!;
         }
     }
