@@ -117,25 +117,21 @@ internal sealed class Lowerer : BoundTreeRewriter
         // goto check
         // check:
         // gotoTrue <condition> continue
-        // end:
         //
 
         var continueLabel = GenerateLabel();
         var checkLabel    = GenerateLabel();
-        var endLabel      = GenerateLabel();
 
         var continueLabelStatement = new BoundLabelStatement(continueLabel);
         var gotoCheckStatement     = new BoundGotoStatement(checkLabel);
         var checkLabelStatement    = new BoundLabelStatement(checkLabel);
         var gotoTrueStatement      = new BoundConditionalGotoStatement(continueLabel, node.Condition);
-        var endLabelStatement      = new BoundLabelStatement(endLabel);
 
         var result = new BoundBlockStatement(ImmutableArray.Create(continueLabelStatement,
                                                                    node.Body,
                                                                    gotoCheckStatement,
                                                                    checkLabelStatement,
-                                                                   gotoTrueStatement,
-                                                                   endLabelStatement));
+                                                                   gotoTrueStatement));
 
         return RewriteStatement(result);
     }
@@ -152,26 +148,22 @@ internal sealed class Lowerer : BoundTreeRewriter
         // <body>
         // check:
         // gotoTrue <condition> continue
-        // end:
         //
 
         var continueLabel = GenerateLabel();
         var checkLabel    = GenerateLabel();
-        var endLabel      = GenerateLabel();
 
         var gotoCheck              = new BoundGotoStatement(checkLabel);
         var continueLabelStatement = new BoundLabelStatement(continueLabel);
         var checkLabelStatement    = new BoundLabelStatement(checkLabel);
 
-        var gotoTrue          = new BoundConditionalGotoStatement(continueLabel, node.Condition);
-        var endLabelStatement = new BoundLabelStatement(endLabel);
+        var gotoTrue = new BoundConditionalGotoStatement(continueLabel, node.Condition);
 
         var result = new BoundBlockStatement(ImmutableArray.Create(gotoCheck,
                                                                    continueLabelStatement,
                                                                    node.Body,
                                                                    checkLabelStatement,
-                                                                   gotoTrue,
-                                                                   endLabelStatement));
+                                                                   gotoTrue));
 
         return RewriteStatement(result);
     }
