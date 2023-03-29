@@ -21,6 +21,10 @@ public sealed class SeparatedSyntaxList<T> : SeparatedSyntaxList, IEnumerable<T>
 
     public int Count => (_nodesAndSeparators.Length + 1) / 2;
 
+    /// <summary>
+    /// return the 2 * index parameter. 
+    /// </summary>
+    /// <param name="index"></param>
     public T this[int index] => (T) _nodesAndSeparators[index * 2];
 
     public Token? GetSeparator(int index)

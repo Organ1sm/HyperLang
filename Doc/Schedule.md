@@ -189,7 +189,8 @@ called *lowered*, to other constructs. That's because languages often provide
 syntactic sugar that is merely a shorthand for other constructs. For example:
 
 ```js
-for i = 1 to 100
+for i = 1 to
+100
 < statement >
 ```
 
@@ -200,8 +201,8 @@ let i = 1
 while i <= 100:
 {
     <statement>
-    i = i + 1
-}
+        i = i + 1
+        }
 ```
 
 Instead of having to generate code for both, `for`- and `while`-statements, it's
@@ -245,31 +246,36 @@ elements.
 We just improve the REPL, This includes the ability to edit multiple lines, have
 history, and syntax highlighting.
 
-
 ## Stage10
 
 ### Completed items
+
 * We added support for string literals and type symbols.
 
-
 ### String Literals
+
 we now support strings like so:
+
 ```js
 let hello = "Hello"
 ```
+
 String need to be terminated on the same line(In other words, we don't support line breaks in them).
-We also don't support any escape sequences yet (such as '\n', '\t'). However, supporting quotes 
+We also don't support any escape sequences yet (such as '\n', '\t'). However, supporting quotes
 which are escaped by doubling them.
+
 ```
 // output hello "World"!
 let message = "Hello, ""World""!"
 ```
 
 ### Cascading errors
+
 Expressions are generally bound inside-out. For example, in order to bind a
 binary expression, one first binds the left hand side and right hand side in
 order to know their types so that the operator can be resolved. This can lead to
 cascading errors, like in this case:
+
 ```js
 (10 * false) - 10
 ```
@@ -278,11 +284,11 @@ There is no `*` operator defined for `int` and `bool`, so the left hand side can
 This makes it impossible to bind `-` operator as well. In general, as a developer, you don't want to drown in
 error messages so a good compiler will try to avoid generating cascading errors.
 For example, you don't want to generate two errors but only one for the above expression.
-so that the `*` cannot be bound because that's the root cause. 
+so that the `*` cannot be bound because that's the root cause.
 
 In the past, we have returned the left hand side when a binary expression cannot be bound or fabricated a fake literal
 expression with a value of `0`, this can lead to cascading error. To fix this problem, we have introduced an `ErrorType`
-to indicate the absence of type information. we also add a `BoundErrorExpression` that is returned whenever we cannot 
+to indicate the absence of type information. we also add a `BoundErrorExpression` that is returned whenever we cannot
 resolve an expression. This is handle a binary expression as follows:
 
 ```c#
@@ -306,3 +312,25 @@ private BoundExpression BindBinaryExpression(BinaryExpression syntax)
     return new BoundErrorExpression();
 }
 ```
+
+## Stage 11
+
+### Completed items
+
+* We added support for calling built-in functions and convert between types.
+
+### Separated syntax lists
+
+When parsing call expressions, we need to represent the list of arguments.
+So we have introduced a special kind of list we call `separater syntax list`.
+so for code like
+
+```
+add(1, 2)
+```
+
+the separated list would contain the expression `1`, the comma, the expression `2`
+Enumerating and indexing the list will generally skip the separators (so that `Arguments[1]` would 
+give you the second argument rather than the first comma), however, we have a method `GetSeparator(int index)` that
+returns the associated token. For the last node it will return `null` because the last node doesn't have a trailing
+comma.
