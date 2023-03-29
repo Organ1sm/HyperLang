@@ -4,6 +4,7 @@ using Hyper.Compiler.Parser;
 using Hyper.Compiler.Symbols;
 using Hyper.Compiler.Syntax;
 using Hyper.Compiler.Syntax.Stmt;
+using Hyper.Compiler.Text;
 using Hyper.Compiler.VM;
 
 namespace Hyper.Compiler.Binding
@@ -155,14 +156,7 @@ namespace Hyper.Compiler.Binding
             return new BoundForStatement(variable, lowerBound, upperBound, body);
         }
 
-        private BoundExpression BindExpression(Expression syntax, TypeSymbol targetType)
-        {
-            var result = BindExpression(syntax);
-            if (targetType != TypeSymbol.Error && result.Type != TypeSymbol.Error && result.Type != targetType)
-                _diagnostics.ReportCannotConvert(syntax.Span, result.Type, targetType);
-
-            return result;
-        }
+        private BoundExpression BindExpression(Expression syntax, TypeSymbol targetType) => BindConversion(targetType, syntax);
 
         private BoundExpression BindExpression(Expression syntax, bool canBeVoid = false)
         {
@@ -270,16 +264,12 @@ namespace Hyper.Compiler.Binding
                 return boundExpression;
             }
 
-            if (variable.IsReadOnly)
+            if (variable is {IsReadOnly: true})
                 _diagnostics.ReportCannotAssign(syntax.EqualsToken.Span, name);
 
-            if (boundExpression.Type != variable.Type)
-            {
-                _diagnostics.ReportCannotConvert(syntax.Expression.Span, boundExpression.Type, variable.Type);
-                return boundExpression;
-            }
+            var convertedExpression = BindConversion(syntax.Expression.Span, boundExpression, variable.Type);
 
-            return new BoundAssignmentExpression(variable, boundExpression);
+            return new BoundAssignmentExpression(variable, convertedExpression);
         }
 
         private BoundExpression BindCallExpression(CallExpression syntax)
@@ -328,15 +318,20 @@ namespace Hyper.Compiler.Binding
         private BoundExpression BindConversion(TypeSymbol type, Expression syntax)
         {
             var expression = BindExpression(syntax);
+            return BindConversion(syntax.Span, expression, type);
+        }
+
+        private BoundExpression BindConversion(TextSpan diagnosticSpan, BoundExpression expression, TypeSymbol type)
+        {
             var conversion = Conversion.Classify(expression.Type, type);
 
-            if (!conversion.Exists)
-            {
-                _diagnostics.ReportCannotConvert(syntax.Span, expression.Type, type);
-                return new BoundErrorExpression();
-            }
+            if (conversion.Exists)
+                return conversion.IsIdentity ? expression : new BoundConversionExpression(type, expression);
 
-            return new BoundConversionExpression(type, expression);
+            if (expression.Type != TypeSymbol.Error && type != TypeSymbol.Error)
+                _diagnostics.ReportCannotConvert(diagnosticSpan, expression.Type, type);
+
+            return new BoundErrorExpression();
         }
 
         private VariableSymbol BindVariable(Token identifier, bool isReadOnly, TypeSymbol type)
