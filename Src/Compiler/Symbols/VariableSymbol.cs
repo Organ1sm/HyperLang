@@ -1,8 +1,8 @@
 ﻿namespace Hyper.Compiler.Symbols;
 
-public sealed class VariableSymbol : Symbol
+public class VariableSymbol : Symbol
 {
-    public VariableSymbol(string? name, TypeSymbol type, bool isReadOnly) : base(name)
+    public VariableSymbol(string name, TypeSymbol type, bool isReadOnly) : base(name)
     {
         Type = type;
         IsReadOnly = isReadOnly;

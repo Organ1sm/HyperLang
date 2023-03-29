@@ -1,5 +1,4 @@
-﻿using Hyper.Compiler.Parser;
-using Hyper.Compiler.Symbols;
+﻿using Hyper.Compiler.Symbols;
 using Hyper.Compiler.Syntax;
 using Hyper.Compiler.Text;
 using Hyper.Compiler.VM;
@@ -11,7 +10,7 @@ internal sealed class HyperREPL : REPL
     private          Compilation                        _previous;
     private          bool                               _showTree;
     private          bool                               _showProgram;
-    private readonly Dictionary<VariableSymbol, object> _variables = new Dictionary<VariableSymbol, object>();
+    private readonly Dictionary<VariableSymbol, object> _variables = new();
 
     protected override void RenderLine(string line)
     {
@@ -22,11 +21,14 @@ internal sealed class HyperREPL : REPL
             var isKeyword    = token.Kind.ToString().EndsWith("Keyword");
             var isNumber     = token.Kind == SyntaxKind.NumberToken;
             var isIdentifier = token.Kind == SyntaxKind.IdentifierToken;
+            var isString     = token.Kind == SyntaxKind.StringToken;
 
             if (isKeyword)
                 Console.ForegroundColor = ConsoleColor.Blue;
             else if (isNumber)
                 Console.ForegroundColor = ConsoleColor.DarkMagenta;
+            else if (isString)
+                Console.ForegroundColor = ConsoleColor.Magenta;
             else if (isIdentifier)
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
 
@@ -97,9 +99,13 @@ internal sealed class HyperREPL : REPL
 
         if (!result.Diagnostics.Any())
         {
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine(result.Value);
-            Console.ResetColor();
+            if (result.Value != null)
+            {
+                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.WriteLine(result.Value);
+                Console.ResetColor();
+            }
+
             _previous = compilation;
         }
         else

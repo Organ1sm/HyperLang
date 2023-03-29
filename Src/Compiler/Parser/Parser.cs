@@ -1,9 +1,13 @@
 ﻿using System.Collections.Immutable;
+using System.Linq.Expressions;
 using Hyper.Compiler.Diagnostic;
 using Hyper.Compiler.Syntax;
 using Hyper.Compiler.Syntax.Stmt;
 using Hyper.Compiler.Text;
 using Hyper.Compiler.VM;
+using BinaryExpression = Hyper.Compiler.Syntax.BinaryExpression;
+using Expression = Hyper.Compiler.Syntax.Expression;
+using UnaryExpression = Hyper.Compiler.Syntax.UnaryExpression;
 
 namespace Hyper.Compiler.Parser
 {
@@ -232,7 +236,7 @@ namespace Hyper.Compiler.Parser
                 SyntaxKind.TrueKeyword or SyntaxKind.FalseKeyword => ParseBooleanLiteral(),
                 SyntaxKind.NumberToken                            => ParseNumberLiteral(),
                 SyntaxKind.StringToken                            => ParseStringLiteral(),
-                SyntaxKind.IdentifierToken or _                   => ParseNameExpression(),
+                SyntaxKind.IdentifierToken or _                   => ParseNameOrCallExpression(),
             };
         }
 
@@ -263,6 +267,43 @@ namespace Hyper.Compiler.Parser
         {
             var numberToken = Match(SyntaxKind.NumberToken);
             return new LiteralExpression(numberToken);
+        }
+
+        private Expression ParseNameOrCallExpression()
+        {
+            if (Peek(0).Kind == SyntaxKind.IdentifierToken && Peek(1).Kind == SyntaxKind.OpenParenthesisToken)
+                return ParseCallExpression();
+
+            return ParseNameExpression();
+        }
+
+        private Expression ParseCallExpression()
+        {
+            var identifier  = Match(SyntaxKind.IdentifierToken);
+            var openParent  = Match(SyntaxKind.OpenParenthesisToken);
+            var arguments   = ParseArguments();
+            var closeParent = Match(SyntaxKind.CloseParenthesisToken);
+
+            return new CallExpression(identifier, openParent, arguments, closeParent);
+        }
+
+        private SeparatedSyntaxList<Expression> ParseArguments()
+        {
+            var nodeAndSeparators = ImmutableArray.CreateBuilder<Node>();
+
+            while (Current.Kind != SyntaxKind.CloseParenthesisToken && Current.Kind != SyntaxKind.EndOfFileToken)
+            {
+                var expression = ParseExpression();
+                nodeAndSeparators.Add(expression);
+
+                if (Current.Kind != SyntaxKind.CloseParenthesisToken)
+                {
+                    var comma = Match(SyntaxKind.CommaToken);
+                    nodeAndSeparators.Add(comma);
+                }
+            }
+
+            return new SeparatedSyntaxList<Expression>(nodeAndSeparators.ToImmutable());
         }
 
         private Expression ParseNameExpression()

@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using Hyper.Compiler.Binding;
+﻿using Hyper.Compiler.Binding;
 using Hyper.Compiler.Symbols;
 
 namespace Hyper.Compiler.VM
@@ -8,6 +7,7 @@ namespace Hyper.Compiler.VM
     {
         private readonly BoundBlockStatement?               _root;
         private readonly Dictionary<VariableSymbol, object> _variables;
+        private          Random?                            _random;
 
         private object _lastValue;
 
@@ -114,7 +114,9 @@ namespace Hyper.Compiler.VM
 
             return b.Operator.OpKind switch
             {
-                BoundBinaryOperatorKind.Addition       => (int) left + (int) right,
+                BoundBinaryOperatorKind.Addition when b.Type == TypeSymbol.Int    => (int) left + (int) right,
+                BoundBinaryOperatorKind.Addition when b.Type == TypeSymbol.String => (string) left + (string) right,
+
                 BoundBinaryOperatorKind.Subtraction    => (int) left - (int) right,
                 BoundBinaryOperatorKind.Multiplication => (int) left * (int) right,
                 BoundBinaryOperatorKind.Division       => (int) left / (int) right,
@@ -141,17 +143,60 @@ namespace Hyper.Compiler.VM
             };
         }
 
+        private object? EvaluateCallExpression(BoundCallExpression node)
+        {
+            if (node.Function == BuiltinFunctions.Input)
+                return Console.ReadLine();
+
+            if (node.Function == BuiltinFunctions.Print)
+            {
+                var message = (string) EvaluateExpression(node.Arguments[0]);
+                Console.WriteLine(message);
+                return null;
+            }
+
+            if (node.Function == BuiltinFunctions.Rnd)
+            {
+                var max = (int) EvaluateExpression(node.Arguments[0]);
+
+                if (_random == null)
+                    _random = new Random();
+
+                return _random.Next(max);
+            }
+
+            throw new Exception($"Unexpected function {node.Function}");
+        }
+
+        private object? EvaluateConversionExpression(BoundConversionExpression node)
+        {
+            var value = EvaluateExpression(node.Expression);
+
+            if (node.Type == TypeSymbol.Bool)
+                return Convert.ToBoolean(value);
+
+            if (node.Type == TypeSymbol.Int)
+                return Convert.ToInt32(value);
+
+            if (node.Type == TypeSymbol.String)
+                return Convert.ToString(value);
+
+            throw new Exception($"Unexpected type {node.Type}");
+        }
+
         private object EvaluateExpression(BoundExpression node)
         {
-            return node switch
+            return (node switch
             {
-                BoundLiteralExpression n    => EvaluateLiteralExpression(n),
-                BoundVariableExpression v   => EvaluateVariableExpression(v),
-                BoundAssignmentExpression a => EvaluateAssignmentExpression(a),
-                BoundUnaryExpression u      => EvaluateUnaryExpression(u),
-                BoundBinaryExpression b     => EvaluateBinaryExpression(b),
-                _                           => throw new Exception($"Unexpected s {node.Kind}")
-            };
+                BoundLiteralExpression n     => EvaluateLiteralExpression(n),
+                BoundVariableExpression v    => EvaluateVariableExpression(v),
+                BoundAssignmentExpression a  => EvaluateAssignmentExpression(a),
+                BoundUnaryExpression u       => EvaluateUnaryExpression(u),
+                BoundBinaryExpression b      => EvaluateBinaryExpression(b),
+                BoundCallExpression c        => EvaluateCallExpression(c),
+                BoundConversionExpression cv => EvaluateConversionExpression(cv),
+                _                            => throw new Exception($"Unexpected node {node.Kind}")
+            })!;
         }
     }
 }

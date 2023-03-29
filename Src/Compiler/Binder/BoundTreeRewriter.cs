@@ -1,10 +1,11 @@
 ﻿using System.Collections.Immutable;
+using Hyper.Compiler.Syntax;
 
 namespace Hyper.Compiler.Binding;
 
 internal class BoundTreeRewriter
 {
-    public virtual BoundStatement? RewriteStatement(BoundStatement? node)
+    protected virtual BoundStatement? RewriteStatement(BoundStatement? node)
     {
         return node?.Kind switch
         {
@@ -22,7 +23,7 @@ internal class BoundTreeRewriter
         };
     }
 
-    public virtual BoundExpression RewriteExpression(BoundExpression node)
+    protected virtual BoundExpression RewriteExpression(BoundExpression node)
     {
         return node.Kind switch
         {
@@ -31,6 +32,8 @@ internal class BoundTreeRewriter
             BoundNodeKind.AssignmentExpression => RewriteAssignmentExpression((BoundAssignmentExpression) node),
             BoundNodeKind.UnaryExpression      => RewriteUnaryExpression((BoundUnaryExpression) node),
             BoundNodeKind.BinaryExpression     => RewriteBinaryExpression((BoundBinaryExpression) node),
+            BoundNodeKind.CallExpression       => RewriteCallExpression((BoundCallExpression) node),
+            BoundNodeKind.ConversionExpression => RewriteConversionExpression((BoundConversionExpression) node),
             _                                  => throw new Exception($"Unexpected node: {node.Kind}")
         };
     }
@@ -149,5 +152,40 @@ internal class BoundTreeRewriter
             return node;
 
         return new BoundBinaryExpression(left, node.Operator, right);
+    }
+
+    protected virtual BoundExpression RewriteCallExpression(BoundCallExpression node)
+    {
+        ImmutableArray<BoundExpression>.Builder builder = null;
+
+        for (var i = 0; i < node.Arguments.Length; i++)
+        {
+            var oldArgument = node.Arguments[i];
+            var newArgument = RewriteExpression(oldArgument);
+            if (newArgument != oldArgument)
+            {
+                if (builder == null)
+                {
+                    builder = ImmutableArray.CreateBuilder<BoundExpression>(node.Arguments.Length);
+
+                    for (var j = 0; j < i; j++)
+                        builder.Add(node.Arguments[j]);
+                }
+            }
+
+            if (builder != null)
+                builder.Add(newArgument);
+        }
+
+        return builder == null ? node : new BoundCallExpression(node.Function, builder.MoveToImmutable());
+    }
+
+    protected virtual BoundExpression RewriteConversionExpression(BoundConversionExpression node)
+    {
+        var expression = RewriteExpression(node.Expression);
+        if (expression == node.Expression)
+            return node;
+
+        return new BoundConversionExpression(node.Type, expression);
     }
 }
