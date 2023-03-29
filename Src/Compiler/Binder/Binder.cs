@@ -346,7 +346,7 @@ namespace Hyper.Compiler.Binding
             var variable = new VariableSymbol(name, type, isReadOnly);
 
             if (declare && _scope != null && !_scope.TryDeclareVariable(variable))
-                _diagnostics.ReportVariableAlreadyDeclared(identifier.Span, name);
+                _diagnostics.ReportSymbolAlreadyDeclared(identifier.Span, name);
 
             return variable;
         }
