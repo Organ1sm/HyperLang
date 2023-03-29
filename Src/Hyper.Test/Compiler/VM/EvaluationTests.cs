@@ -70,6 +70,7 @@ public class EvaluationTests
     [InlineData("{ var a = 0 if a == 4: a = 10 else: a = 5 a }", 5)]
     [InlineData("{ var i = 10 var result = 0 while i > 0: { result = result + i i = i - 1} result }", 55)]
     [InlineData("{ var result = 0 for i = 1 to 10 { result = result + i } result }", 55)]
+    [InlineData("{ var a = 0 do: a = a + 1 while a < 10 a}", 10)]
     public void EvaluatorComputesCorrectValues(string text, object expectedValue) => AssertValue(text, expectedValue);
 
 
@@ -153,6 +154,25 @@ public class EvaluationTests
         var diagnostics = @"
                 Cannot convert type 'int' to 'bool'.
         ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
+    [Fact]
+    public void EvaluatorDoWhileStatementReportsCannotConvert()
+    {
+        var text = @"
+                {
+                    var x = 0
+                    do:
+                        x = 10
+                    while [10]
+                }
+            ";
+
+        var diagnostics = @"
+                Cannot convert type 'int' to 'bool'.
+            ";
 
         AssertDiagnostics(text, diagnostics);
     }

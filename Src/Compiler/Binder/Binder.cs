@@ -79,6 +79,7 @@ namespace Hyper.Compiler.Binding
                 SyntaxKind.BlockStatement      => BindBlockStatement((BlockStatement) syntax),
                 SyntaxKind.ExpressionStatement => BindExpressionStatement((ExpressionStatement) syntax),
                 SyntaxKind.IfStatement         => BindIfStatement((IfStatement) syntax),
+                SyntaxKind.DoWhileStatement    => BindDoWhileStatement((DoWhileStatement) syntax),
                 SyntaxKind.WhileStatement      => BindWhileStatement((WhileStatement) syntax),
                 SyntaxKind.ForStatement        => BindForStatement((ForStatement) syntax),
                 SyntaxKind.VariableDeclaration => BindVariableDeclaration((VariableDeclaration) syntax),
@@ -121,6 +122,14 @@ namespace Hyper.Compiler.Binding
             var elseStatement = syntax.ElseClause == null ? null : BindStatement(syntax.ElseClause.ElseStatement);
 
             return new BoundIfStatement(condition, thenStatement, elseStatement);
+        }
+
+        private BoundStatement BindDoWhileStatement(DoWhileStatement syntax)
+        {
+            var body      = BindStatement(syntax.Body);
+            var condition = BindExpression(syntax.Condition, TypeSymbol.Bool);
+
+            return new BoundDoWhileStatement(body, condition);
         }
 
         private BoundStatement BindWhileStatement(WhileStatement syntax)

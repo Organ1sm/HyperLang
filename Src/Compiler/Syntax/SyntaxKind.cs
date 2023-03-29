@@ -43,6 +43,7 @@ public enum SyntaxKind
     VarKeyword,
     IfKeyword,
     ElseKeyword,
+    DoKeyword,
     WhileKeyword,
     ForKeyword,
     ToKeyword,
@@ -59,6 +60,7 @@ public enum SyntaxKind
     ExpressionStatement,
     IfStatement,
     WhileStatement,
+    DoWhileStatement,
     ForStatement,
 
     // Expression

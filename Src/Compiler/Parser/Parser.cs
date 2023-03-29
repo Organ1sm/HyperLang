@@ -80,6 +80,7 @@ namespace Hyper.Compiler.Parser
                 SyntaxKind.LetKeyword or SyntaxKind.VarKeyword => ParseVariableDeclaration(),
                 SyntaxKind.IfKeyword                           => ParseIfStatement(),
                 SyntaxKind.WhileKeyword                        => ParseWhileStatement(),
+                SyntaxKind.DoKeyword                           => ParseDoWhileStatement(),
                 SyntaxKind.ForKeyword                          => ParseForStatement(),
                 _                                              => ParseExpressionStatement()
             };
@@ -135,6 +136,17 @@ namespace Hyper.Compiler.Parser
             var elseClause = ParseElseClause();
 
             return new IfStatement(keyword, condition, statement, elseClause);
+        }
+
+        private Statement ParseDoWhileStatement()
+        {
+            var doKeyword    = Match(SyntaxKind.DoKeyword);
+            var _            = Match(SyntaxKind.ColonToken);
+            var body         = ParseStatement();
+            var whileKeyword = Match(SyntaxKind.WhileKeyword);
+            var condition    = ParseExpression();
+
+            return new DoWhileStatement(doKeyword, body, whileKeyword, condition);
         }
 
         private Statement ParseWhileStatement()
