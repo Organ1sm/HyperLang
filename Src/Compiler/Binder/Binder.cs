@@ -295,7 +295,7 @@ namespace Hyper.Compiler.Binding
                 boundArguments.Add(boundArgument);
             }
 
-            if (!_scope.TryLookupFunction(syntax.Identifier.Text, out var function))
+            if (!_scope.TryLookUpFunction(syntax.Identifier.Text, out var function))
             {
                 _diagnostics.ReportUndefinedFunction(syntax.Identifier.Span, syntax.Identifier.Text);
                 return new BoundErrorExpression();

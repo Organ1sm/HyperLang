@@ -251,6 +251,23 @@ public class EvaluationTests
         AssertDiagnostics(text, diagnostics);
     }
 
+    [Fact]
+    public void EvaluatorVariablesCanShadowFunctions()
+    {
+        var text = @"
+                {
+                    let print = 42
+                    [print](""test"")
+                }
+            ";
+
+        var diagnostics = @"
+                Function 'print' doesn't exist.
+            ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
     private static void AssertValue(string text, object expectedValue)
     {
         var ast         = AST.Parse(text);
