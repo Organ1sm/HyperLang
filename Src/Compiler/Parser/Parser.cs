@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Linq.Expressions;
 using Hyper.Compiler.Diagnostic;
 using Hyper.Compiler.Syntax;
 using Hyper.Compiler.Syntax.Stmt;
@@ -121,10 +120,24 @@ namespace Hyper.Compiler.Parser
             var expected    = Current.Kind == SyntaxKind.LetKeyword ? SyntaxKind.LetKeyword : SyntaxKind.VarKeyword;
             var keyword     = Match(expected);
             var identifier  = Match(SyntaxKind.IdentifierToken);
+            var typeClause  = ParseTypeClause();
             var equals      = Match(SyntaxKind.EqualsToken);
             var initializer = ParseExpression();
 
-            return new VariableDeclaration(keyword, identifier, equals, initializer);
+            return new VariableDeclaration(keyword, identifier, typeClause, equals, initializer);
+        }
+
+        private TypeClause? ParseOptionalTypeClause()
+        {
+            return Current.Kind != SyntaxKind.ColonToken ? null : ParseTypeClause();
+        }
+
+        private TypeClause ParseTypeClause()
+        {
+            var colonToken = Match(SyntaxKind.ColonToken);
+            var identifier = Match(SyntaxKind.IdentifierToken);
+
+            return new TypeClause(colonToken, identifier);
         }
 
         private Statement ParseIfStatement()

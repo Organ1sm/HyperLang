@@ -28,6 +28,7 @@ public enum SyntaxKind
     GreaterToken,            // '>'
     GreaterOrEqualsToken,    // '>='
     OpenParenthesisToken,    // '('
+    ArrowToken,              // '->'
     CloseParenthesisToken,   // ')'
     OpenBraceToken,          // '{'
     CloseBraceToken,         // '}'
@@ -52,6 +53,7 @@ public enum SyntaxKind
     // Nodes
     CompilationUnit,
     ElseClause,
+    TypeClause,
 
 
     // Statements

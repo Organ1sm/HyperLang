@@ -110,10 +110,26 @@ namespace Hyper.Compiler.Binding
         private BoundStatement BindVariableDeclaration(VariableDeclaration syntax)
         {
             var isReadOnly  = syntax.Keyword.Kind == SyntaxKind.LetKeyword;
+            var type        = BindTypeClause(syntax.TypeClause);
             var initializer = BindExpression(syntax.Initializer);
-            var variable    = BindVariable(syntax.Identifier, isReadOnly, initializer.Type);
+            var varType     = type ?? initializer.Type;
+            var variable    = BindVariable(syntax.Identifier, isReadOnly, varType);
 
-            return new BoundVariableDeclaration(variable, initializer);
+            var convertedInitializer = BindConversion(syntax.Initializer.Span, initializer, varType);
+
+            return new BoundVariableDeclaration(variable, convertedInitializer);
+        }
+
+        private TypeSymbol? BindTypeClause(TypeClause? syntax)
+        {
+            if (syntax == null)
+                return null;
+
+            var type = LookupType(syntax.Identifier.Text);
+            if (type == null)
+                _diagnostics.ReportUndefinedType(syntax.Identifier.Span, syntax.Identifier.Text);
+
+            return type;
         }
 
         private BoundStatement BindIfStatement(IfStatement syntax)
@@ -156,7 +172,8 @@ namespace Hyper.Compiler.Binding
             return new BoundForStatement(variable, lowerBound, upperBound, body);
         }
 
-        private BoundExpression BindExpression(Expression syntax, TypeSymbol targetType) => BindConversion(targetType, syntax);
+        private BoundExpression BindExpression(Expression syntax, TypeSymbol targetType) =>
+            BindConversion(targetType, syntax);
 
         private BoundExpression BindExpression(Expression syntax, bool canBeVoid = false)
         {
@@ -275,7 +292,7 @@ namespace Hyper.Compiler.Binding
         private BoundExpression BindCallExpression(CallExpression syntax)
         {
             if (syntax.Arguments.Count == 1 && LookupType(syntax.Identifier.Text) is TypeSymbol type)
-                return BindConversion(type, syntax.Arguments[0]);
+                return BindConversion(type, syntax.Arguments[0], allowExplicit: true);
 
             var boundArguments = ImmutableArray.CreateBuilder<BoundExpression>();
 
@@ -315,15 +332,21 @@ namespace Hyper.Compiler.Binding
             return new BoundCallExpression(function, boundArguments.ToImmutable());
         }
 
-        private BoundExpression BindConversion(TypeSymbol type, Expression syntax)
+        private BoundExpression BindConversion(TypeSymbol type, Expression syntax, bool allowExplicit = false)
         {
             var expression = BindExpression(syntax);
-            return BindConversion(syntax.Span, expression, type);
+            return BindConversion(syntax.Span, expression, type, allowExplicit);
         }
 
-        private BoundExpression BindConversion(TextSpan diagnosticSpan, BoundExpression expression, TypeSymbol type)
+        private BoundExpression BindConversion(TextSpan diagnosticSpan,
+                                               BoundExpression expression,
+                                               TypeSymbol type,
+                                               bool allowExplicit = false)
         {
             var conversion = Conversion.Classify(expression.Type, type);
+
+            if (!allowExplicit && conversion.IsExplicit)
+                _diagnostics.ReportCannotConvertImplicitly(diagnosticSpan, expression.Type, type);
 
             if (conversion.Exists)
                 return conversion.IsIdentity ? expression : new BoundConversionExpression(type, expression);
