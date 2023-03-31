@@ -73,7 +73,6 @@ public class EvaluationTests
     [InlineData("{ var a = 0 do: a = a + 1 while a < 10 a}", 10)]
     public void EvaluatorComputesCorrectValues(string text, object expectedValue) => AssertValue(text, expectedValue);
 
-
     [Fact]
     public void EvaluatorVariableDeclarationReportsRedeclaration()
     {

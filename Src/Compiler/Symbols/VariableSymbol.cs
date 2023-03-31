@@ -1,6 +1,6 @@
 ﻿namespace Hyper.Compiler.Symbols;
 
-public class VariableSymbol : Symbol
+public abstract class VariableSymbol : Symbol
 {
     public VariableSymbol(string name, TypeSymbol type, bool isReadOnly) : base(name)
     {
@@ -8,7 +8,6 @@ public class VariableSymbol : Symbol
         IsReadOnly = isReadOnly;
     }
 
-    public override SymbolKind Kind       => SymbolKind.Variable;
-    public          TypeSymbol Type       { get; }
-    public          bool       IsReadOnly { get; }
+    public TypeSymbol Type       { get; }
+    public bool       IsReadOnly { get; }
 }

@@ -3,7 +3,7 @@ using Hyper.Compiler.Binding;
 using Hyper.Compiler.Symbols;
 using Hyper.Compiler.Syntax;
 
-namespace Compiler.Lowering;
+namespace Hyper.Compiler.Lowering;
 
 internal sealed class Lowerer : BoundTreeRewriter
 {
@@ -181,7 +181,7 @@ internal sealed class Lowerer : BoundTreeRewriter
         var varDecl = new BoundVariableDeclaration(node.Variable, node.LowerBound);
         var varExpr = new BoundVariableExpression(node.Variable);
 
-        var upperBoundSymbol = new VariableSymbol("upperBound", TypeSymbol.Int, true);
+        var upperBoundSymbol = new LocalVariableSymbol("upperBound", TypeSymbol.Int, true);
         var upperBoundDecl   = new BoundVariableDeclaration(upperBoundSymbol, node.UpperBound);
 
         var condition = new BoundBinaryExpression(varExpr,

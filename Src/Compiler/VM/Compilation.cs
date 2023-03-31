@@ -1,5 +1,5 @@
 ﻿using System.Collections.Immutable;
-using Compiler.Lowering;
+using Hyper.Compiler.Lowering;
 using Hyper.Compiler.Binding;
 using Hyper.Compiler.Symbols;
 using Hyper.Compiler.Syntax;
@@ -26,7 +26,11 @@ namespace Hyper.Compiler.VM
             if (diagnostics.Any())
                 return new EvaluationResult(diagnostics, null);
 
-            var evaluator = new Evaluator(GetStatements(), variables);
+            var program = Binder.BindProgram(GlobalScope);
+            if (program.Diagnostics.Any())
+                return new EvaluationResult(program.Diagnostics.ToImmutableArray(), null);
+
+            var evaluator = new Evaluator(GetStatements(), variables, program.FunctionBodies);
             var value     = evaluator.Evaluate();
 
             return new EvaluationResult(ImmutableArray<Diagnostic.Diagnostic>.Empty, value);

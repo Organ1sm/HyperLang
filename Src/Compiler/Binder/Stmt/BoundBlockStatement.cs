@@ -4,7 +4,7 @@ namespace Hyper.Compiler.Binding;
 
 internal sealed class BoundBlockStatement : BoundStatement
 {
-    public BoundBlockStatement(ImmutableArray<BoundStatement?> statements)
+    public BoundBlockStatement(ImmutableArray<BoundStatement> statements)
     {
         Statements = statements;
     }

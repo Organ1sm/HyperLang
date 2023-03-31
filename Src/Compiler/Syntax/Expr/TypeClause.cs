@@ -4,13 +4,13 @@ namespace Hyper.Compiler.Syntax;
 
 public sealed class TypeClause : Node
 {
-    public TypeClause(Token colonToken, Token identifier)
+    public TypeClause(Token colonOrArrowToken, Token identifier)
     {
-        ColonToken = colonToken;
+        ColonOrArrowToken = colonOrArrowToken;
         Identifier = identifier;
     }
 
-    public override SyntaxKind Kind       => SyntaxKind.TypeClause;
-    public          Token      ColonToken { get; }
-    public          Token      Identifier { get; }
+    public override SyntaxKind Kind              => SyntaxKind.TypeClause;
+    public          Token      ColonOrArrowToken { get; }
+    public          Token      Identifier        { get; }
 }

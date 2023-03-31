@@ -7,7 +7,7 @@ namespace Hyper.Compiler.Diagnostic
 {
     public sealed class DiagnosticBag : IEnumerable<Diagnostic>
     {
-        private readonly List<Diagnostic> _diagnostics = new List<Diagnostic>();
+        private readonly List<Diagnostic> _diagnostics = new();
 
         public IEnumerator<Diagnostic> GetEnumerator() => _diagnostics.GetEnumerator();
 
@@ -58,6 +58,12 @@ namespace Hyper.Compiler.Diagnostic
                                                   TypeSymbol rightType)
         {
             var message = $"Binary operator '{operatorText}' is not defined for types '{leftType}' and '{rightType}'.";
+            Report(span, message);
+        }
+
+        public void ReportParameterAlreadyDeclared(TextSpan span, string? parameterName)
+        {
+            var message = $"A parameter with the name '{parameterName}' already exists.";
             Report(span, message);
         }
 
@@ -120,6 +126,12 @@ namespace Hyper.Compiler.Diagnostic
         public void ReportExpressionMustHaveValue(TextSpan span)
         {
             var message = "Expression must have a value.";
+            Report(span, message);
+        }
+
+        public void XXX_ReportFunctionsAreUnsupported(TextSpan span)
+        {
+            var message = "Functions with return values are unsupported.";
             Report(span, message);
         }
     }

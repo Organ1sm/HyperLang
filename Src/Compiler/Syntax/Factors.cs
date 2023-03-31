@@ -53,6 +53,7 @@ public static class Factors
             "while" => SyntaxKind.WhileKeyword,
             "for"   => SyntaxKind.ForKeyword,
             "to"    => SyntaxKind.ToKeyword,
+            "func"  => SyntaxKind.FuncKeyword,
             _       => SyntaxKind.IdentifierToken
         };
     }
@@ -99,6 +100,7 @@ public static class Factors
             SyntaxKind.LessOrEqualsToken       => "<=",
             SyntaxKind.GreaterToken            => ">",
             SyntaxKind.GreaterOrEqualsToken    => ">=",
+            SyntaxKind.ArrowToken              => "->",
             SyntaxKind.OpenParenthesisToken    => "(",
             SyntaxKind.CloseParenthesisToken   => ")",
             SyntaxKind.OpenBraceToken          => "{",
@@ -115,6 +117,7 @@ public static class Factors
             SyntaxKind.WhileKeyword            => "while",
             SyntaxKind.ForKeyword              => "for",
             SyntaxKind.ToKeyword               => "to",
+            SyntaxKind.FuncKeyword             => "func",
             _                                  => null
         };
     }

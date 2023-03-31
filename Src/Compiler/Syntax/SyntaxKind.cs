@@ -48,13 +48,16 @@ public enum SyntaxKind
     WhileKeyword,
     ForKeyword,
     ToKeyword,
+    FuncKeyword,
 
 
     // Nodes
     CompilationUnit,
+    FunctionDeclaration,
+    GlobalStatement,
+    Parameter,
     ElseClause,
     TypeClause,
-
 
     // Statements
     BlockStatement,
