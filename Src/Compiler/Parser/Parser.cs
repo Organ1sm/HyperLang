@@ -1,12 +1,10 @@
 ﻿using System.Collections.Immutable;
 using Hyper.Compiler.Diagnostic;
 using Hyper.Compiler.Syntax;
+using Hyper.Compiler.Syntax.Expr;
 using Hyper.Compiler.Syntax.Stmt;
 using Hyper.Compiler.Text;
 using Hyper.Compiler.VM;
-using BinaryExpression = Hyper.Compiler.Syntax.BinaryExpression;
-using Expression = Hyper.Compiler.Syntax.Expression;
-using UnaryExpression = Hyper.Compiler.Syntax.UnaryExpression;
 
 namespace Hyper.Compiler.Parser
 {

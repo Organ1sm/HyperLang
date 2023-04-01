@@ -1,4 +1,6 @@
-﻿namespace Hyper.Compiler.Syntax.Stmt;
+﻿using Hyper.Compiler.Syntax.Expr;
+
+namespace Hyper.Compiler.Syntax.Stmt;
 
 public sealed class ExpressionStatement : Statement
 {

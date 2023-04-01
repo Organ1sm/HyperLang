@@ -1,6 +1,6 @@
 ﻿using Hyper.Compiler.Parser;
 
-namespace Hyper.Compiler.Syntax;
+namespace Hyper.Compiler.Syntax.Expr;
 
 public sealed class LiteralExpression : Expression
 {

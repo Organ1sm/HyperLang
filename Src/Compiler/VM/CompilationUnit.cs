@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using Hyper.Compiler.Parser;
 using Hyper.Compiler.Syntax;
+using Hyper.Compiler.Syntax.Expr;
 using Hyper.Compiler.Syntax.Stmt;
 
 namespace Hyper.Compiler.VM

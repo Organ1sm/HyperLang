@@ -2,7 +2,7 @@
 using Hyper.Compiler.Parser;
 using Hyper.Compiler.Text;
 
-namespace Hyper.Compiler.Syntax;
+namespace Hyper.Compiler.Syntax.Expr;
 
 public class Node
 {

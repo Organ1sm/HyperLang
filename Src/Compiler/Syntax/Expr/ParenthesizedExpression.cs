@@ -1,9 +1,8 @@
 ﻿using Hyper.Compiler.Parser;
 
-namespace Hyper.Compiler.Syntax;
+namespace Hyper.Compiler.Syntax.Expr;
 
-public sealed class ParenthesizedExpression :
-    Expression
+public sealed class ParenthesizedExpression : Expression
 {
     public override SyntaxKind Kind                  => SyntaxKind.ParenthesizedExpression;
     public          Token      OpenParenthesisToken  { get; }

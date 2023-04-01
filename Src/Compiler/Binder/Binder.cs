@@ -4,6 +4,7 @@ using Hyper.Compiler.Diagnostic;
 using Hyper.Compiler.Parser;
 using Hyper.Compiler.Symbols;
 using Hyper.Compiler.Syntax;
+using Hyper.Compiler.Syntax.Expr;
 using Hyper.Compiler.Syntax.Stmt;
 using Hyper.Compiler.Text;
 using Hyper.Compiler.VM;
@@ -92,6 +93,7 @@ namespace Hyper.Compiler.Binding
 
             var parent = CreateRootScope();
 
+            // Pass the symbol from global scope to the local scope.
             while (stack.Count > 0)
             {
                 previous = stack.Pop();
