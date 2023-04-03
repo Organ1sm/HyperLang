@@ -30,16 +30,10 @@ namespace Hyper.Compiler.VM
             if (program.Diagnostics.Any())
                 return new EvaluationResult(program.Diagnostics.ToImmutableArray(), null);
 
-            var evaluator = new Evaluator(GetStatements(), variables, program.FunctionBodies);
+            var evaluator = new Evaluator(program, variables);
             var value     = evaluator.Evaluate();
 
             return new EvaluationResult(ImmutableArray<Diagnostic.Diagnostic>.Empty, value);
-        }
-
-        private BoundBlockStatement? GetStatements()
-        {
-            var result = GlobalScope.Statement;
-            return Lowerer.Lower(result);
         }
 
         internal BoundGlobalScope GlobalScope
@@ -63,8 +57,8 @@ namespace Hyper.Compiler.VM
 
         public void EmitTree(TextWriter writer)
         {
-            var statements = GetStatements();
-            statements?.WriteTo(writer);
+            var program = Binder.BindProgram(GlobalScope);
+            program.Statements.WriteTo(writer);
         }
     }
 }

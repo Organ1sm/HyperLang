@@ -6,24 +6,21 @@ namespace Hyper.Compiler.VM
 {
     internal sealed class Evaluator
     {
-        private readonly ImmutableDictionary<FunctionSymbol, BoundBlockStatement> _functionBodies;
-        private readonly BoundBlockStatement?                                     _root;
-        private readonly Dictionary<VariableSymbol, object>                       _globals;
-        private readonly Stack<Dictionary<VariableSymbol, object>>                _locals = new();
-        private          Random?                                                  _random;
+        private readonly BoundProgram                              _program;
+        private readonly Dictionary<VariableSymbol, object>        _globals;
+        private readonly Stack<Dictionary<VariableSymbol, object>> _locals = new();
+        private          Random?                                   _random;
 
         private object _lastValue;
-        public Evaluator(BoundBlockStatement? root,
-                         Dictionary<VariableSymbol, object> variables,
-                         ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functionBodies)
+
+        public Evaluator(BoundProgram program, Dictionary<VariableSymbol, object> variables)
         {
-            _root = root;
-            _functionBodies = functionBodies;
+            _program = program;
             _globals = variables;
             _locals.Push(new());
         }
 
-        public object Evaluate() => EvaluateStatement(_root);
+        public object Evaluate() => EvaluateStatement(_program.Statements);
 
         private object EvaluateStatement(BoundBlockStatement body)
         {
@@ -192,7 +189,7 @@ namespace Hyper.Compiler.VM
 
             _locals.Push(locals);
 
-            var statement = _functionBodies[node.Function];
+            var statement = _program.Functions[node.Function];
             var result    = EvaluateStatement(statement);
 
             _locals.Pop();

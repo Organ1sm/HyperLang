@@ -6,16 +6,16 @@ namespace Hyper.Compiler.Binding;
 
 internal sealed class BoundProgram
 {
-    public BoundProgram(BoundGlobalScope globalScope,
-                        DiagnosticBag diagnostics,
-                        ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functionBodies)
+    public BoundProgram(BoundBlockStatement statements,
+                        ImmutableArray<Diagnostic.Diagnostic> diagnostics,
+                        ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functions)
     {
-        GlobalScope = globalScope;
+        Statements = statements;
         Diagnostics = diagnostics;
-        FunctionBodies = functionBodies;
+        Functions = functions;
     }
 
-    public BoundGlobalScope                                         GlobalScope    { get; }
-    public DiagnosticBag                                            Diagnostics    { get; }
-    public ImmutableDictionary<FunctionSymbol, BoundBlockStatement> FunctionBodies { get; }
+    public BoundBlockStatement                                      Statements  { get; }
+    public ImmutableArray<Diagnostic.Diagnostic>                    Diagnostics { get; }
+    public ImmutableDictionary<FunctionSymbol, BoundBlockStatement> Functions   { get; }
 }

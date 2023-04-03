@@ -1,5 +1,5 @@
-﻿using System.Collections.Specialized;
-using Hyper.Compiler.Syntax;
+﻿using Hyper.Compiler.Syntax;
+using Hyper.Compiler.Syntax.Expr;
 using Hyper.Compiler.Syntax.Stmt;
 using Xunit;
 

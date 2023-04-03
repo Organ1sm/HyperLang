@@ -34,7 +34,7 @@ namespace Hyper.Compiler.Binding
             var parentScope = CreateParentScope(globalScope);
 
             var functionBodies = ImmutableDictionary.CreateBuilder<FunctionSymbol, BoundBlockStatement>();
-            var diagnostics    = new DiagnosticBag();
+            var diagnostics    = ImmutableArray.CreateBuilder<Diagnostic.Diagnostic>();
 
             var scope = globalScope;
             while (scope != null)
@@ -52,7 +52,9 @@ namespace Hyper.Compiler.Binding
                 scope = scope.Previous;
             }
 
-            return new BoundProgram(globalScope, diagnostics, functionBodies.ToImmutable());
+            var statements = Lowerer.Lower(new BoundBlockStatement(globalScope.Statements));
+
+            return new BoundProgram(statements, diagnostics.ToImmutable(), functionBodies.ToImmutable());
         }
 
         public static BoundGlobalScope BindGlobalScope(BoundGlobalScope? previous, CompilationUnit unit)
@@ -63,15 +65,15 @@ namespace Hyper.Compiler.Binding
             foreach (var function in unit.Members.OfType<FunctionDeclaration>())
                 binder.BindFunctionDeclaration(function);
 
-            var statementBuilder = ImmutableArray.CreateBuilder<BoundStatement>();
+            var statements = ImmutableArray.CreateBuilder<BoundStatement>();
 
             foreach (var globalStatement in unit.Members.OfType<GlobalStatement>())
             {
                 var s = binder.BindStatement(globalStatement.Statement);
-                statementBuilder.Add(s);
+                statements.Add(s);
             }
 
-            var statement   = new BoundBlockStatement(statementBuilder.ToImmutable());
+            var statement   = new BoundBlockStatement(statements.ToImmutable());
             var functions   = binder._scope?.GetDeclaredFunctions();
             var variables   = binder._scope?.GetDeclaredVariables() ?? null;
             var diagnostics = binder.Diagnostics.ToImmutableArray();
@@ -79,7 +81,7 @@ namespace Hyper.Compiler.Binding
             if (previous != null)
                 diagnostics = diagnostics.InsertRange(0, previous.Diagnostics);
 
-            return new BoundGlobalScope(previous, diagnostics, variables, functions, statement);
+            return new BoundGlobalScope(previous, diagnostics, variables, functions, statements.ToImmutable());
         }
 
         private static BoundScope? CreateParentScope(BoundGlobalScope? previous)
@@ -145,7 +147,7 @@ namespace Hyper.Compiler.Binding
                 {
                     if (parameterName == null || parameterType == null)
                         continue;
-                    
+
                     var p = new ParameterSymbol(parameterName, parameterType);
                     parameters.Add(p);
                 }
