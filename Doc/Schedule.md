@@ -330,7 +330,60 @@ add(1, 2)
 ```
 
 the separated list would contain the expression `1`, the comma, the expression `2`
-Enumerating and indexing the list will generally skip the separators (so that `Arguments[1]` would 
+Enumerating and indexing the list will generally skip the separators (so that `Arguments[1]` would
 give you the second argument rather than the first comma), however, we have a method `GetSeparator(int index)` that
 returns the associated token. For the last node it will return `null` because the last node doesn't have a trailing
 comma.
+
+## Stage 12
+
+### Completed items
+
+We added support for explicit typing of variables and function declarations.
+
+### Functions
+
+```
+>> function hi(name: string) -> void
+{
+    // do something
+}
+```
+
+### Forward declarations
+
+Inside of the function is logically executing from top to bottom, or
+more precisely from higher nodes in the tree to lower nodes in the tree.
+In this situation, symbol must appear before use.
+
+Some languages, such as C or C++, are designed to compile top to bottom in a single-pass,
+which means developers cannot call functions or refer to global-variable unless then already
+appeared in the file. To solve this problem, they allow forward declarations, where you basically
+only write the signature and omit the function body.
+
+In the hyper, we use multi-pass so that global-variable and functions can appear in any order.
+We are doing this by first declaring all functions before binding function bodies.
+
+### Stack Frame
+
+The evaluator currently evaluates a single block. All variable are global so there is only
+instance of them in the entire program, so having a single symbol-table that holds their value works.
+
+In order to call functions, we need to have a way to let each function have their own instance
+of their local variables.
+
+In virtually all systems this achieved by using stack. Each time we call the function, a new
+entry is pushed on the stack that represents the local state of the function, usually covering
+the arguments as well as the local variables. This is called a *stack frame*. Each time you return
+from a function. the top most stack is poped off that stack.
+
+In hyper, we are doing the same thing:
+
+1. When calling a function, a new set of locals is initialized. All parameters
+   are added params to that new frame and that frame is pushed.
+2. The function's body is identified and the statement is executed.
+3. When the function is done, the frame is popped off.
+
+This also required us to change how assign and look-up values for variables: by looking at
+the symbol kind we identify whether it's a global, a local variable or parameter.
+Global-Variables use the global dictionary while local variables and parameter use the current stack frame.
