@@ -1,37 +1,42 @@
-﻿using Hyper.Compiler.Binding;
+﻿using System.Collections.Immutable;
+using Hyper.Compiler.Binding;
 using Hyper.Compiler.Symbols;
 
 namespace Hyper.Compiler.VM
 {
     internal sealed class Evaluator
     {
-        private readonly BoundBlockStatement?               _root;
-        private readonly Dictionary<VariableSymbol, object> _variables;
-        private          Random?                            _random;
+        private readonly BoundProgram                              _program;
+        private readonly Dictionary<VariableSymbol, object>        _globals;
+        private readonly Stack<Dictionary<VariableSymbol, object>> _locals = new();
+        private          Random?                                   _random;
 
         private object _lastValue;
 
-        public Evaluator(BoundBlockStatement? root, Dictionary<VariableSymbol, object> variables)
+        public Evaluator(BoundProgram program, Dictionary<VariableSymbol, object> variables)
         {
-            _root = root;
-            _variables = variables;
+            _program = program;
+            _globals = variables;
+            _locals.Push(new());
         }
 
-        public object Evaluate()
+        public object Evaluate() => EvaluateStatement(_program.Statements);
+
+        private object EvaluateStatement(BoundBlockStatement body)
         {
             var labelToIndex = new Dictionary<BoundLabel, int>();
-            for (var i = 0; i < _root?.Statements.Length; i++)
+            for (var i = 0; i < body.Statements.Length; i++)
             {
-                if (_root.Statements[i] is BoundLabelStatement l)
+                if (body.Statements[i] is BoundLabelStatement l)
                     labelToIndex.Add(l.Label, i + 1);
             }
 
             var index = 0;
 
-            while (index < _root?.Statements.Length)
+            while (index < body.Statements.Length)
             {
-                var s = _root.Statements[index];
-                switch (s?.Kind)
+                var s = body.Statements[index];
+                switch (s.Kind)
                 {
                     case BoundNodeKind.ExpressionStatement:
                         EvaluateExpressionStatement((BoundExpressionStatement) s);
@@ -72,8 +77,9 @@ namespace Hyper.Compiler.VM
         private void EvaluateVariableDeclaration(BoundVariableDeclaration node)
         {
             var value = EvaluateExpression(node.Initializer);
-            _variables[node.Variable] = value;
             _lastValue = value;
+
+            Assign(node.Variable, value);
         }
 
         private void EvaluateExpressionStatement(BoundExpressionStatement node)
@@ -82,12 +88,20 @@ namespace Hyper.Compiler.VM
         }
 
         private static object EvaluateLiteralExpression(BoundLiteralExpression n) => n.Value;
-        private object EvaluateVariableExpression(BoundVariableExpression v) => _variables[v.Variable];
+
+        private object EvaluateVariableExpression(BoundVariableExpression v)
+        {
+            if (v.Variable.Kind == SymbolKind.GlobalVariable)
+                return _globals[v.Variable];
+
+            var locals = _locals.Peek();
+            return locals[v.Variable];
+        }
 
         private object EvaluateAssignmentExpression(BoundAssignmentExpression a)
         {
             var value = EvaluateExpression(a.Expression);
-            _variables[a.Variable] = value;
+            Assign(a.Variable, value);
 
             return value;
         }
@@ -165,7 +179,22 @@ namespace Hyper.Compiler.VM
                 return _random.Next(max);
             }
 
-            throw new Exception($"Unexpected function {node.Function}");
+            var locals = new Dictionary<VariableSymbol, object>();
+            for (int i = 0; i < node.Arguments.Length; i++)
+            {
+                var parameter = node.Function.Parameters[i];
+                var value     = EvaluateExpression(node.Arguments[i]);
+                locals.Add(parameter, value);
+            }
+
+            _locals.Push(locals);
+
+            var statement = _program.Functions[node.Function];
+            var result    = EvaluateStatement(statement);
+
+            _locals.Pop();
+
+            return result;
         }
 
         private object? EvaluateConversionExpression(BoundConversionExpression node)
@@ -197,6 +226,17 @@ namespace Hyper.Compiler.VM
                 BoundConversionExpression cv => EvaluateConversionExpression(cv),
                 _                            => throw new Exception($"Unexpected node {node.Kind}")
             })!;
+        }
+
+        private void Assign(VariableSymbol variable, object value)
+        {
+            if (variable.Kind == SymbolKind.GlobalVariable)
+                _globals[variable] = value;
+            else
+            {
+                var locals = _locals.Peek();
+                locals[variable] = value;
+            }
         }
     }
 }

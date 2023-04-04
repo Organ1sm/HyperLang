@@ -29,9 +29,18 @@ namespace Hyper.Compiler.Parser
                     _position++;
                     break;
                 case '-':
-                    _kind = SyntaxKind.MinusToken;
+                {
                     _position++;
+                    if (Current == '>')
+                    {
+                        _position++;
+                        _kind = SyntaxKind.ArrowToken;
+                        break;
+                    }
+
+                    _kind = SyntaxKind.MinusToken;
                     break;
+                }
                 case '*':
                     _kind = SyntaxKind.StarToken;
                     _position++;
@@ -64,7 +73,7 @@ namespace Hyper.Compiler.Parser
                     _kind = SyntaxKind.CommaToken;
                     _position++;
                     break;
-                    
+
                 case '!':
                 {
                     if (Lookahead == '=')

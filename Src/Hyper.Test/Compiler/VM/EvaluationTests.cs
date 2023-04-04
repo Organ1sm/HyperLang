@@ -70,8 +70,8 @@ public class EvaluationTests
     [InlineData("{ var a = 0 if a == 4: a = 10 else: a = 5 a }", 5)]
     [InlineData("{ var i = 10 var result = 0 while i > 0: { result = result + i i = i - 1} result }", 55)]
     [InlineData("{ var result = 0 for i = 1 to 10 { result = result + i } result }", 55)]
+    [InlineData("{ var a = 0 do: a = a + 1 while a < 10 a}", 10)]
     public void EvaluatorComputesCorrectValues(string text, object expectedValue) => AssertValue(text, expectedValue);
-
 
     [Fact]
     public void EvaluatorVariableDeclarationReportsRedeclaration()
@@ -88,7 +88,7 @@ public class EvaluationTests
         ";
 
         var diagnostics = @"
-            Variable 'x' is already declared.
+            'x' is already declared.
         ";
 
         AssertDiagnostics(text, diagnostics);
@@ -113,7 +113,7 @@ public class EvaluationTests
     [Fact]
     public void EvaluatorNameExpressionReportsNoErrorForInsertedToken()
     {
-        var text = @"[]";
+        var text = @"1 + []";
 
         var diagnostics = @"
                 Unexpected token <EndOfFileToken>, expected <IdentifierToken>.
@@ -153,6 +153,25 @@ public class EvaluationTests
         var diagnostics = @"
                 Cannot convert type 'int' to 'bool'.
         ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
+    [Fact]
+    public void EvaluatorDoWhileStatementReportsCannotConvert()
+    {
+        var text = @"
+                {
+                    var x = 0
+                    do:
+                        x = 10
+                    while [10]
+                }
+            ";
+
+        var diagnostics = @"
+                Cannot convert type 'int' to 'bool'.
+            ";
 
         AssertDiagnostics(text, diagnostics);
     }
@@ -226,6 +245,23 @@ public class EvaluationTests
 
         var diagnostics = @"
                 Cannot convert type 'bool' to 'int'.
+            ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
+    [Fact]
+    public void EvaluatorVariablesCanShadowFunctions()
+    {
+        var text = @"
+                {
+                    let print = 42
+                    [print](""test"")
+                }
+            ";
+
+        var diagnostics = @"
+                Function 'print' doesn't exist.
             ";
 
         AssertDiagnostics(text, diagnostics);

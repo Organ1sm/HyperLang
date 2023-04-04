@@ -1,13 +1,10 @@
 ﻿using System.Collections.Immutable;
-using System.Linq.Expressions;
 using Hyper.Compiler.Diagnostic;
 using Hyper.Compiler.Syntax;
+using Hyper.Compiler.Syntax.Expr;
 using Hyper.Compiler.Syntax.Stmt;
 using Hyper.Compiler.Text;
 using Hyper.Compiler.VM;
-using BinaryExpression = Hyper.Compiler.Syntax.BinaryExpression;
-using Expression = Hyper.Compiler.Syntax.Expression;
-using UnaryExpression = Hyper.Compiler.Syntax.UnaryExpression;
 
 namespace Hyper.Compiler.Parser
 {
@@ -65,12 +62,93 @@ namespace Hyper.Compiler.Parser
 
         public CompilationUnit ParseCompilationUnit()
         {
-            var statement      = ParseStatement();
+            var members        = ParseMembers();
             var endOfFileToken = Match(SyntaxKind.EndOfFileToken);
 
-            return new CompilationUnit(statement, endOfFileToken);
+            return new CompilationUnit(members, endOfFileToken);
         }
 
+        private ImmutableArray<MemberSyntax> ParseMembers()
+        {
+            var members = ImmutableArray.CreateBuilder<MemberSyntax>();
+
+            while (Current.Kind != SyntaxKind.EndOfFileToken)
+            {
+                var startToken = Current;
+
+                var member = ParseMember();
+                members.Add(member);
+
+                // If ParseMember() did not consume any tokens,
+                // we need to skip the current token and continue
+                // in order to avoid an infinite loop.
+                //
+                // We don't need to report an error, because we'll
+                // already tried to parse an expression statement
+                // and reported one.
+                if (Current == startToken)
+                    NextToken();
+            }
+
+            return members.ToImmutable();
+        }
+
+        private MemberSyntax ParseMember()
+        {
+            return Current.Kind == SyntaxKind.FuncKeyword ? ParseFunctionDeclaration() : ParseGlobalStatement();
+        }
+
+        private MemberSyntax ParseFunctionDeclaration()
+        {
+            var funcKeyword      = Match(SyntaxKind.FuncKeyword);
+            var identifier       = Match(SyntaxKind.IdentifierToken);
+            var openParentToken  = Match(SyntaxKind.OpenParenthesisToken);
+            var parameters       = ParseParameterList();
+            var closeParentToken = Match(SyntaxKind.CloseParenthesisToken);
+            var type             = ParseOptionalTypeClause();
+            var body             = ParseBlockStatement();
+
+            return new FunctionDeclaration(funcKeyword,
+                                           identifier,
+                                           openParentToken,
+                                           parameters,
+                                           closeParentToken,
+                                           type,
+                                           body);
+        }
+
+        private SeparatedSyntaxList<Parameter> ParseParameterList()
+        {
+            var nodeAndSeparators = ImmutableArray.CreateBuilder<Node>();
+
+            while (Current.Kind != SyntaxKind.CloseParenthesisToken && Current.Kind != SyntaxKind.EndOfFileToken)
+            {
+                var parameter = ParseParameter();
+                nodeAndSeparators.Add(parameter);
+
+                if (Current.Kind != SyntaxKind.CloseParenthesisToken)
+                {
+                    var comma = Match(SyntaxKind.CommaToken);
+                    nodeAndSeparators.Add(comma);
+                }
+            }
+
+            return new SeparatedSyntaxList<Parameter>(nodeAndSeparators.ToImmutable());
+        }
+
+        private Parameter ParseParameter()
+        {
+            var identifier = Match(SyntaxKind.IdentifierToken);
+            var type       = ParseTypeClause();
+
+            return new Parameter(identifier, type);
+        }
+
+        private MemberSyntax ParseGlobalStatement()
+        {
+            var statement = ParseStatement();
+            return new GlobalStatement(statement);
+        }
 
         private Statement ParseStatement()
         {
@@ -80,6 +158,7 @@ namespace Hyper.Compiler.Parser
                 SyntaxKind.LetKeyword or SyntaxKind.VarKeyword => ParseVariableDeclaration(),
                 SyntaxKind.IfKeyword                           => ParseIfStatement(),
                 SyntaxKind.WhileKeyword                        => ParseWhileStatement(),
+                SyntaxKind.DoKeyword                           => ParseDoWhileStatement(),
                 SyntaxKind.ForKeyword                          => ParseForStatement(),
                 _                                              => ParseExpressionStatement()
             };
@@ -120,10 +199,31 @@ namespace Hyper.Compiler.Parser
             var expected    = Current.Kind == SyntaxKind.LetKeyword ? SyntaxKind.LetKeyword : SyntaxKind.VarKeyword;
             var keyword     = Match(expected);
             var identifier  = Match(SyntaxKind.IdentifierToken);
+            var typeClause  = ParseOptionalTypeClause();
             var equals      = Match(SyntaxKind.EqualsToken);
             var initializer = ParseExpression();
 
-            return new VariableDeclaration(keyword, identifier, equals, initializer);
+            return new VariableDeclaration(keyword, identifier, typeClause, equals, initializer);
+        }
+
+        private TypeClause? ParseOptionalTypeClause()
+        {
+            if (Current.Kind != SyntaxKind.ArrowToken && Current.Kind != SyntaxKind.ColonToken)
+                return null;
+
+            return ParseTypeClause();
+        }
+
+        private TypeClause? ParseTypeClause()
+        {
+            var token = Current.Kind switch
+            {
+                SyntaxKind.ColonToken => Match(SyntaxKind.ColonToken),
+                SyntaxKind.ArrowToken => Match(SyntaxKind.ArrowToken),
+            };
+            var identifier = Match(SyntaxKind.IdentifierToken);
+
+            return new TypeClause(token, identifier);
         }
 
         private Statement ParseIfStatement()
@@ -135,6 +235,17 @@ namespace Hyper.Compiler.Parser
             var elseClause = ParseElseClause();
 
             return new IfStatement(keyword, condition, statement, elseClause);
+        }
+
+        private Statement ParseDoWhileStatement()
+        {
+            var doKeyword    = Match(SyntaxKind.DoKeyword);
+            var _            = Match(SyntaxKind.ColonToken);
+            var body         = ParseStatement();
+            var whileKeyword = Match(SyntaxKind.WhileKeyword);
+            var condition    = ParseExpression();
+
+            return new DoWhileStatement(doKeyword, body, whileKeyword, condition);
         }
 
         private Statement ParseWhileStatement()

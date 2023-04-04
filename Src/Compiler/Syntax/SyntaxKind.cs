@@ -28,6 +28,7 @@ public enum SyntaxKind
     GreaterToken,            // '>'
     GreaterOrEqualsToken,    // '>='
     OpenParenthesisToken,    // '('
+    ArrowToken,              // '->'
     CloseParenthesisToken,   // ')'
     OpenBraceToken,          // '{'
     CloseBraceToken,         // '}'
@@ -43,15 +44,20 @@ public enum SyntaxKind
     VarKeyword,
     IfKeyword,
     ElseKeyword,
+    DoKeyword,
     WhileKeyword,
     ForKeyword,
     ToKeyword,
+    FuncKeyword,
 
 
     // Nodes
     CompilationUnit,
+    FunctionDeclaration,
+    GlobalStatement,
+    Parameter,
     ElseClause,
-
+    TypeClause,
 
     // Statements
     BlockStatement,
@@ -59,6 +65,7 @@ public enum SyntaxKind
     ExpressionStatement,
     IfStatement,
     WhileStatement,
+    DoWhileStatement,
     ForStatement,
 
     // Expression

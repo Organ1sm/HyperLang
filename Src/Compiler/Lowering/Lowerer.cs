@@ -3,7 +3,7 @@ using Hyper.Compiler.Binding;
 using Hyper.Compiler.Symbols;
 using Hyper.Compiler.Syntax;
 
-namespace Compiler.Lowering;
+namespace Hyper.Compiler.Lowering;
 
 internal sealed class Lowerer : BoundTreeRewriter
 {
@@ -103,10 +103,36 @@ internal sealed class Lowerer : BoundTreeRewriter
         }
     }
 
+
+    protected override BoundStatement? RewriteDoWhileStatement(BoundDoWhileStatement node)
+    {
+        // do
+        //    <body>
+        // while <condition>
+        //
+        // ----->
+        //
+        // continue:
+        // <body>
+        // gotoTrue <condition> continue
+        //
+
+        var continueLabel = GenerateLabel();
+
+        var continueLabelStatement = new BoundLabelStatement(continueLabel);
+        var gotoTrueStatement      = new BoundConditionalGotoStatement(continueLabel, node.Condition);
+
+        var result = new BoundBlockStatement(ImmutableArray.Create(continueLabelStatement,
+                                                                   node.Body,
+                                                                   gotoTrueStatement));
+
+        return RewriteStatement(result);
+    }
+
     protected override BoundStatement? RewriteWhileStatement(BoundWhileStatement node)
     {
         // while <condition>
-        //      <bode>
+        //      <body>
         //
         // ----->
         //
@@ -115,26 +141,22 @@ internal sealed class Lowerer : BoundTreeRewriter
         // <body>
         // check:
         // gotoTrue <condition> continue
-        // end:
         //
 
         var continueLabel = GenerateLabel();
         var checkLabel    = GenerateLabel();
-        var endLabel      = GenerateLabel();
 
         var gotoCheck              = new BoundGotoStatement(checkLabel);
         var continueLabelStatement = new BoundLabelStatement(continueLabel);
         var checkLabelStatement    = new BoundLabelStatement(checkLabel);
 
-        var gotoTrue          = new BoundConditionalGotoStatement(continueLabel, node.Condition);
-        var endLabelStatement = new BoundLabelStatement(endLabel);
+        var gotoTrue = new BoundConditionalGotoStatement(continueLabel, node.Condition);
 
         var result = new BoundBlockStatement(ImmutableArray.Create(gotoCheck,
                                                                    continueLabelStatement,
                                                                    node.Body,
                                                                    checkLabelStatement,
-                                                                   gotoTrue,
-                                                                   endLabelStatement));
+                                                                   gotoTrue));
 
         return RewriteStatement(result);
     }
@@ -159,7 +181,7 @@ internal sealed class Lowerer : BoundTreeRewriter
         var varDecl = new BoundVariableDeclaration(node.Variable, node.LowerBound);
         var varExpr = new BoundVariableExpression(node.Variable);
 
-        var upperBoundSymbol = new VariableSymbol("upperBound", TypeSymbol.Int, true);
+        var upperBoundSymbol = new LocalVariableSymbol("upperBound", TypeSymbol.Int, true);
         var upperBoundDecl   = new BoundVariableDeclaration(upperBoundSymbol, node.UpperBound);
 
         var condition = new BoundBinaryExpression(varExpr,

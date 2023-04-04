@@ -9,16 +9,19 @@ internal sealed class BoundGlobalScope
     public BoundGlobalScope(BoundGlobalScope? previous,
                             ImmutableArray<Diagnostic.Diagnostic> diagnostics,
                             ImmutableArray<VariableSymbol>? variables,
-                            BoundStatement? statement)
+                            ImmutableArray<FunctionSymbol>? functions,
+                            ImmutableArray<BoundStatement> statements)
     {
         Previous = previous;
         Diagnostics = diagnostics;
         Variables = variables;
-        Statement = statement;
+        Functions = functions;
+        Statements = statements;
     }
 
     public BoundGlobalScope?                     Previous    { get; }
     public ImmutableArray<Diagnostic.Diagnostic> Diagnostics { get; }
     public ImmutableArray<VariableSymbol>?       Variables   { get; }
-    public BoundStatement?                       Statement   { get; }
+    public ImmutableArray<FunctionSymbol>?       Functions   { get; }
+    public ImmutableArray<BoundStatement>        Statements  { get; }
 }

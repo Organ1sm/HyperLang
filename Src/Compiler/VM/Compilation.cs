@@ -1,5 +1,5 @@
 ﻿using System.Collections.Immutable;
-using Compiler.Lowering;
+using Hyper.Compiler.Lowering;
 using Hyper.Compiler.Binding;
 using Hyper.Compiler.Symbols;
 using Hyper.Compiler.Syntax;
@@ -26,16 +26,14 @@ namespace Hyper.Compiler.VM
             if (diagnostics.Any())
                 return new EvaluationResult(diagnostics, null);
 
-            var evaluator = new Evaluator(GetStatements(), variables);
+            var program = Binder.BindProgram(GlobalScope);
+            if (program.Diagnostics.Any())
+                return new EvaluationResult(program.Diagnostics.ToImmutableArray(), null);
+
+            var evaluator = new Evaluator(program, variables);
             var value     = evaluator.Evaluate();
 
             return new EvaluationResult(ImmutableArray<Diagnostic.Diagnostic>.Empty, value);
-        }
-
-        private BoundBlockStatement? GetStatements()
-        {
-            var result = GlobalScope.Statement;
-            return Lowerer.Lower(result);
         }
 
         internal BoundGlobalScope GlobalScope
@@ -59,8 +57,8 @@ namespace Hyper.Compiler.VM
 
         public void EmitTree(TextWriter writer)
         {
-            var statements = GetStatements();
-            statements?.WriteTo(writer);
+            var program = Binder.BindProgram(GlobalScope);
+            program.Statements.WriteTo(writer);
         }
     }
 }

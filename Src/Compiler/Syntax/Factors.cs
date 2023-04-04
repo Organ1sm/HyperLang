@@ -49,9 +49,11 @@ public static class Factors
             "var"   => SyntaxKind.VarKeyword,
             "if"    => SyntaxKind.IfKeyword,
             "else"  => SyntaxKind.ElseKeyword,
+            "do"    => SyntaxKind.DoKeyword,
             "while" => SyntaxKind.WhileKeyword,
             "for"   => SyntaxKind.ForKeyword,
             "to"    => SyntaxKind.ToKeyword,
+            "func"  => SyntaxKind.FuncKeyword,
             _       => SyntaxKind.IdentifierToken
         };
     }
@@ -98,6 +100,7 @@ public static class Factors
             SyntaxKind.LessOrEqualsToken       => "<=",
             SyntaxKind.GreaterToken            => ">",
             SyntaxKind.GreaterOrEqualsToken    => ">=",
+            SyntaxKind.ArrowToken              => "->",
             SyntaxKind.OpenParenthesisToken    => "(",
             SyntaxKind.CloseParenthesisToken   => ")",
             SyntaxKind.OpenBraceToken          => "{",
@@ -110,9 +113,11 @@ public static class Factors
             SyntaxKind.VarKeyword              => "var",
             SyntaxKind.IfKeyword               => "if",
             SyntaxKind.ElseKeyword             => "else",
+            SyntaxKind.DoKeyword               => "do",
             SyntaxKind.WhileKeyword            => "while",
             SyntaxKind.ForKeyword              => "for",
             SyntaxKind.ToKeyword               => "to",
+            SyntaxKind.FuncKeyword             => "func",
             _                                  => null
         };
     }

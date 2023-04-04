@@ -2,4 +2,4 @@
 
 namespace Hyper.Compiler.Syntax.Stmt;
 
-public abstract class Statement : Node { }
+public abstract class MemberSyntax : Node { }
