@@ -30,15 +30,15 @@ namespace Hyper.Compiler.Parser
                     break;
                 case '-':
                 {
-                    if (Lookahead == '>')
+                    _position++;
+                    if (Current == '>')
                     {
-                        _position += 2;
+                        _position++;
                         _kind = SyntaxKind.ArrowToken;
                         break;
                     }
 
                     _kind = SyntaxKind.MinusToken;
-                    _position++;
                     break;
                 }
                 case '*':

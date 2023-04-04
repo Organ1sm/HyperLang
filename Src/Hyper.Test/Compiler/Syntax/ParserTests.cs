@@ -131,21 +131,18 @@ public class ParserTests
 
     public static IEnumerable<object[]> GetUnaryOperatorPairsData()
     {
-        foreach (var unaryOp in Factors.GetUnaryOperatorKinds())
-        {
-            foreach (var binaryOp in Factors.GetBinaryOperatorKinds())
-            {
-                yield return new object[] {unaryOp, binaryOp};
-            }
-        }
+        return from unaryOp in Factors.GetUnaryOperatorKinds()
+            from binaryOp in Factors.GetBinaryOperatorKinds()
+            select new object[] {unaryOp, binaryOp};
     }
 
     private static Expression ParseExpression(string text)
     {
-        var syntaxTree = AST.Parse(text);
-        var root       = syntaxTree.Root;
-        var statement  = root.Statement;
+        var syntaxTree      = AST.Parse(text);
+        var root            = syntaxTree.Root;
+        var members         = Assert.Single(root.Members);
+        var globalStatement = Assert.IsType<GlobalStatement>(members);
 
-        return Assert.IsType<ExpressionStatement>(statement).Expression;
+        return Assert.IsType<ExpressionStatement>(globalStatement.Statement).Expression;
     }
 }
