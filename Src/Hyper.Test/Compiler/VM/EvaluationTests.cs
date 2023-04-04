@@ -111,6 +111,44 @@ public class EvaluationTests
     }
 
     [Fact]
+    public void EvaluatorInvokeFunctionArgumentsNoInfiniteLoop()
+    {
+        var text = @"
+                print(""Hi""[[=]][)]
+            ";
+
+        var diagnostics = @"
+                Unexpected token <EqualsToken>, expected <CloseParenthesisToken>.
+                Unexpected token <EqualsToken>, expected <IdentifierToken>.
+                Unexpected token <CloseParenthesisToken>, expected <IdentifierToken>.
+            ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
+    [Fact]
+    public void EvaluatorFunctionParametersNoInfiniteLoop()
+    {
+        var text = @"
+                func hi(name: string[[[=]]][)]
+                {
+                    print(""Hi "" + name + ""!"" )
+                }[]
+
+            ";
+
+        var diagnostics = @"
+                Unexpected token <EqualsToken>, expected <CloseParenthesisToken>.
+                Unexpected token <EqualsToken>, expected <OpenBraceToken>.
+                Unexpected token <EqualsToken>, expected <IdentifierToken>.
+                Unexpected token <CloseParenthesisToken>, expected <IdentifierToken>.
+                Unexpected token <EndOfFileToken>, expected <CloseBraceToken>.
+            ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
+    [Fact]
     public void EvaluatorNameExpressionReportsNoErrorForInsertedToken()
     {
         var text = @"1 + []";
