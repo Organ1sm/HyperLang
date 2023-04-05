@@ -1,6 +1,6 @@
-﻿using Hyper.Compiler.Syntax;
-using Hyper.Compiler.Syntax.Expr;
-using Hyper.Compiler.Syntax.Stmt;
+﻿using Hyper.Core.Syntax;
+using Hyper.Core.Syntax.Expr;
+using Hyper.Core.Syntax.Stmt;
 using Xunit;
 
 namespace Hyper.Test.Compiler.Syntax;

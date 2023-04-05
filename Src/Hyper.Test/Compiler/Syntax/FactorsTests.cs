@@ -1,4 +1,4 @@
-﻿using Hyper.Compiler.Syntax;
+﻿using Hyper.Core.Syntax;
 using Xunit;
 
 namespace Hyper.Test.Compiler.Syntax;

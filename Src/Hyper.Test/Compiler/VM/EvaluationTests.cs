@@ -1,6 +1,6 @@
-﻿using Hyper.Compiler.Symbols;
-using Hyper.Compiler.Syntax;
-using Hyper.Compiler.VM;
+﻿using Hyper.Core.Symbols;
+using Hyper.Core.Syntax;
+using Hyper.Core.VM;
 using Hyper.Test.Compiler.Text;
 using Xunit;
 
