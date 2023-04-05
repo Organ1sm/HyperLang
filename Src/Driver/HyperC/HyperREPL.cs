@@ -109,7 +109,7 @@ internal sealed class HyperREPL : REPL
         }
         else
         {
-            foreach (var diagnostic in result.Diagnostics)
+            foreach (var diagnostic in result.Diagnostics.OrderBy(diag => diag.Span, new TextSpanComparer()))
             {
                 var lineIndex  = ast.Text.GetLineIndex(diagnostic.Span.Start);
                 var line       = ast.Text.Lines[lineIndex];
