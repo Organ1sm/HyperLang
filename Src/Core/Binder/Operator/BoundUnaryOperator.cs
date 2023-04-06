@@ -5,22 +5,22 @@ namespace Hyper.Core.Binding.Operator
 {
     internal sealed class BoundUnaryOperator
     {
-        private BoundUnaryOperator(SyntaxKind syntaxKind, BoundUnaryOperatorKind kind, TypeSymbol operandType)
-            : this(syntaxKind, kind, operandType, operandType) { }
+        private BoundUnaryOperator(SyntaxKind kind, BoundUnaryOperatorKind opKind, TypeSymbol operandType)
+            : this(kind, opKind, operandType, operandType) { }
 
-        public BoundUnaryOperator(SyntaxKind syntaxKind,
-                                  BoundUnaryOperatorKind kind,
+        public BoundUnaryOperator(SyntaxKind kind,
+                                  BoundUnaryOperatorKind opKind,
                                   TypeSymbol operandType,
                                   TypeSymbol resultType)
         {
-            SyntaxKind = syntaxKind;
             Kind = kind;
+            OpKind = opKind;
             OperandType = operandType;
             Type = resultType;
         }
 
-        public SyntaxKind             SyntaxKind  { get; }
-        public BoundUnaryOperatorKind Kind        { get; }
+        public SyntaxKind             Kind        { get; }
+        public BoundUnaryOperatorKind OpKind      { get; }
         public TypeSymbol             OperandType { get; }
         public TypeSymbol             Type        { get; }
 
@@ -36,7 +36,7 @@ namespace Hyper.Core.Binding.Operator
         {
             foreach (var op in _operators)
             {
-                if (op.SyntaxKind == syntaxKind && op.OperandType == operandType)
+                if (op.Kind == syntaxKind && op.OperandType == operandType)
                     return op;
             }
 

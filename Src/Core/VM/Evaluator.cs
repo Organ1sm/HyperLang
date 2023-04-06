@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using Hyper.Core.Symbols;
+﻿using Hyper.Core.Symbols;
 using Hyper.Core.Binding;
 using Hyper.Core.Binding.Expr;
 using Hyper.Core.Binding.Operator;
@@ -113,7 +112,7 @@ namespace Hyper.Core.VM
         {
             var operand = EvaluateExpression(u.Operand);
 
-            return u.Operator.Kind switch
+            return u.Operator.OpKind switch
             {
                 BoundUnaryOperatorKind.Identity        => (int) operand,
                 BoundUnaryOperatorKind.Negation        => -(int) operand,

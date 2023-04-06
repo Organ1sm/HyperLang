@@ -2,6 +2,7 @@
 using Hyper.Core.Symbols;
 using Hyper.Core.Syntax;
 using Hyper.Core.Binding;
+using Hyper.Core.Binding.Expr;
 using Hyper.Core.Binding.Scope;
 
 namespace Hyper.Core.VM

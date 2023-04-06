@@ -5,7 +5,7 @@ namespace Hyper.Core.Binding.Stmt;
 
 internal sealed class BoundBlockStatement : BoundStatement
 {
-    public BoundBlockStatement(ImmutableArray<BoundStatement> statements)
+    public BoundBlockStatement(ImmutableArray<BoundStatement?> statements)
     {
         Statements = statements;
     }
