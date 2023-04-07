@@ -166,6 +166,8 @@ namespace Hyper.Core.Parser
                 SyntaxKind.WhileKeyword                        => ParseWhileStatement(),
                 SyntaxKind.DoKeyword                           => ParseDoWhileStatement(),
                 SyntaxKind.ForKeyword                          => ParseForStatement(),
+                SyntaxKind.BreakKeyword                        => ParseBreakStatement(),
+                SyntaxKind.ContinueKeyword                     => ParseContinueStatement(),
                 _                                              => ParseExpressionStatement()
             };
         }
@@ -287,6 +289,18 @@ namespace Hyper.Core.Parser
             var body        = ParseStatement();
 
             return new ForStatement(keyword, identifier, equalsToken, lowerBound, toKeyword, upperBound, body);
+        }
+
+        private Statement ParseBreakStatement()
+        {
+            var keyword = Match(SyntaxKind.BreakKeyword);
+            return new BreakStatement(keyword);
+        }
+
+        private Statement ParseContinueStatement()
+        {
+            var keyword = Match(SyntaxKind.ContinueKeyword);
+            return new BreakStatement(keyword);
         }
 
         private ExpressionStatement ParseExpressionStatement()

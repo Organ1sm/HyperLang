@@ -43,18 +43,20 @@ public static class Factors
     {
         return text switch
         {
-            "true"  => SyntaxKind.TrueKeyword,
-            "false" => SyntaxKind.FalseKeyword,
-            "let"   => SyntaxKind.LetKeyword,
-            "var"   => SyntaxKind.VarKeyword,
-            "if"    => SyntaxKind.IfKeyword,
-            "else"  => SyntaxKind.ElseKeyword,
-            "do"    => SyntaxKind.DoKeyword,
-            "while" => SyntaxKind.WhileKeyword,
-            "for"   => SyntaxKind.ForKeyword,
-            "to"    => SyntaxKind.ToKeyword,
-            "func"  => SyntaxKind.FuncKeyword,
-            _       => SyntaxKind.IdentifierToken
+            "true"     => SyntaxKind.TrueKeyword,
+            "false"    => SyntaxKind.FalseKeyword,
+            "let"      => SyntaxKind.LetKeyword,
+            "var"      => SyntaxKind.VarKeyword,
+            "if"       => SyntaxKind.IfKeyword,
+            "else"     => SyntaxKind.ElseKeyword,
+            "do"       => SyntaxKind.DoKeyword,
+            "while"    => SyntaxKind.WhileKeyword,
+            "for"      => SyntaxKind.ForKeyword,
+            "to"       => SyntaxKind.ToKeyword,
+            "func"     => SyntaxKind.FuncKeyword,
+            "break"    => SyntaxKind.BreakKeyword,
+            "continue" => SyntaxKind.ContinueKeyword,
+            _          => SyntaxKind.IdentifierToken
         };
     }
 
@@ -118,6 +120,8 @@ public static class Factors
             SyntaxKind.ForKeyword              => "for",
             SyntaxKind.ToKeyword               => "to",
             SyntaxKind.FuncKeyword             => "func",
+            SyntaxKind.BreakKeyword            => "break",
+            SyntaxKind.ContinueKeyword         => "continue",
             _                                  => null
         };
     }

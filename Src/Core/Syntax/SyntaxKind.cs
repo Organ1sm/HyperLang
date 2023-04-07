@@ -49,6 +49,8 @@ public enum SyntaxKind
     ForKeyword,
     ToKeyword,
     FuncKeyword,
+    BreakKeyword,
+    ContinueKeyword,
 
 
     // Nodes
@@ -67,6 +69,8 @@ public enum SyntaxKind
     WhileStatement,
     DoWhileStatement,
     ForStatement,
+    BreakStatement,
+    ContinueStatement,
 
     // Expression
     LiteralExpression,

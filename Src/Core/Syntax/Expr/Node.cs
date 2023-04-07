@@ -16,8 +16,8 @@ public class Node
         {
             if (typeof(Node).IsAssignableFrom(property.PropertyType))
             {
-                var child = (Node) property.GetValue(this)!;
-                yield return child;
+                var child = (Node) property.GetValue(this);
+                if (child != null) yield return child;
             }
             else if (typeof(IEnumerable<Node>).IsAssignableFrom(property.PropertyType))
             {
@@ -68,7 +68,7 @@ public class Node
         var isToConsole = (writer == Console.Out);
 
         if (isToConsole)
-            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.ForegroundColor = ConsoleColor.White;
 
         writer.Write(indent);
         writer.Write(marker);

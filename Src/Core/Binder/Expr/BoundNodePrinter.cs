@@ -17,7 +17,7 @@ internal static class BoundNodePrinter
             WriteTo(node, new IndentedTextWriter(writer));
     }
 
-    public static void WriteTo(this BoundNode node, IndentedTextWriter writer)
+    private static void WriteTo(this BoundNode node, IndentedTextWriter writer)
     {
         switch (node.Kind)
         {

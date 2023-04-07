@@ -55,7 +55,7 @@ internal static class TextWriterExtensions
 
     public static void WritePunctuation(this TextWriter writer, string text)
     {
-        writer.SetForeground(ConsoleColor.White);
+        writer.SetForeground(ConsoleColor.DarkGray);
         writer.Write(text);
         writer.ResetColor();
     }

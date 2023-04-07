@@ -1,5 +1,4 @@
-﻿using Hyper.Core.Binding.Expr;
-using Hyper.Core.Binding.Operator;
+﻿using Hyper.Core.Binding.Operator;
 using Hyper.Core.Symbols;
 
 namespace Hyper.Core.Binding.Expr
