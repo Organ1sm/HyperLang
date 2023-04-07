@@ -59,7 +59,19 @@ namespace Hyper.Core.VM
         public void EmitTree(TextWriter writer)
         {
             var program = Binder.BindProgram(GlobalScope);
-            program.Statements.WriteTo(writer);
+            if (program.Statements.Statements.Any())
+                program.Statements.WriteTo(writer);
+            else
+            {
+                foreach (var functionBody in program.Functions.Where(functionBody =>
+                                                                         GlobalScope.Functions == null ||
+                                                                         GlobalScope.Functions
+                                                                            .Contains(functionBody.Key)))
+                {
+                    functionBody.Key.WriteTo(writer);
+                    functionBody.Value.WriteTo(writer);
+                }
+            }
         }
     }
 }
