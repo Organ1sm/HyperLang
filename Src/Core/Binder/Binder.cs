@@ -258,7 +258,7 @@ namespace Hyper.Core.Binding
 
             _scope = new BoundScope(_scope);
 
-            var variable = BindVariable(syntax.Identifier, true, TypeSymbol.Int);
+            var variable = BindVariable(syntax.Identifier, false, TypeSymbol.Int);
             var body     = BindStatement(syntax.Body);
 
             _scope = _scope.Parent;
