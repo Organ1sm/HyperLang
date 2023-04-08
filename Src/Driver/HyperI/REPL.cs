@@ -64,7 +64,7 @@ internal abstract class REPL
 
     private void HandleKey(ConsoleKeyInfo key, ObservableCollection<string> document, SubmissionView view)
     {
-        if (key.Modifiers == default(ConsoleModifiers))
+        if (key.Modifiers == default)
         {
             switch (key.Key)
             {
@@ -127,7 +127,7 @@ internal abstract class REPL
     {
         document.Clear();
         document.Add(string.Empty);
-        
+
         view.CurrentLine = 0;
         view.CurrentCharacter = 0;
     }
