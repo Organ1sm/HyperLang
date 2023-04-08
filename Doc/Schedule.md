@@ -387,3 +387,10 @@ In hyper, we are doing the same thing:
 This also required us to change how assign and look-up values for variables: by looking at
 the symbol kind we identify whether it's a global, a local variable or parameter.
 Global-Variables use the global dictionary while local variables and parameter use the current stack frame.
+
+## Stage 13
+
+## Completed items
+
+We added pretty printing for bound nodes as well as `break` and `continue`
+statements.

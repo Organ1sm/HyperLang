@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Text;
-using Hyper.Compiler.Text;
+using Hyper.Core.Text;
 
 namespace Hyper.Test.Compiler.Text;
 

@@ -1,5 +1,5 @@
-﻿using Hyper.Compiler.Syntax;
-using Hyper.Compiler.Text;
+﻿using Hyper.Core.Syntax;
+using Hyper.Core.Text;
 using Xunit;
 
 namespace Hyper.Test.Compiler.Syntax;
