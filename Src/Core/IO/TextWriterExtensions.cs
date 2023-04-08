@@ -1,11 +1,12 @@
 ﻿using System.CodeDom.Compiler;
 using System.Runtime.InteropServices;
+using Hyper.Core.Syntax;
 
 namespace Hyper.Core.IO;
 
 internal static class TextWriterExtensions
 {
-    public static bool IsOutToConsole(this TextWriter writer)
+    private static bool IsOutToConsole(this TextWriter writer)
     {
         if (writer == Console.Out)
             return true;
@@ -13,17 +14,20 @@ internal static class TextWriterExtensions
         return writer is IndentedTextWriter iw && iw.InnerWriter.IsOutToConsole();
     }
 
-    public static void SetForeground(this TextWriter writer, ConsoleColor color)
+    private static void SetForeground(this TextWriter writer, ConsoleColor color)
     {
         if (writer.IsOutToConsole())
             Console.ForegroundColor = color;
     }
 
-    public static void ResetColor(this TextWriter writer)
+    private static void ResetColor(this TextWriter writer)
     {
         if (writer.IsOutToConsole())
             Console.ResetColor();
     }
+
+    public static void WriteKeyword(this TextWriter writer, SyntaxKind kind) =>
+        writer.WriteKeyword(Factors.GetText(kind));
 
     public static void WriteKeyword(this TextWriter writer, string text)
     {
@@ -52,6 +56,11 @@ internal static class TextWriterExtensions
         writer.Write(text);
         writer.ResetColor();
     }
+
+    public static void WriteSpace(this TextWriter writer) => writer.WritePunctuation(" ");
+
+    public static void WritePunctuation(this TextWriter writer, SyntaxKind kind) =>
+        writer.WritePunctuation(Factors.GetText(kind));
 
     public static void WritePunctuation(this TextWriter writer, string text)
     {
