@@ -115,18 +115,22 @@ internal sealed class Lowerer : BoundTreeRewriter
         //
         // ----->
         //
-        // continue:
+        // body:
         // <body>
-        // gotoTrue <condition> continue
+        // continue:
+        // gotoTrue <condition> body
         // break:
         //
+        var bodyLabel = GenerateLabel();
 
+        var bodyLabelStatement     = new BoundLabelStatement(bodyLabel);
         var continueLabelStatement = new BoundLabelStatement(node.ContinueLabel);
-        var gotoTrueStatement      = new BoundConditionalGotoStatement(node.ContinueLabel, node.Condition);
+        var gotoTrueStatement      = new BoundConditionalGotoStatement(bodyLabel, node.Condition);
         var breakLabelStatement    = new BoundLabelStatement(node.BreakLabel);
 
-        var result = new BoundBlockStatement(ImmutableArray.Create(continueLabelStatement,
+        var result = new BoundBlockStatement(ImmutableArray.Create(bodyLabelStatement,
                                                                    node.Body,
+                                                                   continueLabelStatement,
                                                                    gotoTrueStatement,
                                                                    breakLabelStatement));
 

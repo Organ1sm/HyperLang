@@ -9,7 +9,7 @@ internal sealed class HyperREPL : REPL
 {
     private          Compilation                        _previous;
     private          bool                               _showTree;
-    private          bool                               _showProgram;
+    private          bool                               _showProgram = true;
     private readonly Dictionary<VariableSymbol, object> _variables = new();
 
     protected override void RenderLine(string line)
