@@ -12,7 +12,7 @@ internal sealed class Lowerer : BoundTreeRewriter
 {
     private Lowerer() { }
 
-    private BoundLabel GenerateLabel() => new BoundLabel($"Label{++_labelCount}");
+    private BoundLabel GenerateLabel() => new($"Label{++_labelCount}");
 
     public static BoundBlockStatement Lower(BoundStatement? statement)
     {
@@ -140,26 +140,26 @@ internal sealed class Lowerer : BoundTreeRewriter
         //
         // ----->
         //
-        // goto check
-        // continue:
+        // goto continue
+        // body:
         // <body>
-        // check:
-        // gotoTrue <condition> continue
+        // continue:
+        // gotoTrue <condition> body
         // break:
 
-        var checkLabel = GenerateLabel();
+        var bodyLabel = GenerateLabel();
 
-        var gotoCheck              = new BoundGotoStatement(checkLabel);
+        var gotoContinue           = new BoundGotoStatement(node.ContinueLabel);
+        var bodyLabelStatement     = new BoundLabelStatement(bodyLabel);
         var continueLabelStatement = new BoundLabelStatement(node.ContinueLabel);
-        var checkLabelStatement    = new BoundLabelStatement(checkLabel);
 
-        var gotoTrue            = new BoundConditionalGotoStatement(node.ContinueLabel, node.Condition);
+        var gotoTrue            = new BoundConditionalGotoStatement(bodyLabel, node.Condition);
         var breakLabelStatement = new BoundLabelStatement(node.BreakLabel);
 
-        var result = new BoundBlockStatement(ImmutableArray.Create(gotoCheck,
-                                                                   continueLabelStatement,
+        var result = new BoundBlockStatement(ImmutableArray.Create(gotoContinue,
+                                                                   bodyLabelStatement,
                                                                    node.Body,
-                                                                   checkLabelStatement,
+                                                                   continueLabelStatement,
                                                                    gotoTrue,
                                                                    breakLabelStatement));
 
