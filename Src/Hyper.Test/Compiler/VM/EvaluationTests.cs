@@ -81,6 +81,35 @@ public class EvaluationTests
     [InlineData("{ var i = 0 do: { i = i + 1 if i == 5: continue } while i < 5 i } ", 5)]
     public void EvaluatorComputesCorrectValues(string text, object expectedValue) => AssertValue(text, expectedValue);
 
+
+    [Fact]
+    public void EvaluatorInvokeFunctionArgumentsMissing()
+    {
+        var text = @"
+                print([)]
+            ";
+
+        var diagnostics = @"
+                Function 'print' requires 1 arguments but was given 0.
+            ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
+    [Fact]
+    public void EvaluatorInvokeFunctionArgumentsExceeding()
+    {
+        var text = @"
+                print(""Hello""[, "" "", "" world!""])
+            ";
+
+        var diagnostics = @"
+                Function 'print' requires 1 arguments but was given 3.
+            ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
     [Fact]
     public void EvaluatorVariableDeclarationReportsRedeclaration()
     {
