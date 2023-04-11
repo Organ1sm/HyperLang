@@ -168,6 +168,7 @@ namespace Hyper.Core.Parser
                 SyntaxKind.ForKeyword                          => ParseForStatement(),
                 SyntaxKind.BreakKeyword                        => ParseBreakStatement(),
                 SyntaxKind.ContinueKeyword                     => ParseContinueStatement(),
+                SyntaxKind.ReturnKeyword                       => ParseReturnStatement(),
                 _                                              => ParseExpressionStatement()
             };
         }
@@ -301,6 +302,18 @@ namespace Hyper.Core.Parser
         {
             var keyword = Match(SyntaxKind.ContinueKeyword);
             return new BreakStatement(keyword);
+        }
+
+        private Statement ParseReturnStatement()
+        {
+            var keyword     = Match(SyntaxKind.ReturnKeyword);
+            var keywordLine = _text.GetLineIndex(keyword.Span.Start);
+            var currentLine = _text.GetLineIndex(Current.Span.Start);
+            var isEof       = Current.Kind == SyntaxKind.EndOfFileToken;
+            var sameLine    = !isEof && keywordLine == currentLine;
+            var expression  = sameLine ? ParseExpression() : null;
+
+            return new ReturnStatement(keyword, expression);
         }
 
         private ExpressionStatement ParseExpressionStatement()

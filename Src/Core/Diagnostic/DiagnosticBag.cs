@@ -140,5 +140,24 @@ namespace Hyper.Core.Diagnostic
             var message = $"The keyword '{text}' can only be used inside of loops.";
             Report(span, message);
         }
+
+        public void ReportInvalidReturn(TextSpan span)
+        {
+            var message = "The 'return' keyword can only be used inside of functions.";
+            Report(span, message);
+        }
+
+        public void ReportInvalidReturnExpression(TextSpan span, string functionName)
+        {
+            var message =
+                $"Since the function '{functionName}' does not return a value the 'return' keyword cannot be followed by an expression.";
+            Report(span, message);
+        }
+
+        public void ReportMissingReturnExpression(TextSpan span, TypeSymbol returnType)
+        {
+            var message = $"An expression of type '{returnType}' expected.";
+            Report(span, message);
+        }
     }
 }

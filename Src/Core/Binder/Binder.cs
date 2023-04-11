@@ -81,7 +81,6 @@ namespace Hyper.Core.Binding
                 statements.Add(s);
             }
 
-            var statement   = new BoundBlockStatement(statements.ToImmutable());
             var functions   = binder._scope?.GetDeclaredFunctions();
             var variables   = binder._scope?.GetDeclaredVariables() ?? null;
             var diagnostics = binder.Diagnostics.ToImmutableArray();
@@ -163,9 +162,6 @@ namespace Hyper.Core.Binding
 
             var type = BindTypeClause(syntax.Type) ?? TypeSymbol.Void;
 
-            if (type != TypeSymbol.Void)
-                _diagnostics.XXX_ReportFunctionsAreUnsupported(syntax.Type.Span);
-
             var function = new FunctionSymbol(syntax.Identifier.Text, parameters.ToImmutable(), type, syntax);
             if (!_scope.TryDeclareFunction(function))
                 _diagnostics.ReportSymbolAlreadyDeclared(syntax.Identifier.Span, function.Name);
@@ -183,6 +179,7 @@ namespace Hyper.Core.Binding
                 SyntaxKind.ForStatement        => BindForStatement((ForStatement) syntax),
                 SyntaxKind.BreakStatement      => BindBreakStatement((BreakStatement) syntax),
                 SyntaxKind.ContinueStatement   => BindContinueStatement((ContinueStatement) syntax),
+                SyntaxKind.ReturnStatement     => BindReturnStatement((ReturnStatement) syntax),
                 SyntaxKind.VariableDeclaration => BindVariableDeclaration((VariableDeclaration) syntax),
                 _                              => throw new Exception($"Unexpected syntax {syntax.Kind}")
             };
@@ -309,6 +306,33 @@ namespace Hyper.Core.Binding
 
             var continueLabel = _loopStack.Peek().ContinueLabel;
             return new BoundGotoStatement(continueLabel);
+        }
+
+        private BoundStatement BindReturnStatement(ReturnStatement syntax)
+        {
+            var expression = syntax.Expression == null ? null : BindExpression(syntax.Expression);
+
+            if (_function == null)
+            {
+                _diagnostics.ReportInvalidReturn(syntax.ReturnKeyword.Span);
+            }
+            else
+            {
+                if (_function.Type == TypeSymbol.Void)
+                {
+                    if (expression != null && syntax.Expression != null)
+                        _diagnostics.ReportInvalidReturnExpression(syntax.Expression.Span, _function.Name);
+                }
+                else
+                {
+                    if (expression == null)
+                        _diagnostics.ReportMissingReturnExpression(syntax.ReturnKeyword.Span, _function.Type);
+                    else if (syntax.Expression != null)
+                        expression = BindConversion(syntax.Expression.Span, expression, _function.Type);
+                }
+            }
+
+            return new BoundReturnStatement(expression);
         }
 
         private BoundExpression BindExpression(Expression syntax, TypeSymbol targetType) =>
