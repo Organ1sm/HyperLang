@@ -474,6 +474,7 @@ namespace Hyper.Core.Binding
                 return new BoundErrorExpression();
             }
 
+            var hasErrors = false;
             for (var i = 0; i < syntax.Arguments.Count; i++)
             {
                 var argument  = boundArguments[i];
@@ -486,8 +487,11 @@ namespace Hyper.Core.Binding
                                                      parameter.Name,
                                                      parameter.Type,
                                                      argument.Type);
-                return new BoundErrorExpression();
+                hasErrors = true;
             }
+
+            if (hasErrors)
+                return new BoundErrorExpression();
 
             return new BoundCallExpression(function, boundArguments.ToImmutable());
         }
