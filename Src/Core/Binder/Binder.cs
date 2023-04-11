@@ -449,7 +449,25 @@ namespace Hyper.Core.Binding
 
             if (syntax.Arguments.Count != function.Parameters.Length)
             {
-                _diagnostics.ReportWrongArgumentCount(syntax.Span,
+                TextSpan span;
+                if (syntax.Arguments.Count > function.Parameters.Length)
+                {
+                    Node? firstExceedingNode;
+                    if (function.Parameters.Length > 0)
+                        firstExceedingNode = syntax.Arguments.GetSeparator(function.Parameters.Length - 1);
+                    else
+                        firstExceedingNode = syntax.Arguments[0];
+
+                    var lastExceedingNode = syntax.Arguments[^1];
+
+                    span = TextSpan.MakeTextSpanFromBound(firstExceedingNode.Span.Start, lastExceedingNode.Span.End);
+                }
+                else
+                {
+                    span = syntax.CloseParenthesisToken.Span;
+                }
+
+                _diagnostics.ReportWrongArgumentCount(span,
                                                       function.Name,
                                                       function.Parameters.Length,
                                                       syntax.Arguments.Count);
