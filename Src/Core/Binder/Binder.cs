@@ -483,10 +483,11 @@ namespace Hyper.Core.Binding
                 if (argument.Type == parameter.Type)
                     continue;
 
-                _diagnostics.ReportWrongArgumentType(syntax.Arguments[i].Span,
-                                                     parameter.Name,
-                                                     parameter.Type,
-                                                     argument.Type);
+                if (argument.Type != TypeSymbol.Error)
+                    _diagnostics.ReportWrongArgumentType(syntax.Arguments[i].Span,
+                                                         parameter.Name,
+                                                         parameter.Type,
+                                                         argument.Type);
                 hasErrors = true;
             }
 
