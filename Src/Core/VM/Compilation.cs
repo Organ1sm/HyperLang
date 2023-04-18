@@ -3,6 +3,7 @@ using Hyper.Core.Symbols;
 using Hyper.Core.Syntax;
 using Hyper.Core.Binding;
 using Hyper.Core.Binding.Expr;
+using Hyper.Core.Binding.Opt;
 using Hyper.Core.Binding.Scope;
 
 namespace Hyper.Core.VM
@@ -28,6 +29,17 @@ namespace Hyper.Core.VM
                 return new EvaluationResult(diagnostics, null);
 
             var program = Binder.BindProgram(GlobalScope);
+
+            var appPath      = Environment.GetCommandLineArgs()[0];
+            var appDirectory = Path.GetDirectoryName(appPath);
+            var cfgPath      = Path.Combine(appDirectory, "cfg.dot");
+            var cfgStatement = !program.Statements.Statements.Any() && program.Functions.Any()
+                ? program.Functions.Last().Value
+                : program.Statements;
+            var cfg = ControlFlowGraph.Create(cfgStatement);
+            using (var streamWriter = new StreamWriter(cfgPath))
+                cfg.WriteTo(streamWriter);
+
             if (program.Diagnostics.Any())
                 return new EvaluationResult(program.Diagnostics.ToImmutableArray(), null);
 
@@ -51,7 +63,7 @@ namespace Hyper.Core.VM
             }
         }
 
-        public Compilation ContinueWith(AST ast)
+        public Compilation? ContinueWith(AST ast)
         {
             return new Compilation(this, ast);
         }

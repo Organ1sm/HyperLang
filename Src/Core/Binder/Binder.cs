@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using Hyper.Core.Binding.Expr;
 using Hyper.Core.Binding.Operator;
+using Hyper.Core.Binding.Opt;
 using Hyper.Core.Binding.Scope;
 using Hyper.Core.Binding.Stmt;
 using Hyper.Core.Symbols;
@@ -52,8 +53,11 @@ namespace Hyper.Core.Binding
                     var binder      = new Binder(parentScope, function);
                     var body        = binder.BindStatement(function.Declaration?.Body);
                     var loweredBody = Lowerer.Lower(body);
-                    functionBodies.Add(function, loweredBody);
 
+                    if (function.Type != TypeSymbol.Void && !ControlFlowGraph.AllPathsReturn(loweredBody))
+                        binder._diagnostics.ReportAllPathsMustReturn(function.Declaration!.Identifier.Span);
+
+                    functionBodies.Add(function, loweredBody);
                     diagnostics.AddRange(binder.Diagnostics);
                 }
 

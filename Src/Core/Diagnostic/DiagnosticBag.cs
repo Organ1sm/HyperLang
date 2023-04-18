@@ -147,6 +147,12 @@ namespace Hyper.Core.Diagnostic
             Report(span, message);
         }
 
+        public void ReportAllPathsMustReturn(TextSpan span)
+        {
+            var message = "Not all code paths return a value.";
+            Report(span, message);
+        }
+
         public void ReportInvalidReturnExpression(TextSpan span, string functionName)
         {
             var message =
