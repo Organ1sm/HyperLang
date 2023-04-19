@@ -45,15 +45,20 @@ internal sealed class GraphBuilder
                         Connect(current, toBlock);
                         break;
                     case BoundNodeKind.ConditionalGotoStatement:
-                        var cgs              = (BoundConditionalGotoStatement) statement;
-                        var thenBlock        = _blockFromLabel[cgs.Label];
-                        var elseBlock        = next;
+                    {
+                        var cgs       = (BoundConditionalGotoStatement) statement;
+                        var thenBlock = _blockFromLabel[cgs.Label];
+                        var elseBlock = next;
+
                         var negatedCondition = Negate(cgs.Condition);
                         var thenCondition    = cgs.JumpIfTrue ? cgs.Condition : negatedCondition;
                         var elseCondition    = cgs.JumpIfTrue ? negatedCondition : cgs.Condition;
+
                         Connect(current, thenBlock, thenCondition);
                         Connect(current, elseBlock, elseCondition);
+
                         break;
+                    }
                     case BoundNodeKind.ReturnStatement:
                         Connect(current, _end);
                         break;

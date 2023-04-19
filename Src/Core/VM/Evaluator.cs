@@ -22,7 +22,7 @@ namespace Hyper.Core.VM
             _locals.Push(new());
         }
 
-        public object Evaluate() => EvaluateStatement(_program.Statements);
+        public object Evaluate() => EvaluateStatement(_program.BlockStatement);
 
         private object? EvaluateStatement(BoundBlockStatement body)
         {

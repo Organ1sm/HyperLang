@@ -33,9 +33,9 @@ namespace Hyper.Core.VM
             var appPath      = Environment.GetCommandLineArgs()[0];
             var appDirectory = Path.GetDirectoryName(appPath);
             var cfgPath      = Path.Combine(appDirectory, "cfg.dot");
-            var cfgStatement = !program.Statements.Statements.Any() && program.Functions.Any()
+            var cfgStatement = !program.BlockStatement.Statements.Any() && program.Functions.Any()
                 ? program.Functions.Last().Value
-                : program.Statements;
+                : program.BlockStatement;
             var cfg = ControlFlowGraph.Create(cfgStatement);
             using (var streamWriter = new StreamWriter(cfgPath))
                 cfg.WriteTo(streamWriter);
@@ -71,8 +71,8 @@ namespace Hyper.Core.VM
         public void EmitTree(TextWriter writer)
         {
             var program = Binder.BindProgram(GlobalScope);
-            if (program.Statements.Statements.Any())
-                program.Statements.WriteTo(writer);
+            if (program.BlockStatement.Statements.Any())
+                program.BlockStatement.WriteTo(writer);
             else
             {
                 foreach (var functionBody in program.Functions.Where(functionBody =>

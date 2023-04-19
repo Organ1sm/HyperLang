@@ -4,7 +4,7 @@ namespace Hyper.Core.Binding.Opt;
 
 internal sealed class BasicBlockBranch
 {
-    public BasicBlockBranch(BasicBlock from, BasicBlock to, BoundExpression condition)
+    public BasicBlockBranch(BasicBlock from, BasicBlock to, BoundExpression? condition)
     {
         From = from;
         To = to;

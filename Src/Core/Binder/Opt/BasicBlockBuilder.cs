@@ -24,7 +24,7 @@ internal sealed class BasicBlockBuilder
                 case BoundNodeKind.ConditionalGotoStatement:
                 case BoundNodeKind.ReturnStatement:
                     _statements.Add(statement);
-                    StartBlock();
+                    EndBlock();
                     break;
 
                 case BoundNodeKind.VariableDeclaration:
