@@ -375,7 +375,7 @@ of their local variables.
 In virtually all systems this achieved by using stack. Each time we call the function, a new
 entry is pushed on the stack that represents the local state of the function, usually covering
 the arguments as well as the local variables. This is called a *stack frame*. Each time you return
-from a function. the top most stack is poped off that stack.
+from a function. the top most stack is popped off that stack.
 
 In hyper, we are doing the same thing:
 
@@ -390,7 +390,51 @@ Global-Variables use the global dictionary while local variables and parameter u
 
 ## Stage 13
 
-## Completed items
+### Completed items
 
-We added pretty printing for bound nodes as well as `break` and `continue`
-statements.
+* We added pretty printing for bound nodes as well as `break` and `continue`
+  statements.
+
+## Stage 14
+
+### Completed items
+
+* Add support for `return` statements and control flow analysis.
+
+Implementing the `return` statement is so easy. What's harder is to decide whether
+all control flows through a function end in the return statement.
+
+Consider this code
+
+```typescript
+func sum(n: int)-> int
+{
+    var i = 0
+    var result = 0
+    while true:
+    {
+        if (i == n) return result
+        result = result + i
+        i = i + 1
+    }
+    
+    var z = 0
+}
+```
+
+The statement `var z = 0` is unreachable. This is required more complex 
+control flow analysis to solve it.
+
+All nodes in the graph are called `basic block`.A basic block is a list of statements 
+that are executed in sequence without any jumps. Only the first statement in a basic block 
+can be jumped to and only the last statement can transfer control to other blocks. 
+All edges in this graph represent branches in control flow.
+All control flow graphs have a single <Start> and a single <End> node. 
+
+Thus, empty functions would have two nodes.
+To check whether a function always returns a value, we only have to start at the
+<End> node and check whether all incoming blocks end with a `return statement`, 
+ignoring blocks that are unreachable. A node is considered unreachable if 
+it doesn't have any incoming nodes or all incoming nodes are also considered unreachable.
+
+![](stage14-cfg.png)
