@@ -1,8 +1,5 @@
 ﻿using Hyper.Core.Binding.Expr;
-using Hyper.Core.Binding.Operator;
 using Hyper.Core.Binding.Stmt;
-using Hyper.Core.Symbols;
-using Hyper.Core.Syntax;
 
 namespace Hyper.Core.Binding.Opt;
 

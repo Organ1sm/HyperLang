@@ -5,6 +5,7 @@ using Hyper.Core.Binding;
 using Hyper.Core.Binding.Expr;
 using Hyper.Core.Binding.Opt;
 using Hyper.Core.Binding.Scope;
+using Hyper.Core.Binding.Stmt;
 
 namespace Hyper.Core.VM
 {
@@ -33,9 +34,13 @@ namespace Hyper.Core.VM
             var appPath      = Environment.GetCommandLineArgs()[0];
             var appDirectory = Path.GetDirectoryName(appPath);
             var cfgPath      = Path.Combine(appDirectory, "cfg.dot");
-            var cfgStatement = !program.BlockStatement.Statements.Any() && program.Functions.Any()
-                ? program.Functions.Last().Value
-                : program.BlockStatement;
+
+            BoundBlockStatement cfgStatement;
+            if (!program.BlockStatement.Statements.Any() && program.Functions.Any())
+                cfgStatement = program.Functions.Last().Value;
+            else
+                cfgStatement = program.BlockStatement;
+
             var cfg = ControlFlowGraph.Create(cfgStatement);
             using (var streamWriter = new StreamWriter(cfgPath))
                 cfg.WriteTo(streamWriter);

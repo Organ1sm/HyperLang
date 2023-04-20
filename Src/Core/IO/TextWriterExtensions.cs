@@ -29,7 +29,7 @@ internal static class TextWriterExtensions
     public static void WriteKeyword(this TextWriter writer, SyntaxKind kind) =>
         writer.WriteKeyword(Factors.GetText(kind));
 
-    public static void WriteKeyword(this TextWriter writer, string text)
+    public static void WriteKeyword(this TextWriter writer, string? text)
     {
         writer.SetForeground(ConsoleColor.Blue);
         writer.Write(text);
@@ -62,7 +62,7 @@ internal static class TextWriterExtensions
     public static void WritePunctuation(this TextWriter writer, SyntaxKind kind) =>
         writer.WritePunctuation(Factors.GetText(kind));
 
-    public static void WritePunctuation(this TextWriter writer, string text)
+    public static void WritePunctuation(this TextWriter writer, string? text)
     {
         writer.SetForeground(ConsoleColor.White);
         writer.Write(text);
