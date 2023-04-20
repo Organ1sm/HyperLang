@@ -12,6 +12,7 @@ internal enum BoundNodeKind
     LabelStatement,
     GotoStatement,
     ConditionalGotoStatement,
+    ReturnStatement,
     VariableDeclaration,
 
     // Expressions

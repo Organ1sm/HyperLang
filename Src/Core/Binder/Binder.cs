@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using Hyper.Core.Binding.Expr;
 using Hyper.Core.Binding.Operator;
+using Hyper.Core.Binding.Opt;
 using Hyper.Core.Binding.Scope;
 using Hyper.Core.Binding.Stmt;
 using Hyper.Core.Symbols;
@@ -52,8 +53,11 @@ namespace Hyper.Core.Binding
                     var binder      = new Binder(parentScope, function);
                     var body        = binder.BindStatement(function.Declaration?.Body);
                     var loweredBody = Lowerer.Lower(body);
-                    functionBodies.Add(function, loweredBody);
 
+                    if (function.Type != TypeSymbol.Void && !ControlFlowGraph.AllPathsReturn(loweredBody))
+                        binder._diagnostics.ReportAllPathsMustReturn(function.Declaration!.Identifier.Span);
+
+                    functionBodies.Add(function, loweredBody);
                     diagnostics.AddRange(binder.Diagnostics);
                 }
 
@@ -81,7 +85,6 @@ namespace Hyper.Core.Binding
                 statements.Add(s);
             }
 
-            var statement   = new BoundBlockStatement(statements.ToImmutable());
             var functions   = binder._scope?.GetDeclaredFunctions();
             var variables   = binder._scope?.GetDeclaredVariables() ?? null;
             var diagnostics = binder.Diagnostics.ToImmutableArray();
@@ -163,9 +166,6 @@ namespace Hyper.Core.Binding
 
             var type = BindTypeClause(syntax.Type) ?? TypeSymbol.Void;
 
-            if (type != TypeSymbol.Void)
-                _diagnostics.XXX_ReportFunctionsAreUnsupported(syntax.Type.Span);
-
             var function = new FunctionSymbol(syntax.Identifier.Text, parameters.ToImmutable(), type, syntax);
             if (!_scope.TryDeclareFunction(function))
                 _diagnostics.ReportSymbolAlreadyDeclared(syntax.Identifier.Span, function.Name);
@@ -183,6 +183,7 @@ namespace Hyper.Core.Binding
                 SyntaxKind.ForStatement        => BindForStatement((ForStatement) syntax),
                 SyntaxKind.BreakStatement      => BindBreakStatement((BreakStatement) syntax),
                 SyntaxKind.ContinueStatement   => BindContinueStatement((ContinueStatement) syntax),
+                SyntaxKind.ReturnStatement     => BindReturnStatement((ReturnStatement) syntax),
                 SyntaxKind.VariableDeclaration => BindVariableDeclaration((VariableDeclaration) syntax),
                 _                              => throw new Exception($"Unexpected syntax {syntax.Kind}")
             };
@@ -309,6 +310,33 @@ namespace Hyper.Core.Binding
 
             var continueLabel = _loopStack.Peek().ContinueLabel;
             return new BoundGotoStatement(continueLabel);
+        }
+
+        private BoundStatement BindReturnStatement(ReturnStatement syntax)
+        {
+            var expression = syntax.Expression == null ? null : BindExpression(syntax.Expression);
+
+            if (_function == null)
+            {
+                _diagnostics.ReportInvalidReturn(syntax.ReturnKeyword.Span);
+            }
+            else
+            {
+                if (_function.Type == TypeSymbol.Void)
+                {
+                    if (expression != null && syntax.Expression != null)
+                        _diagnostics.ReportInvalidReturnExpression(syntax.Expression.Span, _function.Name);
+                }
+                else
+                {
+                    if (expression == null)
+                        _diagnostics.ReportMissingReturnExpression(syntax.ReturnKeyword.Span, _function.Type);
+                    else if (syntax.Expression != null)
+                        expression = BindConversion(syntax.Expression.Span, expression, _function.Type);
+                }
+            }
+
+            return new BoundReturnStatement(expression);
         }
 
         private BoundExpression BindExpression(Expression syntax, TypeSymbol targetType) =>
@@ -449,13 +477,32 @@ namespace Hyper.Core.Binding
 
             if (syntax.Arguments.Count != function.Parameters.Length)
             {
-                _diagnostics.ReportWrongArgumentCount(syntax.Span,
+                TextSpan span;
+                if (syntax.Arguments.Count > function.Parameters.Length)
+                {
+                    Node? firstExceedingNode;
+                    if (function.Parameters.Length > 0)
+                        firstExceedingNode = syntax.Arguments.GetSeparator(function.Parameters.Length - 1);
+                    else
+                        firstExceedingNode = syntax.Arguments[0];
+
+                    var lastExceedingNode = syntax.Arguments[^1];
+
+                    span = TextSpan.MakeTextSpanFromBound(firstExceedingNode.Span.Start, lastExceedingNode.Span.End);
+                }
+                else
+                {
+                    span = syntax.CloseParenthesisToken.Span;
+                }
+
+                _diagnostics.ReportWrongArgumentCount(span,
                                                       function.Name,
                                                       function.Parameters.Length,
                                                       syntax.Arguments.Count);
                 return new BoundErrorExpression();
             }
 
+            var hasErrors = false;
             for (var i = 0; i < syntax.Arguments.Count; i++)
             {
                 var argument  = boundArguments[i];
@@ -464,12 +511,16 @@ namespace Hyper.Core.Binding
                 if (argument.Type == parameter.Type)
                     continue;
 
-                _diagnostics.ReportWrongArgumentType(syntax.Arguments[i].Span,
-                                                     parameter.Name,
-                                                     parameter.Type,
-                                                     argument.Type);
-                return new BoundErrorExpression();
+                if (argument.Type != TypeSymbol.Error)
+                    _diagnostics.ReportWrongArgumentType(syntax.Arguments[i].Span,
+                                                         parameter.Name,
+                                                         parameter.Type,
+                                                         argument.Type);
+                hasErrors = true;
             }
+
+            if (hasErrors)
+                return new BoundErrorExpression();
 
             return new BoundCallExpression(function, boundArguments.ToImmutable());
         }

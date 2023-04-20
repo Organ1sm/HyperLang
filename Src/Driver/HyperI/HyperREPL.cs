@@ -7,9 +7,9 @@ namespace HyperI;
 
 internal sealed class HyperREPL : REPL
 {
-    private          Compilation                        _previous;
+    private          Compilation?                       _previous;
     private          bool                               _showTree;
-    private          bool                               _showProgram = true;
+    private          bool                               _showProgram;
     private readonly Dictionary<VariableSymbol, object> _variables = new();
 
     protected override void RenderLine(string line)
@@ -48,6 +48,9 @@ internal sealed class HyperREPL : REPL
             case "#showProgram":
                 _showProgram = !_showProgram;
                 Console.WriteLine(_showProgram ? "Showing bound tree." : "Not showing bound tree.");
+                break;
+            case "#cls":
+                Console.Clear();
                 break;
             case "#reset":
                 _previous = null;

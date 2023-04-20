@@ -56,6 +56,7 @@ public static class Factors
             "func"     => SyntaxKind.FuncKeyword,
             "break"    => SyntaxKind.BreakKeyword,
             "continue" => SyntaxKind.ContinueKeyword,
+            "return"   => SyntaxKind.ReturnKeyword,
             _          => SyntaxKind.IdentifierToken
         };
     }
@@ -122,6 +123,7 @@ public static class Factors
             SyntaxKind.FuncKeyword             => "func",
             SyntaxKind.BreakKeyword            => "break",
             SyntaxKind.ContinueKeyword         => "continue",
+            SyntaxKind.ReturnKeyword           => "return",
             _                                  => null
         };
     }

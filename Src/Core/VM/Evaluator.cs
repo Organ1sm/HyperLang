@@ -13,7 +13,7 @@ namespace Hyper.Core.VM
         private readonly Stack<Dictionary<VariableSymbol, object>> _locals = new();
         private          Random?                                   _random;
 
-        private object _lastValue;
+        private object? _lastValue;
 
         public Evaluator(BoundProgram program, Dictionary<VariableSymbol, object> variables)
         {
@@ -22,9 +22,9 @@ namespace Hyper.Core.VM
             _locals.Push(new());
         }
 
-        public object Evaluate() => EvaluateStatement(_program.Statements);
+        public object Evaluate() => EvaluateStatement(_program.BlockStatement);
 
-        private object EvaluateStatement(BoundBlockStatement body)
+        private object? EvaluateStatement(BoundBlockStatement body)
         {
             var labelToIndex = new Dictionary<BoundLabel, int>();
             for (var i = 0; i < body.Statements.Length; i++)
@@ -67,6 +67,11 @@ namespace Hyper.Core.VM
                     case BoundNodeKind.LabelStatement:
                         index++;
                         break;
+
+                    case BoundNodeKind.ReturnStatement:
+                        var rs = (BoundReturnStatement) s;
+                        _lastValue = rs.Expression == null ? null : EvaluateExpression(rs.Expression);
+                        return _lastValue;
 
                     default:
                         throw new Exception($"Unexpected s {s?.Kind}");

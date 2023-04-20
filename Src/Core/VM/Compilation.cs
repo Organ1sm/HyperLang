@@ -3,7 +3,9 @@ using Hyper.Core.Symbols;
 using Hyper.Core.Syntax;
 using Hyper.Core.Binding;
 using Hyper.Core.Binding.Expr;
+using Hyper.Core.Binding.Opt;
 using Hyper.Core.Binding.Scope;
+using Hyper.Core.Binding.Stmt;
 
 namespace Hyper.Core.VM
 {
@@ -28,6 +30,21 @@ namespace Hyper.Core.VM
                 return new EvaluationResult(diagnostics, null);
 
             var program = Binder.BindProgram(GlobalScope);
+
+            var appPath      = Environment.GetCommandLineArgs()[0];
+            var appDirectory = Path.GetDirectoryName(appPath);
+            var cfgPath      = Path.Combine(appDirectory, "cfg.dot");
+
+            BoundBlockStatement cfgStatement;
+            if (!program.BlockStatement.Statements.Any() && program.Functions.Any())
+                cfgStatement = program.Functions.Last().Value;
+            else
+                cfgStatement = program.BlockStatement;
+
+            var cfg = ControlFlowGraph.Create(cfgStatement);
+            using (var streamWriter = new StreamWriter(cfgPath))
+                cfg.WriteTo(streamWriter);
+
             if (program.Diagnostics.Any())
                 return new EvaluationResult(program.Diagnostics.ToImmutableArray(), null);
 
@@ -51,7 +68,7 @@ namespace Hyper.Core.VM
             }
         }
 
-        public Compilation ContinueWith(AST ast)
+        public Compilation? ContinueWith(AST ast)
         {
             return new Compilation(this, ast);
         }
@@ -59,8 +76,8 @@ namespace Hyper.Core.VM
         public void EmitTree(TextWriter writer)
         {
             var program = Binder.BindProgram(GlobalScope);
-            if (program.Statements.Statements.Any())
-                program.Statements.WriteTo(writer);
+            if (program.BlockStatement.Statements.Any())
+                program.BlockStatement.WriteTo(writer);
             else
             {
                 foreach (var functionBody in program.Functions.Where(functionBody =>
