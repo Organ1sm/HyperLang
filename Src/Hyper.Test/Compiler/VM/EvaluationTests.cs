@@ -68,6 +68,7 @@ public class EvaluationTests
     [InlineData("\"test\" != \"test\"", false)]
     [InlineData("\"test\" == \"abc\"", false)]
     [InlineData("\"test\" != \"abc\"", true)]
+    [InlineData("\"test\" + \"abc\"", "testabc")]
     [InlineData("{ var a = 10 (a * a) }", 100)]
     [InlineData("{ var a = 0 (a = 10) * a }", 100)]
     [InlineData("{ var a = 0 if a == 0: a = 10 a }", 10)]
@@ -337,6 +338,172 @@ public class EvaluationTests
 
         var diagnostics = @"
                 Function 'print' doesn't exist.
+            ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
+    [Fact]
+    public void EvaluatorVoidFunctionShouldNotReturnValue()
+    {
+        var text = @"
+                func test()
+                {
+                    return [1]
+                }
+            ";
+
+        var diagnostics = @"
+                Since the function 'test' does not return a value the 'return' keyword cannot be followed by an expression.
+            ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
+    [Fact]
+    public void EvaluatorFunctionWithReturnValueShouldNotReturnVoid()
+    {
+        var text = @"
+                func test()-> int
+                {
+                    [return]
+                }
+            ";
+
+        var diagnostics = @"
+                An expression of type 'int' expected.
+            ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
+    [Fact]
+    public void EvaluatorNotAllCodePathsReturnValue()
+    {
+        var text = @"
+                func [test](n: int)-> bool
+                {
+                    if (n > 10):
+                       return true
+                }
+            ";
+
+        var diagnostics = @"
+                Not all code paths return a value.
+            ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
+    [Fact]
+    public void EvaluatorExpressionMustHaveValue()
+    {
+        var text = @"
+                func test(n: int)
+                {
+                    return
+                }
+
+                let value = [test(100)]
+            ";
+
+        var diagnostics = @"
+                Expression must have a value.
+            ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
+    [Theory]
+    [InlineData("[break]", "break")]
+    [InlineData("[continue]", "continue")]
+    public void EvaluatorInvalidBreakOrContinue(string text, string keyword)
+    {
+        var diagnostics = $@"
+                The keyword '{keyword}' can only be used inside of loops.
+            ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
+    [Fact]
+    public void EvaluatorInvalidReturn()
+    {
+        var text = @"
+                [return]
+            ";
+
+        var diagnostics = @"
+                The 'return' keyword can only be used inside of functions.
+            ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
+    [Fact]
+    public void EvaluatorParameterAlreadyDeclared()
+    {
+        var text = @"
+                func sum(a: int, b: int, [a: int])-> int
+                {
+                    return a + b + c
+                }
+            ";
+
+        var diagnostics = @"
+                A parameter with the name 'a' already exists.
+            ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
+    [Fact]
+    public void EvaluatorFunctionMustHaveName()
+    {
+        var text = @"
+                func [(]a: int, b: int)-> int
+                {
+                    return a + b
+                }
+            ";
+
+        var diagnostics = @"
+                Unexpected token <OpenParenthesisToken>, expected <IdentifierToken>.
+            ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
+    [Fact]
+    public void EvaluatorWrongArgumentType()
+    {
+        var text = @"
+                func test(n: int)-> bool
+                {
+                    return n > 10
+                }
+                let testValue = ""string""
+                test([testValue])
+            ";
+
+        var diagnostics = @"
+                Parameter 'n' requires a value of type 'int' but was given a value of type 'string'.
+            ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
+    [Fact]
+    public void EvaluatorBadType()
+    {
+        var text = @"
+                func test(n: [invalidtype])
+                {
+                }
+            ";
+
+        var diagnostics = @"
+                Type 'invalidtype' doesn't exist.
             ";
 
         AssertDiagnostics(text, diagnostics);
