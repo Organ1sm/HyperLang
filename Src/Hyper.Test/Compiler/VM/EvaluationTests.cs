@@ -165,6 +165,22 @@ public class EvaluationTests
     }
 
     [Fact]
+    public void EvaluatorFunctionReturnMissing()
+    {
+        var text = @"
+                func [add](a: int, b: int) -> int
+                {
+                }
+            ";
+
+        var diagnostics = @"
+                Not all code paths return a value.
+            ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
+    [Fact]
     public void EvaluatorFunctionParametersNoInfiniteLoop()
     {
         var text = @"
@@ -293,6 +309,18 @@ public class EvaluationTests
     }
 
     [Fact]
+    public void EvaluatorAssignmentExpressionReportsNotAVariable()
+    {
+        var text = @"[print] = 42";
+
+        var diagnostics = @"
+                'print' is not a variable.
+            ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
+    [Fact]
     public void EvaluatorAssignmentExpressionReportsCannotAssign()
     {
         var text = @"
@@ -327,6 +355,35 @@ public class EvaluationTests
     }
 
     [Fact]
+    public void EvaluatorCallExpressionReportsUndefined()
+    {
+        var text = @"[foo](42)";
+
+        var diagnostics = @"
+                Function 'foo' doesn't exist.
+            ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
+    [Fact]
+    public void EvaluatorCallExpressionReportsNotAFunction()
+    {
+        var text = @"
+                {
+                    let foo = 42
+                    [foo](42)
+                }
+            ";
+
+        var diagnostics = @"
+                'foo' is not a function.
+            ";
+
+        AssertDiagnostics(text, diagnostics);
+    }
+
+    [Fact]
     public void EvaluatorVariablesCanShadowFunctions()
     {
         var text = @"
@@ -337,8 +394,8 @@ public class EvaluationTests
             ";
 
         var diagnostics = @"
-                Function 'print' doesn't exist.
-            ";
+             'print' is not a function.
+        ";
 
         AssertDiagnostics(text, diagnostics);
     }

@@ -216,7 +216,7 @@ namespace Hyper.Core.Binding
             var type        = BindTypeClause(syntax.TypeClause);
             var initializer = BindExpression(syntax.Initializer);
             var varType     = type ?? initializer.Type;
-            var variable    = BindVariable(syntax.Identifier, isReadOnly, varType);
+            var variable    = BindVariableDeclaration(syntax.Identifier, isReadOnly, varType);
 
             var convertedInitializer = BindConversion(syntax.Initializer.Span, initializer, varType);
 
@@ -267,7 +267,7 @@ namespace Hyper.Core.Binding
 
             _scope = new BoundScope(_scope);
 
-            var variable = BindVariable(syntax.Identifier, false, TypeSymbol.Int);
+            var variable = BindVariableDeclaration(syntax.Identifier, false, TypeSymbol.Int);
             var body     = BindLoopBody(syntax.Body, out var breakLabel, out var continueLabel);
 
             _scope = _scope.Parent;
@@ -428,11 +428,9 @@ namespace Hyper.Core.Binding
                 return new BoundErrorExpression();
             }
 
-            if (!_scope.TryLookUpVariable(name, out var variable))
-            {
-                _diagnostics.ReportUndefinedName(syntax.IdentifierToken.Span, name);
+            var variable = BindVariableReference(name, syntax.IdentifierToken.Span);
+            if (variable == null)
                 return new BoundErrorExpression();
-            }
 
             return new BoundVariableExpression(variable);
         }
@@ -442,14 +440,15 @@ namespace Hyper.Core.Binding
             var name            = syntax.IdentifierToken.Text;
             var boundExpression = BindExpression(syntax.Expression);
 
-            if (!_scope.TryLookUpVariable(name, out var variable))
+            var variable = BindVariableReference(name, syntax.IdentifierToken.Span);
+            switch (variable)
             {
-                _diagnostics.ReportUndefinedName(syntax.IdentifierToken.Span, name);
-                return boundExpression;
+                case null:
+                    return boundExpression;
+                case {IsReadOnly: true}:
+                    _diagnostics.ReportCannotAssign(syntax.EqualsToken.Span, name);
+                    break;
             }
-
-            if (variable is {IsReadOnly: true})
-                _diagnostics.ReportCannotAssign(syntax.EqualsToken.Span, name);
 
             var convertedExpression = BindConversion(syntax.Expression.Span, boundExpression, variable.Type);
 
@@ -469,9 +468,17 @@ namespace Hyper.Core.Binding
                 boundArguments.Add(boundArgument);
             }
 
-            if (!_scope.TryLookUpFunction(syntax.Identifier.Text, out var function))
+            var symbol = _scope.TryLookUpSymbol(syntax.Identifier.Text);
+            if (symbol == null)
             {
                 _diagnostics.ReportUndefinedFunction(syntax.Identifier.Span, syntax.Identifier.Text);
+                return new BoundErrorExpression();
+            }
+
+            var function = symbol as FunctionSymbol;
+            if (function == null)
+            {
+                _diagnostics.ReportNotAFunction(syntax.Identifier.Span, syntax.Identifier.Text);
                 return new BoundErrorExpression();
             }
 
@@ -550,7 +557,7 @@ namespace Hyper.Core.Binding
             return new BoundErrorExpression();
         }
 
-        private VariableSymbol BindVariable(Token identifier, bool isReadOnly, TypeSymbol type)
+        private VariableSymbol BindVariableDeclaration(Token identifier, bool isReadOnly, TypeSymbol type)
         {
             var name    = identifier.Text ?? "?";
             var declare = !identifier.IsMissing;
@@ -562,6 +569,23 @@ namespace Hyper.Core.Binding
                 _diagnostics.ReportSymbolAlreadyDeclared(identifier.Span, name);
 
             return variable;
+        }
+
+        private VariableSymbol? BindVariableReference(string name, TextSpan span)
+        {
+            switch (_scope.TryLookUpSymbol(name))
+            {
+                case VariableSymbol variable:
+                    return variable;
+
+                case null:
+                    _diagnostics.ReportUndefinedVariable(span, name);
+                    return null;
+
+                default:
+                    _diagnostics.ReportNotAVariable(span, name);
+                    return null;
+            }
         }
 
         private TypeSymbol? LookupType(string? name)
