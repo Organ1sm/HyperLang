@@ -162,7 +162,7 @@ namespace Hyper.Core.Diagnostic
 
         public void ReportMissingReturnExpression(TextSpan span, TypeSymbol returnType)
         {
-            var message = $"An expression of type '{returnType}' expected.";
+            var message = $"An expression of type '{returnType}' is expected.";
             Report(span, message);
         }
     }

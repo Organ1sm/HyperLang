@@ -1,4 +1,5 @@
-﻿using Hyper.Core.Binding.Expr;
+﻿using System.CodeDom.Compiler;
+using Hyper.Core.Binding.Expr;
 using Hyper.Core.Binding.Stmt;
 
 namespace Hyper.Core.Binding.Opt;
@@ -19,9 +20,10 @@ internal sealed class BasicBlock
         if (IsEnd) return "<End>";
 
         using (var writer = new StringWriter())
+        using (var indentedWriter = new IndentedTextWriter(writer))
         {
             foreach (var statement in Statements)
-                statement.WriteTo(writer);
+                statement.WriteTo(indentedWriter);
 
             return writer.ToString();
         }

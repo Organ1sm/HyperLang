@@ -371,7 +371,7 @@ public class EvaluationTests
             ";
 
         var diagnostics = @"
-                An expression of type 'int' expected.
+                An expression of type 'int' is expected.
             ";
 
         AssertDiagnostics(text, diagnostics);
