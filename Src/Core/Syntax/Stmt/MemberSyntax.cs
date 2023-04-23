@@ -2,4 +2,7 @@
 
 namespace Hyper.Core.Syntax.Stmt;
 
-public abstract class MemberSyntax : Node { }
+public abstract class MemberSyntax : Node
+{
+    protected MemberSyntax(AST syntaxTree) : base(syntaxTree) { }
+}

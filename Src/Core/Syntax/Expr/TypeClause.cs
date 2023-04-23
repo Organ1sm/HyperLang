@@ -4,7 +4,8 @@ namespace Hyper.Core.Syntax.Expr;
 
 public sealed class TypeClause : Node
 {
-    public TypeClause(Token colonOrArrowToken, Token identifier)
+    public TypeClause(AST syntaxTree, Token colonOrArrowToken, Token identifier)
+        : base(syntaxTree)
     {
         ColonOrArrowToken = colonOrArrowToken;
         Identifier = identifier;

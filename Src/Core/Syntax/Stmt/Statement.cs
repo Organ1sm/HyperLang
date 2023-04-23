@@ -2,4 +2,8 @@
 
 namespace Hyper.Core.Syntax.Stmt;
 
-public abstract class Statement : Node { }
+public abstract class Statement : Node
+{
+    protected Statement(AST syntaxTree)
+        : base(syntaxTree) { }
+}

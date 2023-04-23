@@ -8,9 +8,10 @@ namespace Hyper.Core.Parser
 {
     internal sealed class Lexer
     {
-        public Lexer(SourceText text)
+        public Lexer(AST syntaxTree)
         {
-            _text = text;
+            _syntaxTree = syntaxTree;
+            _text = syntaxTree.Text;
         }
 
         public Token Lex()
@@ -200,7 +201,10 @@ namespace Hyper.Core.Parser
                         LexWhiteSpace();
                     else
                     {
-                        _diagnostics.ReportBadCharacter(_position, Current);
+                        var span     = new TextSpan(_position, 1);
+                        var location = new TextLocation(_text, span);
+
+                        _diagnostics.ReportBadCharacter(location, Current);
                         _position++;
                     }
 
@@ -210,7 +214,7 @@ namespace Hyper.Core.Parser
             var length = _position - _start;
             var text   = Factors.GetText(_kind) ?? _text.ToString(_start, length);
 
-            return new Token(_kind, _start, text, _value);
+            return new Token(_syntaxTree, _kind, _start, text, _value);
         }
 
         private void LexString()
@@ -228,8 +232,10 @@ namespace Hyper.Core.Parser
                     case '\r':
                     case '\n':
                     {
-                        var span = new TextSpan(_start, 1);
-                        _diagnostics.ReportUnterminatedString(span);
+                        var span     = new TextSpan(_start, 1);
+                        var location = new TextLocation(_text, span);
+
+                        _diagnostics.ReportUnterminatedString(location);
                         done = true;
                         break;
                     }
@@ -270,7 +276,12 @@ namespace Hyper.Core.Parser
             var text   = _text.ToString(_start, length);
 
             if (!int.TryParse(text, out var value))
-                _diagnostics.ReportInvalidNumber(new TextSpan(_start, length), text, TypeSymbol.Int);
+            {
+                var span     = new TextSpan(_start, length);
+                var location = new TextLocation(_text, span);
+
+                _diagnostics.ReportInvalidNumber(location, text, TypeSymbol.Int);
+            }
 
             _value = value;
             _kind = SyntaxKind.NumberToken;
@@ -307,6 +318,7 @@ namespace Hyper.Core.Parser
 
         private char Lookahead => Peek(1);
 
+        private readonly AST           _syntaxTree;
         private readonly SourceText    _text;
         private          int           _position;
         private          DiagnosticBag _diagnostics = new();

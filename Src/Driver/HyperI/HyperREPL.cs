@@ -112,7 +112,7 @@ internal sealed class HyperREPL : REPL
         }
         else
         {
-            Console.Out.WriteDiagnostics(result.Diagnostics, ast);
+            Console.Out.WriteDiagnostics(result.Diagnostics);
         }
     }
 }

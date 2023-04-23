@@ -55,7 +55,7 @@ namespace Hyper.Core.Binding
                     var loweredBody = Lowerer.Lower(body);
 
                     if (function.Type != TypeSymbol.Void && !ControlFlowGraph.AllPathsReturn(loweredBody))
-                        binder._diagnostics.ReportAllPathsMustReturn(function.Declaration!.Identifier.Span);
+                        binder._diagnostics.ReportAllPathsMustReturn(function.Declaration!.Identifier.Location);
 
                     functionBodies.Add(function, loweredBody);
                     diagnostics.AddRange(binder.Diagnostics);
@@ -152,7 +152,7 @@ namespace Hyper.Core.Binding
 
                 if (!seenParameterNames.Add(parameterName))
                 {
-                    _diagnostics.ReportParameterAlreadyDeclared(parameter.Span, parameterName);
+                    _diagnostics.ReportParameterAlreadyDeclared(parameter.Location, parameterName);
                 }
                 else
                 {
@@ -168,7 +168,7 @@ namespace Hyper.Core.Binding
 
             var function = new FunctionSymbol(syntax.Identifier.Text, parameters.ToImmutable(), type, syntax);
             if (_scope != null && function.Declaration?.Identifier.Text != null && !_scope.TryDeclareFunction(function))
-                _diagnostics.ReportSymbolAlreadyDeclared(syntax.Identifier.Span, function.Name);
+                _diagnostics.ReportSymbolAlreadyDeclared(syntax.Identifier.Location, function.Name);
         }
 
         private BoundStatement BindStatement(Statement? syntax)
@@ -218,7 +218,7 @@ namespace Hyper.Core.Binding
             var varType     = type ?? initializer.Type;
             var variable    = BindVariableDeclaration(syntax.Identifier, isReadOnly, varType);
 
-            var convertedInitializer = BindConversion(syntax.Initializer.Span, initializer, varType);
+            var convertedInitializer = BindConversion(syntax.Initializer.Location, initializer, varType);
 
             return new BoundVariableDeclaration(variable, convertedInitializer);
         }
@@ -230,7 +230,7 @@ namespace Hyper.Core.Binding
 
             var type = LookupType(syntax.Identifier.Text);
             if (type == null)
-                _diagnostics.ReportUndefinedType(syntax.Identifier.Span, syntax.Identifier.Text);
+                _diagnostics.ReportUndefinedType(syntax.Identifier.Location, syntax.Identifier.Text);
 
             return type;
         }
@@ -292,7 +292,7 @@ namespace Hyper.Core.Binding
         {
             if (_loopStack.Count == 0)
             {
-                _diagnostics.ReportInvalidBreakOrContinue(syntax.Keyword.Span, syntax.Keyword.Text);
+                _diagnostics.ReportInvalidBreakOrContinue(syntax.Keyword.Location, syntax.Keyword.Text);
                 return BindErrorStatement();
             }
 
@@ -304,7 +304,7 @@ namespace Hyper.Core.Binding
         {
             if (_loopStack.Count == 0)
             {
-                _diagnostics.ReportInvalidBreakOrContinue(syntax.Keyword.Span, syntax.Keyword.Text);
+                _diagnostics.ReportInvalidBreakOrContinue(syntax.Keyword.Location, syntax.Keyword.Text);
                 return BindErrorStatement();
             }
 
@@ -318,21 +318,21 @@ namespace Hyper.Core.Binding
 
             if (_function == null)
             {
-                _diagnostics.ReportInvalidReturn(syntax.ReturnKeyword.Span);
+                _diagnostics.ReportInvalidReturn(syntax.ReturnKeyword.Location);
             }
             else
             {
                 if (_function.Type == TypeSymbol.Void)
                 {
                     if (expression != null && syntax.Expression != null)
-                        _diagnostics.ReportInvalidReturnExpression(syntax.Expression.Span, _function.Name);
+                        _diagnostics.ReportInvalidReturnExpression(syntax.Expression.Location, _function.Name);
                 }
                 else
                 {
                     if (expression == null)
-                        _diagnostics.ReportMissingReturnExpression(syntax.ReturnKeyword.Span, _function.Type);
+                        _diagnostics.ReportMissingReturnExpression(syntax.ReturnKeyword.Location, _function.Type);
                     else if (syntax.Expression != null)
-                        expression = BindConversion(syntax.Expression.Span, expression, _function.Type);
+                        expression = BindConversion(syntax.Expression.Location, expression, _function.Type);
                 }
             }
 
@@ -348,7 +348,7 @@ namespace Hyper.Core.Binding
 
             if (!canBeVoid && result.Type == TypeSymbol.Void)
             {
-                _diagnostics.ReportExpressionMustHaveValue(syntax.Span);
+                _diagnostics.ReportExpressionMustHaveValue(syntax.Location);
                 return new BoundErrorExpression();
             }
 
@@ -388,7 +388,7 @@ namespace Hyper.Core.Binding
             if (boundOperator != null)
                 return new BoundUnaryExpression(boundOperator, boundOperand);
 
-            _diagnostics.ReportUndefinedUnaryOperator(syntax.Operator.Span,
+            _diagnostics.ReportUndefinedUnaryOperator(syntax.Operator.Location,
                                                       syntax.Operator.Text,
                                                       boundOperand.Type);
             return new BoundErrorExpression();
@@ -406,7 +406,7 @@ namespace Hyper.Core.Binding
             if (boundOperator != null)
                 return new BoundBinaryExpression(boundLeft, boundOperator, boundRight);
 
-            _diagnostics.ReportUndefinedBinaryOperator(syntax.Operator.Span,
+            _diagnostics.ReportUndefinedBinaryOperator(syntax.Operator.Location,
                                                        syntax.Operator.Text,
                                                        boundLeft.Type,
                                                        boundRight.Type);
@@ -428,7 +428,7 @@ namespace Hyper.Core.Binding
                 return new BoundErrorExpression();
             }
 
-            var variable = BindVariableReference(name, syntax.IdentifierToken.Span);
+            var variable = BindVariableReference(syntax.IdentifierToken);
             if (variable == null)
                 return new BoundErrorExpression();
 
@@ -440,17 +440,17 @@ namespace Hyper.Core.Binding
             var name            = syntax.IdentifierToken.Text;
             var boundExpression = BindExpression(syntax.Expression);
 
-            var variable = BindVariableReference(name, syntax.IdentifierToken.Span);
+            var variable = BindVariableReference(syntax.IdentifierToken);
             switch (variable)
             {
                 case null:
                     return boundExpression;
                 case {IsReadOnly: true}:
-                    _diagnostics.ReportCannotAssign(syntax.EqualsToken.Span, name);
+                    _diagnostics.ReportCannotAssign(syntax.EqualsToken.Location, name);
                     break;
             }
 
-            var convertedExpression = BindConversion(syntax.Expression.Span, boundExpression, variable.Type);
+            var convertedExpression = BindConversion(syntax.Expression.Location, boundExpression, variable.Type);
 
             return new BoundAssignmentExpression(variable, convertedExpression);
         }
@@ -471,14 +471,14 @@ namespace Hyper.Core.Binding
             var symbol = _scope.TryLookUpSymbol(syntax.Identifier.Text);
             if (symbol == null)
             {
-                _diagnostics.ReportUndefinedFunction(syntax.Identifier.Span, syntax.Identifier.Text);
+                _diagnostics.ReportUndefinedFunction(syntax.Identifier.Location, syntax.Identifier.Text);
                 return new BoundErrorExpression();
             }
 
             var function = symbol as FunctionSymbol;
             if (function == null)
             {
-                _diagnostics.ReportNotAFunction(syntax.Identifier.Span, syntax.Identifier.Text);
+                _diagnostics.ReportNotAFunction(syntax.Identifier.Location, syntax.Identifier.Text);
                 return new BoundErrorExpression();
             }
 
@@ -502,7 +502,8 @@ namespace Hyper.Core.Binding
                     span = syntax.CloseParenthesisToken.Span;
                 }
 
-                _diagnostics.ReportWrongArgumentCount(span,
+                var location = new TextLocation(syntax.SyntaxTree.Text, span);
+                _diagnostics.ReportWrongArgumentCount(location,
                                                       function.Name,
                                                       function.Parameters.Length,
                                                       syntax.Arguments.Count);
@@ -519,7 +520,7 @@ namespace Hyper.Core.Binding
                     continue;
 
                 if (argument.Type != TypeSymbol.Error)
-                    _diagnostics.ReportWrongArgumentType(syntax.Arguments[i].Span,
+                    _diagnostics.ReportWrongArgumentType(syntax.Arguments[i].Location,
                                                          parameter.Name,
                                                          parameter.Type,
                                                          argument.Type);
@@ -535,10 +536,10 @@ namespace Hyper.Core.Binding
         private BoundExpression BindConversion(TypeSymbol type, Expression syntax, bool allowExplicit = false)
         {
             var expression = BindExpression(syntax);
-            return BindConversion(syntax.Span, expression, type, allowExplicit);
+            return BindConversion(syntax.Location, expression, type, allowExplicit);
         }
 
-        private BoundExpression BindConversion(TextSpan diagnosticSpan,
+        private BoundExpression BindConversion(TextLocation diagnosticLocation,
                                                BoundExpression expression,
                                                TypeSymbol type,
                                                bool allowExplicit = false)
@@ -546,13 +547,13 @@ namespace Hyper.Core.Binding
             var conversion = Conversion.Classify(expression.Type, type);
 
             if (!allowExplicit && conversion.IsExplicit)
-                _diagnostics.ReportCannotConvertImplicitly(diagnosticSpan, expression.Type, type);
+                _diagnostics.ReportCannotConvertImplicitly(diagnosticLocation, expression.Type, type);
 
             if (conversion.Exists)
                 return conversion.IsIdentity ? expression : new BoundConversionExpression(type, expression);
 
             if (expression.Type != TypeSymbol.Error && type != TypeSymbol.Error)
-                _diagnostics.ReportCannotConvert(diagnosticSpan, expression.Type, type);
+                _diagnostics.ReportCannotConvert(diagnosticLocation, expression.Type, type);
 
             return new BoundErrorExpression();
         }
@@ -566,24 +567,25 @@ namespace Hyper.Core.Binding
                 : new LocalVariableSymbol(name, type, isReadOnly);
 
             if (declare && _scope != null && !_scope.TryDeclareVariable(variable))
-                _diagnostics.ReportSymbolAlreadyDeclared(identifier.Span, name);
+                _diagnostics.ReportSymbolAlreadyDeclared(identifier.Location, name);
 
             return variable;
         }
 
-        private VariableSymbol? BindVariableReference(string name, TextSpan span)
+        private VariableSymbol? BindVariableReference(Token identifier)
         {
-            switch (_scope.TryLookUpSymbol(name))
+            var name = identifier.Text;
+            switch (_scope?.TryLookUpSymbol(name))
             {
                 case VariableSymbol variable:
                     return variable;
 
                 case null:
-                    _diagnostics.ReportUndefinedVariable(span, name);
+                    _diagnostics.ReportUndefinedVariable(identifier.Location, name);
                     return null;
 
                 default:
-                    _diagnostics.ReportNotAVariable(span, name);
+                    _diagnostics.ReportNotAVariable(identifier.Location, name);
                     return null;
             }
         }

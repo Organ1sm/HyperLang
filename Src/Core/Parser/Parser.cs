@@ -10,6 +10,7 @@ namespace Hyper.Core.Parser
 {
     internal sealed class Parser
     {
+        private readonly AST                   _syntaxTree;
         private readonly SourceText            _text;
         private readonly ImmutableArray<Token> _tokens;
         private readonly DiagnosticBag         _diagnostics = new();
@@ -18,10 +19,10 @@ namespace Hyper.Core.Parser
         public  DiagnosticBag Diagnostics => _diagnostics;
         private Token         Current     => Peek(0);
 
-        public Parser(SourceText text)
+        public Parser(AST syntaxTree)
         {
             var tokens = new List<Token>();
-            var lexer  = new Lexer(text);
+            var lexer  = new Lexer(syntaxTree);
 
             Token token;
             do
@@ -32,7 +33,8 @@ namespace Hyper.Core.Parser
                     tokens.Add(token);
             } while (token.Kind != SyntaxKind.EndOfFileToken);
 
-            _text = text;
+            _syntaxTree = syntaxTree;
+            _text = syntaxTree.Text;
             _tokens = tokens.ToImmutableArray();
             _diagnostics.AddRange(lexer.Diagnostics);
         }
@@ -56,8 +58,8 @@ namespace Hyper.Core.Parser
             if (Current.Kind == kind)
                 return NextToken();
 
-            _diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind, kind);
-            return new Token(kind: kind, position: Current.Position);
+            _diagnostics.ReportUnexpectedToken(Current.Location, Current.Kind, kind);
+            return new Token(_syntaxTree, kind: kind, position: Current.Position);
         }
 
         public CompilationUnit ParseCompilationUnit()
@@ -65,7 +67,7 @@ namespace Hyper.Core.Parser
             var members        = ParseMembers();
             var endOfFileToken = Match(SyntaxKind.EndOfFileToken);
 
-            return new CompilationUnit(members, endOfFileToken);
+            return new CompilationUnit(_syntaxTree, members, endOfFileToken);
         }
 
         private ImmutableArray<MemberSyntax> ParseMembers()
@@ -108,7 +110,8 @@ namespace Hyper.Core.Parser
             var type             = ParseOptionalTypeClause();
             var body             = ParseBlockStatement();
 
-            return new FunctionDeclaration(funcKeyword,
+            return new FunctionDeclaration(_syntaxTree,
+                                           funcKeyword,
                                            identifier,
                                            openParentToken,
                                            parameters,
@@ -147,13 +150,13 @@ namespace Hyper.Core.Parser
             var identifier = Match(SyntaxKind.IdentifierToken);
             var type       = ParseTypeClause();
 
-            return new Parameter(identifier, type);
+            return new Parameter(_syntaxTree, identifier, type);
         }
 
         private MemberSyntax ParseGlobalStatement()
         {
             var statement = ParseStatement();
-            return new GlobalStatement(statement);
+            return new GlobalStatement(_syntaxTree, statement);
         }
 
         private Statement ParseStatement()
@@ -200,7 +203,7 @@ namespace Hyper.Core.Parser
 
             var closeBraceToken = Match(SyntaxKind.CloseBraceToken);
 
-            return new BlockStatement(openBraceToken, statements.ToImmutable(), closeBraceToken);
+            return new BlockStatement(_syntaxTree, openBraceToken, statements.ToImmutable(), closeBraceToken);
         }
 
         private Statement ParseVariableDeclaration()
@@ -212,7 +215,7 @@ namespace Hyper.Core.Parser
             var equals      = Match(SyntaxKind.EqualsToken);
             var initializer = ParseExpression();
 
-            return new VariableDeclaration(keyword, identifier, typeClause, equals, initializer);
+            return new VariableDeclaration(_syntaxTree, keyword, identifier, typeClause, equals, initializer);
         }
 
         private TypeClause? ParseOptionalTypeClause()
@@ -232,7 +235,7 @@ namespace Hyper.Core.Parser
             };
             var identifier = Match(SyntaxKind.IdentifierToken);
 
-            return new TypeClause(token, identifier);
+            return new TypeClause(_syntaxTree, token, identifier);
         }
 
         private Statement ParseIfStatement()
@@ -243,7 +246,7 @@ namespace Hyper.Core.Parser
             var statement  = ParseStatement();
             var elseClause = ParseElseClause();
 
-            return new IfStatement(keyword, condition, statement, elseClause);
+            return new IfStatement(_syntaxTree, keyword, condition, statement, elseClause);
         }
 
         private Statement ParseDoWhileStatement()
@@ -254,7 +257,7 @@ namespace Hyper.Core.Parser
             var whileKeyword = Match(SyntaxKind.WhileKeyword);
             var condition    = ParseExpression();
 
-            return new DoWhileStatement(doKeyword, body, whileKeyword, condition);
+            return new DoWhileStatement(_syntaxTree, doKeyword, body, whileKeyword, condition);
         }
 
         private Statement ParseWhileStatement()
@@ -264,7 +267,7 @@ namespace Hyper.Core.Parser
             Match(SyntaxKind.ColonToken);
             var body = ParseStatement();
 
-            return new WhileStatement(keyword, condition, body);
+            return new WhileStatement(_syntaxTree, keyword, condition, body);
         }
 
         private ElseClause? ParseElseClause()
@@ -276,7 +279,7 @@ namespace Hyper.Core.Parser
             Match(SyntaxKind.ColonToken);
             var statement = ParseStatement();
 
-            return new ElseClause(keyword, statement);
+            return new ElseClause(_syntaxTree, keyword, statement);
         }
 
         private Statement ParseForStatement()
@@ -289,19 +292,26 @@ namespace Hyper.Core.Parser
             var upperBound  = ParseExpression();
             var body        = ParseStatement();
 
-            return new ForStatement(keyword, identifier, equalsToken, lowerBound, toKeyword, upperBound, body);
+            return new ForStatement(_syntaxTree,
+                                    keyword,
+                                    identifier,
+                                    equalsToken,
+                                    lowerBound,
+                                    toKeyword,
+                                    upperBound,
+                                    body);
         }
 
         private Statement ParseBreakStatement()
         {
             var keyword = Match(SyntaxKind.BreakKeyword);
-            return new BreakStatement(keyword);
+            return new BreakStatement(_syntaxTree, keyword);
         }
 
         private Statement ParseContinueStatement()
         {
             var keyword = Match(SyntaxKind.ContinueKeyword);
-            return new BreakStatement(keyword);
+            return new BreakStatement(_syntaxTree, keyword);
         }
 
         private Statement ParseReturnStatement()
@@ -313,13 +323,13 @@ namespace Hyper.Core.Parser
             var sameLine    = !isEof && keywordLine == currentLine;
             var expression  = sameLine ? ParseExpression() : null;
 
-            return new ReturnStatement(keyword, expression);
+            return new ReturnStatement(_syntaxTree, keyword, expression);
         }
 
         private ExpressionStatement ParseExpressionStatement()
         {
             var expression = ParseExpression();
-            return new ExpressionStatement(expression);
+            return new ExpressionStatement(_syntaxTree, expression);
         }
 
         private Expression ParseBinaryExpression(int parentPrecedence = 0)
@@ -331,7 +341,7 @@ namespace Hyper.Core.Parser
             {
                 var opToken = NextToken();
                 var operand = ParseBinaryExpression(unaryOperatorPrecedence);
-                left = new UnaryExpression(opToken, operand);
+                left = new UnaryExpression(_syntaxTree, opToken, operand);
             }
             else
             {
@@ -347,7 +357,7 @@ namespace Hyper.Core.Parser
                 var opToken = NextToken();
                 var right   = ParseBinaryExpression(precedence);
 
-                left = new BinaryExpression(left, opToken, right);
+                left = new BinaryExpression(_syntaxTree, left, opToken, right);
             }
 
             return left;
@@ -366,7 +376,7 @@ namespace Hyper.Core.Parser
                 var operatorToken   = NextToken();
                 var right           = ParseAssignmentExpression();
 
-                return new AssignmentExpression(identifierToken, operatorToken, right);
+                return new AssignmentExpression(_syntaxTree, identifierToken, operatorToken, right);
             }
 
             return ParseBinaryExpression();
@@ -390,13 +400,13 @@ namespace Hyper.Core.Parser
             var expression = ParseExpression();
             var right      = Match(SyntaxKind.CloseParenthesisToken);
 
-            return new ParenthesizedExpression(left, expression, right);
+            return new ParenthesizedExpression(_syntaxTree, left, expression, right);
         }
 
         private Expression ParseStringLiteral()
         {
             var stringToken = Match(SyntaxKind.StringToken);
-            return new LiteralExpression(stringToken);
+            return new LiteralExpression(_syntaxTree, stringToken);
         }
 
         private Expression ParseBooleanLiteral()
@@ -404,13 +414,13 @@ namespace Hyper.Core.Parser
             var isTrue       = (Current.Kind == SyntaxKind.TrueKeyword);
             var keywordToken = isTrue ? Match(SyntaxKind.TrueKeyword) : Match(SyntaxKind.FalseKeyword);
 
-            return new LiteralExpression(keywordToken, isTrue);
+            return new LiteralExpression(_syntaxTree, keywordToken, isTrue);
         }
 
         private Expression ParseNumberLiteral()
         {
             var numberToken = Match(SyntaxKind.NumberToken);
-            return new LiteralExpression(numberToken);
+            return new LiteralExpression(_syntaxTree, numberToken);
         }
 
         private Expression ParseNameOrCallExpression()
@@ -428,7 +438,7 @@ namespace Hyper.Core.Parser
             var arguments   = ParseArguments();
             var closeParent = Match(SyntaxKind.CloseParenthesisToken);
 
-            return new CallExpression(identifier, openParent, arguments, closeParent);
+            return new CallExpression(_syntaxTree, identifier, openParent, arguments, closeParent);
         }
 
         private SeparatedSyntaxList<Expression> ParseArguments()
@@ -459,7 +469,7 @@ namespace Hyper.Core.Parser
         private Expression ParseNameExpression()
         {
             var identifierToken = Match(SyntaxKind.IdentifierToken);
-            return new NameExpression(identifierToken);
+            return new NameExpression(_syntaxTree, identifierToken);
         }
     }
 }

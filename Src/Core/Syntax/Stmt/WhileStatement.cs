@@ -5,7 +5,8 @@ namespace Hyper.Core.Syntax.Stmt;
 
 public sealed class WhileStatement : Statement
 {
-    public WhileStatement(Token whileKeyword, Expression condition, Statement body)
+    public WhileStatement(AST syntaxTree, Token whileKeyword, Expression condition, Statement body)
+        : base(syntaxTree)
     {
         WhileKeyword = whileKeyword;
         Condition = condition;

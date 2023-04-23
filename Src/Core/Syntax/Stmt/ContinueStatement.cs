@@ -4,7 +4,8 @@ namespace Hyper.Core.Syntax.Stmt;
 
 internal class ContinueStatement : Statement
 {
-    public ContinueStatement(Token keyword)
+    public ContinueStatement(AST syntaxTree, Token keyword)
+        : base(syntaxTree)
     {
         Keyword = keyword;
     }

@@ -4,9 +4,10 @@ namespace Hyper.Core.Text;
 
 public sealed class SourceText
 {
-    private SourceText(string text)
+    private SourceText(string text, string fileName)
     {
         _text = text;
+        FileName = fileName;
         Lines = ParseLines(this, text);
     }
 
@@ -24,13 +25,9 @@ public sealed class SourceText
                 return index;
 
             if (start > position)
-            {
                 upper = index - 1;
-            }
             else
-            {
                 lower = index + 1;
-            }
         }
 
         return lower - 1;
@@ -73,6 +70,7 @@ public sealed class SourceText
         var lineLength = position - lineStart;
         var lineLengthIncludingLineBreak = lineLength + lineBreakWidth;
         var line = new TextLine(sourceText, lineStart, lineLength, lineLengthIncludingLineBreak);
+
         result.Add(line);
     }
 
@@ -90,18 +88,20 @@ public sealed class SourceText
         };
     }
 
-    public static SourceText MakeSTFrom(string text)
+    public static SourceText MakeSTFrom(string text, string fileName = "")
     {
-        return new SourceText(text);
+        return new SourceText(text, fileName);
     }
 
     public override string ToString() => _text;
     public string ToString(int start, int length) => _text.Substring(start, length);
     public string ToString(TextSpan span) => ToString(span.Start, span.Length);
 
-    private readonly string                   _text;
-    public           ImmutableArray<TextLine> Lines  { get; }
-    public           int                      Length => _text.Length;
+    public ImmutableArray<TextLine> Lines { get; }
+
+    private readonly string _text;
+    public           int    Length   => _text.Length;
+    public           string FileName { get; }
 
     public char this[int index] => _text[index];
 }

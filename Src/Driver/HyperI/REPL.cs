@@ -5,9 +5,10 @@ namespace HyperI;
 
 internal abstract class REPL
 {
-    private List<string> _submissionHistory = new();
-    private int          _submissionHistoryIndex;
-    private bool         _done;
+    private readonly List<string> _submissionHistory = new();
+
+    private int  _submissionHistoryIndex;
+    private bool _done;
 
     public void Run()
     {

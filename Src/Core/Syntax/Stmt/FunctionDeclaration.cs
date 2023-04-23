@@ -5,13 +5,15 @@ namespace Hyper.Core.Syntax.Stmt;
 
 public sealed class FunctionDeclaration : MemberSyntax
 {
-    public FunctionDeclaration(Token functionKeyword,
+    public FunctionDeclaration(AST syntaxTree,
+                               Token functionKeyword,
                                Token identifier,
                                Token openParenthesisToken,
                                SeparatedSyntaxList<Parameter> parameters,
                                Token closeParenthesisToken,
                                TypeClause? type,
                                BlockStatement body)
+        : base(syntaxTree)
     {
         FunctionKeyword = functionKeyword;
         Identifier = identifier;
@@ -29,6 +31,6 @@ public sealed class FunctionDeclaration : MemberSyntax
     public Token                          OpenParenthesisToken  { get; }
     public SeparatedSyntaxList<Parameter> Parameters            { get; }
     public Token                          CloseParenthesisToken { get; }
-    public TypeClause?                     Type                  { get; }
+    public TypeClause?                    Type                  { get; }
     public BlockStatement                 Body                  { get; }
 }

@@ -8,13 +8,15 @@ public sealed class ForStatement : Statement
     // for <var> = <lower> to <upper>
     // <body>
     //  ....
-    public ForStatement(Token keyword,
+    public ForStatement(AST syntaxTree,
+                        Token keyword,
                         Token identifier,
                         Token equalsToken,
                         Expression lowerBound,
                         Token toKeyword,
                         Expression upperBound,
                         Statement body)
+        : base(syntaxTree)
     {
         Keyword = keyword;
         Identifier = identifier;

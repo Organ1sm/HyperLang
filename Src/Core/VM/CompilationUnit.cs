@@ -8,7 +8,8 @@ namespace Hyper.Core.VM
 {
     public sealed class CompilationUnit : Node
     {
-        public CompilationUnit(ImmutableArray<MemberSyntax> members, Token endOfFileToken)
+        public CompilationUnit(AST syntaxTree, ImmutableArray<MemberSyntax> members, Token endOfFileToken)
+            : base(syntaxTree)
         {
             Members = members;
             EndOfFileToken = endOfFileToken;

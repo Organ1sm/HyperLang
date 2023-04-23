@@ -9,7 +9,11 @@ public sealed class ParenthesizedExpression : Expression
     public          Expression Expression            { get; }
     public          Token      CloseParenthesisToken { get; }
 
-    public ParenthesizedExpression(Token openParenthesisToken, Expression expression, Token closeParenthesisToken)
+    public ParenthesizedExpression(AST syntaxTree,
+                                   Token openParenthesisToken,
+                                   Expression expression,
+                                   Token closeParenthesisToken)
+        : base(syntaxTree)
     {
         OpenParenthesisToken = openParenthesisToken;
         Expression = expression;

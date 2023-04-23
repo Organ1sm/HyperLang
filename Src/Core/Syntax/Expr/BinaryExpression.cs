@@ -9,7 +9,8 @@ public sealed class BinaryExpression : Expression
     public          Token      Operator { get; }
     public          Expression Right    { get; }
 
-    public BinaryExpression(Expression left, Token @operator, Expression right)
+    public BinaryExpression(AST syntaxTree, Expression left, Token @operator, Expression right)
+        : base(syntaxTree)
     {
         Left = left;
         Operator = @operator;

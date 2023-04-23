@@ -70,43 +70,49 @@ public static class TextWriterExtensions
     }
 
     public static void WriteDiagnostics(this TextWriter writer,
-                                        IEnumerable<Diagnostic.Diagnostic> diagnostics,
-                                        AST syntaxTree)
+                                        IEnumerable<Diagnostic.Diagnostic> diagnostics)
     {
-        foreach (var diagnostic in diagnostics.OrderBy(d => d.Span.Start)
-                                              .ThenBy(d => d.Span.Length))
+        foreach (var diagnostic in diagnostics.OrderBy(d => d.Location.FileName)
+                                              .ThenBy(d => d.Location.Span.Start)
+                                              .ThenBy(d => d.Location.Span.Length))
         {
-            var lineIndex  = syntaxTree.Text.GetLineIndex(diagnostic.Span.Start);
-            var line       = syntaxTree.Text.Lines[lineIndex];
-            var lineNumber = lineIndex + 1;
-            var character  = diagnostic.Span.Start - line.Start + 1;
+            var text           = diagnostic.Location.Text;
+            var fileName       = diagnostic.Location.FileName;
+            var startLine      = diagnostic.Location.StartLine + 1;
+            var startCharacter = diagnostic.Location.StartCharacter + 1;
+            var endLine        = diagnostic.Location.EndLine + 1;
+            var endCharacter   = diagnostic.Location.EndCharacter + 1;
 
-            Console.WriteLine();
+            var span      = diagnostic.Location.Span;
+            var lineIndex = text.GetLineIndex(span.Start);
+            var line      = text.Lines[lineIndex];
 
-            Console.ForegroundColor = ConsoleColor.DarkRed;
-            Console.Write($"({lineNumber}, {character}): ");
-            Console.WriteLine(diagnostic);
-            Console.ResetColor();
+            writer.WriteLine();
 
-            var prefixSpan = TextSpan.MakeTextSpanFromBound(line.Start, diagnostic.Span.Start);
-            var suffixSpan = TextSpan.MakeTextSpanFromBound(diagnostic.Span.End, line.End);
+            writer.SetForeground(ConsoleColor.DarkRed);
+            writer.Write($"{fileName}({startLine},{startCharacter},{endLine},{endCharacter}): ");
+            writer.WriteLine(diagnostic);
+            writer.ResetColor();
 
-            var prefix = syntaxTree.Text.ToString(prefixSpan);
-            var error  = syntaxTree.Text.ToString(diagnostic.Span);
-            var suffix = syntaxTree.Text.ToString(suffixSpan);
+            var prefixSpan = TextSpan.MakeTextSpanFromBound(line.Start, span.Start);
+            var suffixSpan = TextSpan.MakeTextSpanFromBound(span.End, line.End);
 
-            Console.Write("    ");
-            Console.Write(prefix);
+            var prefix = text.ToString(prefixSpan);
+            var error  = text.ToString(span);
+            var suffix = text.ToString(suffixSpan);
 
-            Console.ForegroundColor = ConsoleColor.DarkRed;
-            Console.Write(error);
-            Console.ResetColor();
+            writer.Write("    ");
+            writer.Write(prefix);
 
-            Console.Write(suffix);
+            writer.SetForeground(ConsoleColor.DarkRed);
+            writer.Write(error);
+            writer.ResetColor();
 
-            Console.WriteLine();
+            writer.Write(suffix);
+
+            writer.WriteLine();
         }
 
-        Console.WriteLine();
+        writer.WriteLine();
     }
 }

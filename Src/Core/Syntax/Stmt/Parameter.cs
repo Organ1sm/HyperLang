@@ -5,7 +5,8 @@ namespace Hyper.Core.Syntax.Stmt;
 
 public sealed class Parameter : Node
 {
-    public Parameter(Token identifier, TypeClause type)
+    public Parameter(AST syntaxTree, Token identifier, TypeClause type)
+        : base(syntaxTree)
     {
         Identifier = identifier;
         Type = type;

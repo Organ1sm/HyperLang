@@ -5,7 +5,11 @@ namespace Hyper.Core.Syntax.Stmt;
 
 public sealed class BlockStatement : Statement
 {
-    public BlockStatement(Token openBraceToken, ImmutableArray<Statement> statements, Token closeBraceToken)
+    public BlockStatement(AST syntaxTree,
+                          Token openBraceToken,
+                          ImmutableArray<Statement> statements,
+                          Token closeBraceToken)
+        : base(syntaxTree)
     {
         OpenBraceToken = openBraceToken;
         Statements = statements;

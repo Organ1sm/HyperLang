@@ -4,7 +4,8 @@ namespace Hyper.Core.Syntax.Stmt;
 
 public sealed class ExpressionStatement : Statement
 {
-    public ExpressionStatement(Expression expression)
+    public ExpressionStatement(AST syntaxTree, Expression expression)
+        : base(syntaxTree)
     {
         Expression = expression;
     }

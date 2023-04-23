@@ -6,7 +6,8 @@ namespace Hyper.Core.Parser
 {
     public sealed class Token : Node
     {
-        public Token(SyntaxKind kind, int position, string? text = null, object? value = null)
+        public Token(AST syntaxTree, SyntaxKind kind, int position, string? text = null, object? value = null)
+            : base(syntaxTree)
         {
             Kind = kind;
             Position = position;
