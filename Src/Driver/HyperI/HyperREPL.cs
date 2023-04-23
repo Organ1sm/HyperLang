@@ -1,6 +1,6 @@
-﻿using Hyper.Core.Symbols;
+﻿using Hyper.Core.IO;
+using Hyper.Core.Symbols;
 using Hyper.Core.Syntax;
-using Hyper.Core.Text;
 using Hyper.Core.VM;
 
 namespace HyperI;
@@ -112,40 +112,7 @@ internal sealed class HyperREPL : REPL
         }
         else
         {
-            foreach (var diagnostic in result.Diagnostics.OrderBy(diag => diag.Span, new TextSpanComparer()))
-            {
-                var lineIndex  = ast.Text.GetLineIndex(diagnostic.Span.Start);
-                var line       = ast.Text.Lines[lineIndex];
-                var lineNumber = lineIndex + 1;
-                var character  = diagnostic.Span.Start - line.Start + 1;
-
-                Console.WriteLine();
-
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.Write($"({lineNumber}, {character}): ");
-                Console.WriteLine(diagnostic);
-                Console.ResetColor();
-
-                var prefixSpan = TextSpan.MakeTextSpanFromBound(line.Start, diagnostic.Span.Start);
-                var suffixSpan = TextSpan.MakeTextSpanFromBound(diagnostic.Span.End, line.End);
-
-                var prefix = ast.Text.ToString(prefixSpan);
-                var error  = ast.Text.ToString(diagnostic.Span);
-                var suffix = ast.Text.ToString(suffixSpan);
-
-                Console.Write("     ");
-                Console.Write(prefix);
-
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.Write(error);
-                Console.ResetColor();
-
-                Console.Write(suffix);
-
-                Console.WriteLine();
-            }
-
-            Console.WriteLine();
+            Console.Out.WriteDiagnostics(result.Diagnostics, ast);
         }
     }
 }
