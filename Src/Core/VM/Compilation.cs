@@ -70,10 +70,7 @@ namespace Hyper.Core.VM
             }
         }
 
-        public Compilation? ContinueWith(AST ast)
-        {
-            return new Compilation(this, ast);
-        }
+        public Compilation ContinueWith(AST ast) => new(this, ast);
 
         public void EmitTree(TextWriter writer)
         {
@@ -88,6 +85,7 @@ namespace Hyper.Core.VM
                                                                             .Contains(functionBody.Key)))
                 {
                     functionBody.Key.WriteTo(writer);
+                    writer.WriteLine();
                     functionBody.Value.WriteTo(writer);
                 }
             }
