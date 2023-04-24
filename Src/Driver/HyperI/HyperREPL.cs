@@ -1,6 +1,4 @@
-﻿using System.Linq.Expressions;
-using System.Reflection.Metadata;
-using Hyper.Core.IO;
+﻿using Hyper.Core.IO;
 using Hyper.Core.Symbols;
 using Hyper.Core.Syntax;
 using Hyper.Core.VM;
@@ -81,6 +79,23 @@ internal sealed class HyperREPL : REPL
 
         var text = File.ReadAllText(path);
         EvaluateSubmission(text);
+    }
+
+
+    [MetaCommand("ls", "List all symbols")]
+    private void EvaluateLs()
+    {
+        if (_previous == null)
+            return;
+
+        var symbols = _previous.GetSymbols()
+                               .OrderBy(s => s.Kind)
+                               .ThenBy(s => s.Name);
+        foreach (var symbol in symbols)
+        {
+            symbol.WriteTo(Console.Out);
+            Console.WriteLine();
+        }
     }
 
     protected override bool IsCompleteSubmission(string text)

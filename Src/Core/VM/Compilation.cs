@@ -15,6 +15,9 @@ namespace Hyper.Core.VM
         public  Compilation?        Previous { get; }
         private BoundGlobalScope?   _globalScope;
 
+        public ImmutableArray<FunctionSymbol>? Functions => GlobalScope.Functions;
+        public ImmutableArray<VariableSymbol>? Variables => GlobalScope.Variables;
+
         public Compilation(params AST[] syntaxTrees) : this(null, syntaxTrees) { }
 
         private Compilation(Compilation? previous, params AST[] syntaxTrees)
@@ -71,6 +74,29 @@ namespace Hyper.Core.VM
         }
 
         public Compilation ContinueWith(AST ast) => new(this, ast);
+
+        public IEnumerable<Symbol> GetSymbols()
+        {
+            var submission      = this;
+            var seenSymbolNames = new HashSet<string>();
+
+            while (submission != null)
+            {
+                foreach (var function in submission.Functions)
+                {
+                    if (seenSymbolNames.Add(function.Name))
+                        yield return function;
+                }
+
+                foreach (var variable in submission.Variables)
+                {
+                    if (seenSymbolNames.Add(variable.Name))
+                        yield return variable;
+                }
+
+                submission = submission.Previous;
+            }
+        }
 
         public void EmitTree(TextWriter writer)
         {
