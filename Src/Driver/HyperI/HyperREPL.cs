@@ -85,10 +85,8 @@ internal sealed class HyperREPL : REPL
     [MetaCommand("ls", "List all symbols")]
     private void EvaluateLs()
     {
-        if (_previous == null)
-            return;
-
-        var symbols = _previous.GetSymbols()
+        var compilation = _previous ?? new Compilation();
+        var symbols = compilation.GetSymbols()
                                .OrderBy(s => s.Kind)
                                .ThenBy(s => s.Name);
         foreach (var symbol in symbols)
@@ -101,11 +99,12 @@ internal sealed class HyperREPL : REPL
     [MetaCommand("dump", "Shows bound tree of a given function")]
     private void EvaluateDump(string functionName)
     {
-        if (_previous == null)
-            return;
+        var compilation = _previous ?? new Compilation();
 
-        var symbol = _previous.GetSymbols().OfType<FunctionSymbol>().SingleOrDefault(f => f.Name == functionName);
-        if (symbol == null)
+        var symbols = compilation.GetSymbols()
+                                 .OfType<FunctionSymbol>()
+                                 .SingleOrDefault(f => f.Name == functionName);
+        if (symbols == null)
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine($"error: function '{functionName}' does not exist");
@@ -113,7 +112,7 @@ internal sealed class HyperREPL : REPL
             return;
         }
 
-        _previous.EmitTree(symbol, Console.Out);
+        compilation.EmitTree(symbols, Console.Out);
     }
 
     protected override bool IsCompleteSubmission(string text)
