@@ -232,7 +232,9 @@ internal static class BoundNodePrinter
     {
         writer.WriteKeyword("goto ");
         writer.WriteIdentifier(node.Label.Name);
-        writer.WriteKeyword(node.JumpIfTrue ? " if " : " unless ");
+        writer.WriteSpace();
+        writer.WriteKeyword(node.JumpIfTrue ? "if" : "unless");
+        writer.WriteSpace();
         node.Condition.WriteTo(writer);
         writer.WriteLine();
     }

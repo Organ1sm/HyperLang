@@ -5,7 +5,8 @@ namespace Hyper.Core.Syntax.Stmt;
 
 public sealed class ReturnStatement : Statement
 {
-    public ReturnStatement(Token returnKeyword, Expression? expression)
+    public ReturnStatement(AST syntaxTree, Token returnKeyword, Expression? expression)
+        : base(syntaxTree)
     {
         ReturnKeyword = returnKeyword;
         Expression = expression;

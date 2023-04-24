@@ -4,9 +4,16 @@ using Hyper.Core.Text;
 
 namespace Hyper.Core.Syntax.Expr;
 
-public class Node
+public abstract class Node
 {
-    public virtual SyntaxKind Kind { get; }
+    protected Node(AST syntaxTree)
+    {
+        SyntaxTree = syntaxTree;
+    }
+
+    public virtual SyntaxKind Kind       { get; }
+    public         AST        SyntaxTree { get; }
+
 
     public IEnumerable<Node> GetChildren()
     {
@@ -46,6 +53,8 @@ public class Node
             return TextSpan.MakeTextSpanFromBound(first.Start, last.End);
         }
     }
+
+    public TextLocation Location => new(SyntaxTree.Text, Span);
 
     public Token GetLastToken()
     {

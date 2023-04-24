@@ -4,7 +4,8 @@ namespace Hyper.Core.Syntax.Expr;
 
 public sealed class AssignmentExpression : Expression
 {
-    public AssignmentExpression(Token identifierToken, Token equalsToken, Expression expression)
+    public AssignmentExpression(AST syntaxTree, Token identifierToken, Token equalsToken, Expression expression)
+        : base(syntaxTree)
     {
         IdentifierToken = identifierToken;
         EqualsToken = equalsToken;

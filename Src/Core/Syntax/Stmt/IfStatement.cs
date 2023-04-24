@@ -5,7 +5,12 @@ namespace Hyper.Core.Syntax.Stmt;
 
 public class IfStatement : Statement
 {
-    public IfStatement(Token ifKeyword, Expression condition, Statement thenStatement, ElseClause? elseClause)
+    public IfStatement(AST syntaxTree,
+                       Token ifKeyword,
+                       Expression condition,
+                       Statement thenStatement,
+                       ElseClause? elseClause)
+        : base(syntaxTree)
     {
         IfKeyword = ifKeyword;
         Condition = condition;
@@ -13,9 +18,9 @@ public class IfStatement : Statement
         ElseClause = elseClause;
     }
 
-    public override SyntaxKind Kind          => SyntaxKind.IfStatement;
-    public          Token      IfKeyword     { get; }
-    public          Expression Condition     { get; }
-    public          Statement  ThenStatement { get; }
+    public override SyntaxKind  Kind          => SyntaxKind.IfStatement;
+    public          Token       IfKeyword     { get; }
+    public          Expression  Condition     { get; }
+    public          Statement   ThenStatement { get; }
     public          ElseClause? ElseClause    { get; }
 }

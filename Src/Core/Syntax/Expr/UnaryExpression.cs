@@ -8,7 +8,8 @@ public sealed class UnaryExpression : Expression
     public          Token      Operator { get; }
     public          Expression Operand  { get; }
 
-    public UnaryExpression(Token @operator, Expression operand)
+    public UnaryExpression(AST syntaxTree, Token @operator, Expression operand)
+        : base(syntaxTree)
     {
         Operator = @operator;
         Operand = operand;

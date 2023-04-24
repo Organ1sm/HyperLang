@@ -4,10 +4,11 @@ namespace Hyper.Core.Syntax.Expr;
 
 public class CallExpression : Expression
 {
-    public CallExpression(Token identifier,
+    public CallExpression(AST syntaxTree,Token identifier,
                           Token openParenthesisToken,
                           SeparatedSyntaxList<Expression> arguments,
                           Token closeParenthesisToken)
+    : base(syntaxTree)
     {
         Identifier = identifier;
         OpenParenthesisToken = openParenthesisToken;

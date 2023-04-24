@@ -2,7 +2,8 @@
 
 public sealed class GlobalStatement : MemberSyntax
 {
-    public GlobalStatement(Statement statement)
+    public GlobalStatement(AST syntaxTree, Statement statement)
+        : base(syntaxTree)
     {
         Statement = statement;
     }

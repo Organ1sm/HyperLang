@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using Hyper.Core.Parser;
+using Hyper.Core.Syntax.Stmt;
 using Hyper.Core.Text;
 using Hyper.Core.VM;
 
@@ -7,16 +8,38 @@ namespace Hyper.Core.Syntax;
 
 public sealed class AST
 {
-    private AST(SourceText text)
-    {
-        var parser = new Parser.Parser(text);
+    private delegate void ParseHandler(AST syntaxTree,
+                                       out CompilationUnit? root,
+                                       out ImmutableArray<Diagnostic.Diagnostic> diagnostics);
 
-        Root = parser.ParseCompilationUnit();
-        Diagnostics = parser.Diagnostics.ToImmutableArray();
+    private AST(SourceText text, ParseHandler handler)
+    {
         Text = text;
+        handler(this, out var root, out var diagnostics);
+
+        Diagnostics = diagnostics;
+        Root = root;
     }
 
-    public static AST Parse(SourceText text) => new(text);
+    public static AST Load(string fileName)
+    {
+        var text       = File.ReadAllText(fileName);
+        var sourceText = SourceText.MakeSTFrom(text, fileName);
+
+        return Parse(sourceText);
+    }
+
+    private static void Parse(AST syntaxTree,
+                              out CompilationUnit root,
+                              out ImmutableArray<Diagnostic.Diagnostic> diagnostics)
+    {
+        var parser = new Parser.Parser(syntaxTree);
+
+        root = parser.ParseCompilationUnit();
+        diagnostics = parser.Diagnostics.ToImmutableArray();
+    }
+
+    public static AST Parse(SourceText text) => new(text, Parse);
 
     public static AST Parse(string text)
     {
@@ -41,22 +64,31 @@ public sealed class AST
     public static ImmutableArray<Token> ParseTokens(SourceText text,
                                                     out ImmutableArray<Diagnostic.Diagnostic> diagnostics)
     {
-        IEnumerable<Token> LexTokens(Lexer lexer)
+        var tokens = new List<Token>();
+
+        void ParseTokens(AST st, out CompilationUnit? root, out ImmutableArray<Diagnostic.Diagnostic> d)
         {
+            root = null;
+
+            var l = new Lexer(st);
             while (true)
             {
-                var token = lexer.Lex();
+                var token = l.Lex();
                 if (token.Kind == SyntaxKind.EndOfFileToken)
+                {
+                    root = new CompilationUnit(st, ImmutableArray<MemberSyntax>.Empty, token);
                     break;
+                }
 
-                yield return token;
+                tokens.Add(token);
             }
+
+            d = l.Diagnostics.ToImmutableArray();
         }
 
-        var l      = new Lexer(text);
-        var result = LexTokens(l).ToImmutableArray();
-        diagnostics = l.Diagnostics.ToImmutableArray();
-        return result;
+        var syntaxTree = new AST(text, ParseTokens);
+        diagnostics = syntaxTree.Diagnostics.ToImmutableArray();
+        return tokens.ToImmutableArray();
     }
 
     public CompilationUnit                       Root        { get; }

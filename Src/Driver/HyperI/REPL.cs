@@ -5,9 +5,10 @@ namespace HyperI;
 
 internal abstract class REPL
 {
-    private List<string> _submissionHistory = new();
-    private int          _submissionHistoryIndex;
-    private bool         _done;
+    private readonly List<string> _submissionHistory = new();
+
+    private int  _submissionHistoryIndex;
+    private bool _done;
 
     public void Run()
     {
@@ -119,7 +120,7 @@ internal abstract class REPL
             }
         }
 
-        if (key.KeyChar >= ' ')
+        if (key.KeyChar >= ' ' && key.Key != ConsoleKey.Escape)
             HandleTyping(document, view, key.KeyChar.ToString());
     }
 
@@ -145,9 +146,7 @@ internal abstract class REPL
     }
 
     private void HandleControlEnter(ObservableCollection<string> document, SubmissionView view)
-    {
-        InsertLine(document, view);
-    }
+        => InsertLine(document, view);
 
     private static void InsertLine(ObservableCollection<string> document, SubmissionView view)
     {
@@ -233,15 +232,10 @@ internal abstract class REPL
         document[lineIndex] = before + after;
     }
 
-    private void HandleHome(ObservableCollection<string> document, SubmissionView view)
-    {
-        view.CurrentCharacter = 0;
-    }
+    private void HandleHome(ObservableCollection<string> document, SubmissionView view) => view.CurrentCharacter = 0;
 
-    private void HandleEnd(ObservableCollection<string> document, SubmissionView view)
-    {
+    private void HandleEnd(ObservableCollection<string> document, SubmissionView view) =>
         view.CurrentCharacter = document[view.CurrentLine].Length;
-    }
 
     private void HandleTab(ObservableCollection<string> document, SubmissionView view)
     {

@@ -4,7 +4,8 @@ namespace Hyper.Core.Syntax.Stmt;
 
 internal class BreakStatement : Statement
 {
-    public BreakStatement(Token keyword)
+    public BreakStatement(AST syntaxTree, Token keyword)
+        : base(syntaxTree)
     {
         Keyword = keyword;
     }

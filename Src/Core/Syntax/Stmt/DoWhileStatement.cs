@@ -5,7 +5,8 @@ namespace Hyper.Core.Syntax.Stmt;
 
 public sealed class DoWhileStatement : Statement
 {
-    public DoWhileStatement(Token doKeyword, Statement body, Token whileKeyword, Expression condition)
+    public DoWhileStatement(AST syntaxTree, Token doKeyword, Statement body, Token whileKeyword, Expression condition)
+        : base(syntaxTree)
     {
         DoKeyword = doKeyword;
         Body = body;

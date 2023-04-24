@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HyperI", "Src\Driver\HyperI
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hyper.Test", "Src\Hyper.Test\Hyper.Test.csproj", "{FDCF5AF4-C2A5-4E56-8CD6-E352D9B782CA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HyperC", "Src\Driver\HyperC\HyperC.csproj", "{6E77804E-8057-4AB4-90E4-C5715A7DE4EE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,5 +30,9 @@ Global
 		{FDCF5AF4-C2A5-4E56-8CD6-E352D9B782CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FDCF5AF4-C2A5-4E56-8CD6-E352D9B782CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FDCF5AF4-C2A5-4E56-8CD6-E352D9B782CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E77804E-8057-4AB4-90E4-C5715A7DE4EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E77804E-8057-4AB4-90E4-C5715A7DE4EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E77804E-8057-4AB4-90E4-C5715A7DE4EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E77804E-8057-4AB4-90E4-C5715A7DE4EE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

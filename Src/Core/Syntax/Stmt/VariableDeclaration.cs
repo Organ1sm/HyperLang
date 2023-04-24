@@ -5,11 +5,13 @@ namespace Hyper.Core.Syntax.Stmt;
 
 public sealed class VariableDeclaration : Statement
 {
-    public VariableDeclaration(Token keyword,
+    public VariableDeclaration(AST syntaxTree,
+                               Token keyword,
                                Token identifier,
                                TypeClause? typeClause,
                                Token equalsToken,
                                Expression initializer)
+        : base(syntaxTree)
     {
         Keyword = keyword;
         Identifier = identifier;

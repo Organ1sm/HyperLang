@@ -27,7 +27,10 @@ internal sealed class ControlFlowGraph
 
     public void WriteTo(TextWriter writer)
     {
-        string Quote(string text) => "\"" + text.Replace("\"", "\\\"") + "\"";
+        string Quote(string text) => "\"" + text.TrimEnd()
+                                                .Replace("\\", "\\\\")
+                                                .Replace("\"", "\\\"")
+                                                .Replace(Environment.NewLine, "\\l") + "\"";
 
         writer.WriteLine("digraph G {");
 
@@ -42,8 +45,8 @@ internal sealed class ControlFlowGraph
         foreach (var block in Blocks)
         {
             var id    = blockIds[block];
-            var label = Quote(block.ToString().Replace(Environment.NewLine, "\\l"));
-            writer.WriteLine($"    {id} [label = {label} shape = box]");
+            var label = Quote(block.ToString());
+            writer.WriteLine($"    {id} [label = {label}, shape = box]");
         }
 
         foreach (var branch in Branches)
@@ -72,8 +75,8 @@ internal sealed class ControlFlowGraph
 
         foreach (var branch in graph.End.Incoming)
         {
-            var lastStatement = branch.From.Statements.Last();
-            if (lastStatement.Kind != BoundNodeKind.ReturnStatement)
+            var lastStatement = branch.From.Statements.LastOrDefault();
+            if (lastStatement is not {Kind: BoundNodeKind.ReturnStatement})
                 return false;
         }
 

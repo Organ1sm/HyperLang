@@ -4,7 +4,8 @@ namespace Hyper.Core.Syntax.Expr;
 
 public sealed class NameExpression : Expression
 {
-    public NameExpression(Token identifierToken)
+    public NameExpression(AST syntaxTree, Token identifierToken)
+        : base(syntaxTree)
     {
         IdentifierToken = identifierToken;
     }

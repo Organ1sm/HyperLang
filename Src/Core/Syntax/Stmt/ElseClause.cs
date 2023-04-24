@@ -5,7 +5,8 @@ namespace Hyper.Core.Syntax.Stmt;
 
 public class ElseClause : Node
 {
-    public ElseClause(Token elseKeyword, Statement elseStatement)
+    public ElseClause(AST syntaxTree, Token elseKeyword, Statement elseStatement)
+        : base(syntaxTree)
     {
         ElseKeyword = elseKeyword;
         ElseStatement = elseStatement;

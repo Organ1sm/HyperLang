@@ -25,29 +25,12 @@ internal sealed class BoundScope
         return true;
     }
 
-    public bool TryLookUpVariable(string name, out VariableSymbol? variable) => TryLookUpSymbol(name, out variable);
-    public bool TryLookUpFunction(string name, out FunctionSymbol? function) => TryLookUpSymbol(name, out function);
-
-    private bool TryLookUpSymbol<TSymbol>(string name, out TSymbol? symbol)
-        where TSymbol : Symbol
+    public Symbol? TryLookUpSymbol(string name)
     {
-        symbol = null;
+        if (_symbols != null && _symbols.TryGetValue(name, out var symbol))
+            return symbol;
 
-        if (_symbols != null && _symbols.TryGetValue(name, out var declaredSymbol))
-        {
-            if (declaredSymbol is TSymbol matchingSymbol)
-            {
-                symbol = matchingSymbol;
-                return true;
-            }
-
-            return false;
-        }
-
-        if (Parent == null)
-            return false;
-
-        return Parent.TryLookUpSymbol(name, out symbol);
+        return Parent?.TryLookUpSymbol(name);
     }
 
     public ImmutableArray<VariableSymbol> GetDeclaredVariables() => GetDeclaredSymbols<VariableSymbol>();
