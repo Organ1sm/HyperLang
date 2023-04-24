@@ -116,5 +116,16 @@ namespace Hyper.Core.VM
                 }
             }
         }
+
+        public void EmitTree(FunctionSymbol symbol, TextWriter writer)
+        {
+            var program = Binder.BindProgram(GlobalScope);
+            if (!program.Functions.TryGetValue(symbol, out var body))
+                return;
+
+            symbol.WriteTo(writer);
+            writer.WriteLine();
+            body.WriteTo(writer);
+        }
     }
 }
