@@ -1,4 +1,5 @@
-﻿using Hyper.Core.IO;
+﻿using System.Linq.Expressions;
+using Hyper.Core.IO;
 using Hyper.Core.Symbols;
 using Hyper.Core.Syntax;
 using Hyper.Core.VM;
@@ -10,7 +11,10 @@ internal sealed class HyperREPL : REPL
     private          Compilation?                       _previous;
     private          bool                               _showTree;
     private          bool                               _showProgram;
+    private static   bool                               _loadingSubmission;
     private readonly Dictionary<VariableSymbol, object> _variables = new();
+
+    public HyperREPL() => LoadSubmissions();
 
     protected override void RenderLine(string line)
     {
@@ -45,6 +49,7 @@ internal sealed class HyperREPL : REPL
     {
         _previous = null;
         _variables.Clear();
+        ClearSubmissions();
     }
 
     [MetaCommand("showTree", "Shows the parse tree")]
@@ -108,10 +113,60 @@ internal sealed class HyperREPL : REPL
             }
 
             _previous = compilation;
+
+            SaveSubmissions(text);
         }
         else
         {
             Console.Out.WriteDiagnostics(result.Diagnostics);
         }
     }
+
+    private static string GetSubmissionsDirectory()
+        => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                        "HyperLang",
+                        "Submissions");
+
+    private static void ClearSubmissions() => Directory.Delete(GetSubmissionsDirectory(), recursive: true);
+
+    private void LoadSubmissions()
+    {
+        var submissionsDirectory = GetSubmissionsDirectory();
+        if (!Directory.Exists(submissionsDirectory)) return;
+
+        var files = Directory.GetFiles(submissionsDirectory).OrderBy(f => f).ToArray();
+        if (files.Length == 0)
+            return;
+
+        Console.ForegroundColor = ConsoleColor.DarkGray;
+        Console.WriteLine($"Loaded {files.Length} submission(s)");
+        Console.ResetColor();
+
+        _loadingSubmission = true;
+
+        foreach (var file in files)
+        {
+            var text = File.ReadAllText(file);
+            EvaluateSubmission(text);
+        }
+
+        _loadingSubmission = false;
+    }
+
+    private static void SaveSubmissions(string text)
+    {
+        if (_loadingSubmission)
+            return;
+
+        var submissionsDirectory = GetSubmissionsDirectory();
+        Directory.CreateDirectory(submissionsDirectory);
+
+        var count    = Directory.GetFiles(submissionsDirectory).Length;
+        var name     = $"submission{count:0000}";
+        var fileName = Path.Combine(submissionsDirectory, name);
+
+        File.WriteAllText(fileName, text);
+    }
+
+
 }
