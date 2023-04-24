@@ -11,21 +11,23 @@ namespace Hyper.Core.VM
 {
     public sealed class Compilation
     {
-        public  AST               Ast      { get; }
-        public  Compilation?      Previous { get; }
-        private BoundGlobalScope? _globalScope;
+        public  ImmutableArray<AST> SyntaxTrees;
+        public  Compilation?        Previous { get; }
+        private BoundGlobalScope?   _globalScope;
 
-        public Compilation(AST ast) : this(null, ast) { }
+        public Compilation(params AST[] syntaxTrees) : this(null, syntaxTrees) { }
 
-        private Compilation(Compilation? previous, AST ast)
+        private Compilation(Compilation? previous, params AST[] syntaxTrees)
         {
             Previous = previous;
-            Ast = ast;
+            SyntaxTrees = syntaxTrees.ToImmutableArray();
         }
 
         public EvaluationResult Evaluate(Dictionary<VariableSymbol, object> variables)
         {
-            var diagnostics = Ast.Diagnostics.Concat(GlobalScope.Diagnostics).ToImmutableArray();
+            var parseDiagnostics = SyntaxTrees.SelectMany(st => st.Diagnostics);
+
+            var diagnostics = parseDiagnostics.Concat(GlobalScope.Diagnostics).ToImmutableArray();
             if (diagnostics.Any())
                 return new EvaluationResult(diagnostics, null);
 
@@ -60,7 +62,7 @@ namespace Hyper.Core.VM
             {
                 if (_globalScope == null)
                 {
-                    var globalScope = Binder.BindGlobalScope(Previous?.GlobalScope, Ast.Root);
+                    var globalScope = Binder.BindGlobalScope(Previous?.GlobalScope, SyntaxTrees);
                     Interlocked.CompareExchange(ref _globalScope, globalScope, null);
                 }
 

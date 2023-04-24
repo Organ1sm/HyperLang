@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
 using Hyper.Core.Binding.Expr;
 using Hyper.Core.Binding.Operator;
 using Hyper.Core.Binding.Opt;
@@ -69,17 +70,22 @@ namespace Hyper.Core.Binding
             return new BoundProgram(statements, diagnostics.ToImmutable(), functionBodies.ToImmutable());
         }
 
-        public static BoundGlobalScope BindGlobalScope(BoundGlobalScope? previous, CompilationUnit unit)
+        public static BoundGlobalScope BindGlobalScope(BoundGlobalScope? previous, ImmutableArray<AST> syntaxTrees)
         {
             var parentScope = CreateParentScope(previous);
             var binder      = new Binder(parentScope, function: null);
 
-            foreach (var function in unit.Members.OfType<FunctionDeclaration>())
+            var functionDeclarations = syntaxTrees.SelectMany(st => st.Root.Members)
+                                                  .OfType<FunctionDeclaration>();
+
+            foreach (var function in functionDeclarations)
                 binder.BindFunctionDeclaration(function);
 
-            var statements = ImmutableArray.CreateBuilder<BoundStatement>();
+            var globalStatements = syntaxTrees.SelectMany(st => st.Root.Members)
+                                              .OfType<GlobalStatement>();
+            var statements       = ImmutableArray.CreateBuilder<BoundStatement>();
 
-            foreach (var globalStatement in unit.Members.OfType<GlobalStatement>())
+            foreach (var globalStatement in globalStatements)
             {
                 var s = binder.BindStatement(globalStatement.Statement);
                 statements.Add(s);
