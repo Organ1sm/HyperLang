@@ -27,7 +27,7 @@ internal abstract class REPL
 
         foreach (var method in methods)
         {
-            var attribute = (MetaCommandAttribute) method.GetCustomAttribute(typeof(MetaCommandAttribute));
+            var attribute = method.GetCustomAttribute<MetaCommandAttribute>();
             if (attribute == null)
                 continue;
 
