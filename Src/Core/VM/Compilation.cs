@@ -1,11 +1,12 @@
 ﻿using System.Collections.Immutable;
 using Hyper.Core.Symbols;
 using Hyper.Core.Syntax;
-using Hyper.Core.Binding;
 using Hyper.Core.Binding.Expr;
 using Hyper.Core.Binding.Opt;
 using Hyper.Core.Binding.Scope;
 using Hyper.Core.Binding.Stmt;
+using Binder = Hyper.Core.Binding.Binder;
+using ReflectionBindingFlags = System.Reflection.BindingFlags;
 
 namespace Hyper.Core.VM
 {
@@ -14,6 +15,9 @@ namespace Hyper.Core.VM
         public  ImmutableArray<AST> SyntaxTrees;
         public  Compilation?        Previous { get; }
         private BoundGlobalScope?   _globalScope;
+
+        public ImmutableArray<FunctionSymbol>? Functions => GlobalScope.Functions;
+        public ImmutableArray<VariableSymbol>? Variables => GlobalScope.Variables;
 
         public Compilation(params AST[] syntaxTrees) : this(null, syntaxTrees) { }
 
@@ -70,9 +74,45 @@ namespace Hyper.Core.VM
             }
         }
 
-        public Compilation? ContinueWith(AST ast)
+        public Compilation ContinueWith(AST ast) => new(this, ast);
+
+        public IEnumerable<Symbol> GetSymbols()
         {
-            return new Compilation(this, ast);
+            var submission      = this;
+            var seenSymbolNames = new HashSet<string>();
+
+            while (submission != null)
+            {
+                const ReflectionBindingFlags bindingFlags = ReflectionBindingFlags.Static |
+                                                            ReflectionBindingFlags.Public |
+                                                            ReflectionBindingFlags.NonPublic;
+
+                var builtinFunctions = typeof(BuiltinFunctions)
+                                      .GetFields(bindingFlags)
+                                      .Where(fi => fi.FieldType == typeof(FunctionSymbol))
+                                      .Select(fi => (FunctionSymbol) fi.GetValue(null))
+                                      .ToList();
+
+                foreach (var bf in builtinFunctions)
+                {
+                    if (seenSymbolNames.Add(bf.Name))
+                        yield return bf;
+                }
+
+                foreach (var function in submission.Functions)
+                {
+                    if (seenSymbolNames.Add(function.Name))
+                        yield return function;
+                }
+
+                foreach (var variable in submission.Variables)
+                {
+                    if (seenSymbolNames.Add(variable.Name))
+                        yield return variable;
+                }
+
+                submission = submission.Previous;
+            }
         }
 
         public void EmitTree(TextWriter writer)
@@ -88,9 +128,23 @@ namespace Hyper.Core.VM
                                                                             .Contains(functionBody.Key)))
                 {
                     functionBody.Key.WriteTo(writer);
+                    writer.WriteLine();
                     functionBody.Value.WriteTo(writer);
                 }
             }
+        }
+
+        public void EmitTree(FunctionSymbol symbol, TextWriter writer)
+        {
+            var program = Binder.BindProgram(GlobalScope);
+
+            symbol.WriteTo(writer);
+            writer.WriteLine();
+
+            if (!program.Functions.TryGetValue(symbol, out var body))
+                return;
+
+            body.WriteTo(writer);
         }
     }
 }

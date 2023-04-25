@@ -6,23 +6,27 @@ namespace Hyper.Core.IO;
 
 public static class TextWriterExtensions
 {
-    private static bool IsOutToConsole(this TextWriter writer)
+    private static bool IsConsole(this TextWriter writer)
     {
         if (writer == Console.Out)
-            return true;
+            return !Console.IsOutputRedirected;
 
-        return writer is IndentedTextWriter iw && iw.InnerWriter.IsOutToConsole();
+        if (writer == Console.Error)
+            return !Console.IsErrorRedirected &&
+                   !Console.IsOutputRedirected; // Color codes are always output to Console.Out
+
+        return writer is IndentedTextWriter iw && iw.InnerWriter.IsConsole();
     }
 
     private static void SetForeground(this TextWriter writer, ConsoleColor color)
     {
-        if (writer.IsOutToConsole())
+        if (writer.IsConsole())
             Console.ForegroundColor = color;
     }
 
     private static void ResetColor(this TextWriter writer)
     {
-        if (writer.IsOutToConsole())
+        if (writer.IsConsole())
             Console.ResetColor();
     }
 

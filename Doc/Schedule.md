@@ -447,3 +447,13 @@ it doesn't have any incoming nodes or all incoming nodes are also considered unr
 * Added support for multiple syntax trees in a single compilation.
 * Added a compiler project `HyperC` which accepts the program paths.
 
+## Stage 16
+
+## Completed items
+
+* Make meta commands attribute-driven
+* Add `#help` that shows list of available meta commands
+* Add `#load` that loads a script file into the REPL
+* Add `#ls` that shows visible symbols
+* Add `#dump` that shows the bound tree of a given function
+* Persist submissions between run

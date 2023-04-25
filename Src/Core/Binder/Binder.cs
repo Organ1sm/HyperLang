@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Runtime.CompilerServices;
 using Hyper.Core.Binding.Expr;
 using Hyper.Core.Binding.Operator;
 using Hyper.Core.Binding.Opt;
@@ -13,7 +12,6 @@ using Hyper.Core.Lowering;
 using Hyper.Core.Parser;
 using Hyper.Core.Syntax.Expr;
 using Hyper.Core.Syntax.Stmt;
-using Hyper.Core.VM;
 
 namespace Hyper.Core.Binding
 {
