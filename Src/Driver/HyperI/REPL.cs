@@ -514,9 +514,31 @@ internal abstract class REPL
 
         foreach (var metaCommand in _metaCommands.OrderBy(mc => mc.Name))
         {
-            var paddedName = metaCommand.Name.PadRight(maxNameLength);
             Console.Out.WritePunctuation("#");
-            Console.Out.WriteIdentifier(paddedName);
+
+            var metaParams = metaCommand.Method.GetParameters();
+            if (metaParams.Length == 0)
+            {
+                var paddedName = metaCommand.Name.PadRight(maxNameLength);
+                Console.Out.WriteIdentifier(paddedName);
+            }
+            else
+            {
+                Console.Out.WriteIdentifier(metaCommand.Name);
+                foreach (var pi in metaParams)
+                {
+                    Console.Out.WriteSpace();
+                    Console.Out.WritePunctuation("<");
+                    Console.Out.WriteIdentifier(pi.Name);
+                    Console.Out.WritePunctuation(">");
+                }
+
+                Console.Out.WriteLine();
+                Console.Out.WriteSpace();
+                for (var _ = 0; _ < maxNameLength; _++)
+                    Console.Out.WriteSpace();
+            }
+
             Console.Out.WriteSpace();
             Console.Out.Write("-");
             Console.Out.WriteSpace();
