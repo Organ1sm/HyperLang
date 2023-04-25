@@ -7,11 +7,12 @@ namespace HyperI;
 
 internal sealed class HyperREPL : REPL
 {
-    private          Compilation?                       _previous;
-    private          bool                               _showTree;
-    private          bool                               _showProgram;
-    private static   bool                               _loadingSubmission;
-    private readonly Dictionary<VariableSymbol, object> _variables = new();
+    private                 Compilation?                       _previous;
+    private                 bool                               _showTree;
+    private                 bool                               _showProgram;
+    private static          bool                               _loadingSubmission;
+    private static readonly Compilation                        EmptyCompilation = new();
+    private readonly        Dictionary<VariableSymbol, object> _variables       = new();
 
     public HyperREPL() => LoadSubmissions();
 
@@ -85,11 +86,11 @@ internal sealed class HyperREPL : REPL
     [MetaCommand("ls", "List all symbols")]
     private void EvaluateLs()
     {
-        var compilation = _previous ?? new Compilation();
+        var compilation = _previous ?? EmptyCompilation;
         var symbols = compilation.GetSymbols()
-                               .OrderBy(s => s.Kind)
-                               .ThenBy(s => s.Name);
-        
+                                 .OrderBy(s => s.Kind)
+                                 .ThenBy(s => s.Name);
+
         foreach (var symbol in symbols)
         {
             symbol.WriteTo(Console.Out);
@@ -100,8 +101,7 @@ internal sealed class HyperREPL : REPL
     [MetaCommand("dump", "Shows bound tree of a given function")]
     private void EvaluateDump(string functionName)
     {
-        var compilation = _previous ?? new Compilation();
-
+        var compilation = _previous ?? EmptyCompilation;
         var symbols = compilation.GetSymbols()
                                  .OfType<FunctionSymbol>()
                                  .SingleOrDefault(f => f.Name == functionName);
