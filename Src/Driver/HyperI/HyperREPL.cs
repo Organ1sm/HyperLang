@@ -10,7 +10,7 @@ internal sealed class HyperREPL : REPL
     private                 Compilation?                       _previous;
     private                 bool                               _showTree;
     private                 bool                               _showProgram;
-    private static          bool                               _loadingSubmission;
+    private                 bool                               _loadingSubmission;
     private static readonly Compilation                        EmptyCompilation = new();
     private readonly        Dictionary<VariableSymbol, object> _variables       = new();
 
@@ -206,7 +206,7 @@ internal sealed class HyperREPL : REPL
         _loadingSubmission = false;
     }
 
-    private static void SaveSubmissions(string text)
+    private void SaveSubmissions(string text)
     {
         if (_loadingSubmission)
             return;
