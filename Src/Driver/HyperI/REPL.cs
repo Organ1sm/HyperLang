@@ -390,8 +390,8 @@ internal abstract class REPL
     {
         private readonly Action<string>               _lineRender;
         private readonly ObservableCollection<string> _submissionDocument;
-        private readonly int                          _cursorTop;
 
+        private int _cursorTop;
         private int _renderedLineCount;
         private int _currentLine;
         private int _currentCharacter;
