@@ -1,11 +1,12 @@
 ﻿using System.Collections.Immutable;
 using Hyper.Core.Symbols;
 using Hyper.Core.Syntax;
-using Hyper.Core.Binding;
 using Hyper.Core.Binding.Expr;
 using Hyper.Core.Binding.Opt;
 using Hyper.Core.Binding.Scope;
 using Hyper.Core.Binding.Stmt;
+using Binder = Hyper.Core.Binding.Binder;
+using ReflectionBindingFlags = System.Reflection.BindingFlags;
 
 namespace Hyper.Core.VM
 {
@@ -82,6 +83,22 @@ namespace Hyper.Core.VM
 
             while (submission != null)
             {
+                const ReflectionBindingFlags bindingFlags = ReflectionBindingFlags.Static |
+                                                            ReflectionBindingFlags.Public |
+                                                            ReflectionBindingFlags.NonPublic;
+
+                var builtinFunctions = typeof(BuiltinFunctions)
+                                      .GetFields(bindingFlags)
+                                      .Where(fi => fi.FieldType == typeof(FunctionSymbol))
+                                      .Select(fi => (FunctionSymbol) fi.GetValue(null))
+                                      .ToList();
+
+                foreach (var bf in builtinFunctions)
+                {
+                    if (seenSymbolNames.Add(bf.Name))
+                        yield return bf;
+                }
+
                 foreach (var function in submission.Functions)
                 {
                     if (seenSymbolNames.Add(function.Name))

@@ -89,6 +89,7 @@ internal sealed class HyperREPL : REPL
         var symbols = compilation.GetSymbols()
                                .OrderBy(s => s.Kind)
                                .ThenBy(s => s.Name);
+        
         foreach (var symbol in symbols)
         {
             symbol.WriteTo(Console.Out);
