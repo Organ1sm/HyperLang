@@ -517,7 +517,7 @@ internal abstract class REPL
             Console.Out.WritePunctuation("#");
             Console.Out.WriteIdentifier(paddedName);
             Console.Out.WriteSpace();
-            Console.Out.WriteSpace();
+            Console.Out.Write("-");
             Console.Out.WriteSpace();
             Console.Out.WritePunctuation(metaCommand.Description);
             Console.Out.WriteLine();
