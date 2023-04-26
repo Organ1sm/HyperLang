@@ -180,7 +180,12 @@ internal sealed class HyperREPL : REPL
                         "HyperLang",
                         "Submissions");
 
-    private static void ClearSubmissions() => Directory.Delete(GetSubmissionsDirectory(), recursive: true);
+    private static void ClearSubmissions()
+    {
+        var dir = GetSubmissionsDirectory();
+        if (Directory.Exists(dir))
+            Directory.Delete(GetSubmissionsDirectory(), recursive: true);
+    }
 
     private void LoadSubmissions()
     {
