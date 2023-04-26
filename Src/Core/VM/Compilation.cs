@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using Hyper.Core.Binding;
 using Hyper.Core.Symbols;
 using Hyper.Core.Syntax;
 using Hyper.Core.Binding.Expr;
@@ -27,6 +28,12 @@ namespace Hyper.Core.VM
             SyntaxTrees = syntaxTrees.ToImmutableArray();
         }
 
+        private BoundProgram GetProgram()
+        {
+            var previous = Previous?.GetProgram() ?? null;
+            return Binder.BindProgram(previous, GlobalScope);
+        }
+
         public EvaluationResult Evaluate(Dictionary<VariableSymbol, object> variables)
         {
             var parseDiagnostics = SyntaxTrees.SelectMany(st => st.Diagnostics);
@@ -35,7 +42,7 @@ namespace Hyper.Core.VM
             if (diagnostics.Any())
                 return new EvaluationResult(diagnostics, null);
 
-            var program = Binder.BindProgram(GlobalScope);
+            var program = GetProgram();
 
             var appPath      = Environment.GetCommandLineArgs()[0];
             var appDirectory = Path.GetDirectoryName(appPath);
@@ -117,7 +124,7 @@ namespace Hyper.Core.VM
 
         public void EmitTree(TextWriter writer)
         {
-            var program = Binder.BindProgram(GlobalScope);
+            var program = GetProgram();
             if (program.BlockStatement.Statements.Any())
                 program.BlockStatement.WriteTo(writer);
             else
@@ -136,7 +143,7 @@ namespace Hyper.Core.VM
 
         public void EmitTree(FunctionSymbol symbol, TextWriter writer)
         {
-            var program = Binder.BindProgram(GlobalScope);
+            var program = GetProgram();
 
             symbol.WriteTo(writer);
             writer.WriteLine();

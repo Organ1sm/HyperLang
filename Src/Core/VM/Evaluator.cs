@@ -8,18 +8,33 @@ namespace Hyper.Core.VM
 {
     internal sealed class Evaluator
     {
-        private readonly BoundProgram                              _program;
-        private readonly Dictionary<VariableSymbol, object>        _globals;
-        private readonly Stack<Dictionary<VariableSymbol, object>> _locals = new();
-        private          Random?                                   _random;
+        private readonly BoundProgram?                                   _program;
+        private readonly Dictionary<VariableSymbol, object>              _globals;
+        private readonly Dictionary<FunctionSymbol, BoundBlockStatement> _functions = new();
+        private readonly Stack<Dictionary<VariableSymbol, object>>       _locals   = new();
+        private          Random?                                         _random;
 
         private object? _lastValue;
 
-        public Evaluator(BoundProgram program, Dictionary<VariableSymbol, object> variables)
+        public Evaluator(BoundProgram? program, Dictionary<VariableSymbol, object> variables)
         {
             _program = program;
             _globals = variables;
             _locals.Push(new());
+
+            var current = program;
+            while (current != null)
+            {
+                foreach (var kv in current.Functions)
+                {
+                    var function = kv.Key;
+                    var body     = kv.Value;
+
+                    _functions.Add(function, body);
+                }
+
+                current = current.Previous;
+            }
         }
 
         public object Evaluate() => EvaluateStatement(_program.BlockStatement);
@@ -196,7 +211,7 @@ namespace Hyper.Core.VM
 
             _locals.Push(locals);
 
-            var statement = _program.Functions[node.Function];
+            var statement = _functions[node.Function];
             var result    = EvaluateStatement(statement);
 
             _locals.Pop();
