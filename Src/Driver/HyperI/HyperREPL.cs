@@ -11,7 +11,7 @@ internal sealed class HyperREPL : REPL
     private                 bool                               _showTree;
     private                 bool                               _showProgram;
     private                 bool                               _loadingSubmission;
-    private static readonly Compilation                        EmptyCompilation = new();
+    private static readonly Compilation                        EmptyCompilation = Compilation.CreateScript(null);
     private readonly        Dictionary<VariableSymbol, object> _variables       = new();
 
     public HyperREPL() => LoadSubmissions();
@@ -144,9 +144,8 @@ internal sealed class HyperREPL : REPL
 
     protected override void EvaluateSubmission(string text)
     {
-        var ast = AST.Parse(text);
-
-        var compilation = _previous == null ? new Compilation(ast) : _previous.ContinueWith(ast);
+        var ast         = AST.Parse(text);
+        var compilation = Compilation.CreateScript(_previous, ast);
 
         if (_showTree)
             ast.Root.WriteTo(Console.Out);

@@ -16,22 +16,27 @@ namespace Hyper.Core.VM
         public  ImmutableArray<AST> SyntaxTrees;
         public  Compilation?        Previous { get; }
         private BoundGlobalScope?   _globalScope;
+        private bool                IsScript { get; }
 
         public ImmutableArray<FunctionSymbol>? Functions => GlobalScope.Functions;
         public ImmutableArray<VariableSymbol>? Variables => GlobalScope.Variables;
 
-        public Compilation(params AST[] syntaxTrees) : this(null, syntaxTrees) { }
-
-        private Compilation(Compilation? previous, params AST[] syntaxTrees)
+        private Compilation(bool isScript, Compilation? previous, params AST[] syntaxTrees)
         {
+            IsScript = isScript;
             Previous = previous;
             SyntaxTrees = syntaxTrees.ToImmutableArray();
         }
 
+        public static Compilation Create(params AST[] syntaxTrees) => new(isScript: false, previous: null, syntaxTrees);
+
+        public static Compilation CreateScript(Compilation? previous, params AST[] syntaxTrees) =>
+            new(isScript: true, previous, syntaxTrees);
+
         private BoundProgram GetProgram()
         {
             var previous = Previous?.GetProgram() ?? null;
-            return Binder.BindProgram(previous, GlobalScope);
+            return Binder.BindProgram(IsScript, previous, GlobalScope);
         }
 
         public EvaluationResult Evaluate(Dictionary<VariableSymbol, object> variables)
@@ -73,15 +78,13 @@ namespace Hyper.Core.VM
             {
                 if (_globalScope == null)
                 {
-                    var globalScope = Binder.BindGlobalScope(Previous?.GlobalScope, SyntaxTrees);
+                    var globalScope = Binder.BindGlobalScope(IsScript, Previous?.GlobalScope, SyntaxTrees);
                     Interlocked.CompareExchange(ref _globalScope, globalScope, null);
                 }
 
                 return _globalScope;
             }
         }
-
-        public Compilation ContinueWith(AST ast) => new(this, ast);
 
         public IEnumerable<Symbol> GetSymbols()
         {

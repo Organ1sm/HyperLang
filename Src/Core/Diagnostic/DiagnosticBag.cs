@@ -179,5 +179,11 @@ namespace Hyper.Core.Diagnostic
             var message = $"An expression of type '{returnType}' is expected.";
             Report(location, message);
         }
+
+        public void ReportInvalidExpressionStatement(TextLocation location)
+        {
+            var message = $"Only assignment and call expressions can be used as a statement.";
+            Report(location, message);
+        }
     }
 }

@@ -18,6 +18,7 @@ namespace Hyper.Core.Binding
     internal sealed class Binder
     {
         private          BoundScope?     _scope;
+        private readonly bool            _isScript;
         private readonly FunctionSymbol? _function;
         private readonly DiagnosticBag   _diagnostics = new();
         private          DiagnosticBag   Diagnostics => _diagnostics;
@@ -26,9 +27,10 @@ namespace Hyper.Core.Binding
 
         private int _labelCounter;
 
-        public Binder(BoundScope? parent, FunctionSymbol? function)
+        public Binder(bool isScript, BoundScope? parent, FunctionSymbol? function)
         {
             _scope = new BoundScope(parent);
+            _isScript = isScript;
             _function = function;
 
             if (function == null) return;
@@ -37,7 +39,7 @@ namespace Hyper.Core.Binding
                 _scope.TryDeclareVariable(p);
         }
 
-        public static BoundProgram BindProgram(BoundProgram? previous, BoundGlobalScope globalScope)
+        public static BoundProgram BindProgram(bool isScript, BoundProgram? previous, BoundGlobalScope globalScope)
         {
             var parentScope = CreateParentScope(globalScope);
 
@@ -46,7 +48,7 @@ namespace Hyper.Core.Binding
 
             foreach (var function in globalScope.Functions)
             {
-                var binder      = new Binder(parentScope, function);
+                var binder      = new Binder(isScript, parentScope, function);
                 var body        = binder.BindStatement(function.Declaration?.Body);
                 var loweredBody = Lowerer.Lower(body);
 
@@ -63,10 +65,12 @@ namespace Hyper.Core.Binding
             return new BoundProgram(previous, statements, diagnostics.ToImmutable(), functionBodies.ToImmutable());
         }
 
-        public static BoundGlobalScope BindGlobalScope(BoundGlobalScope? previous, ImmutableArray<AST> syntaxTrees)
+        public static BoundGlobalScope BindGlobalScope(bool isScript,
+                                                       BoundGlobalScope? previous,
+                                                       ImmutableArray<AST> syntaxTrees)
         {
             var parentScope = CreateParentScope(previous);
-            var binder      = new Binder(parentScope, function: null);
+            var binder      = new Binder(isScript, parentScope, function: null);
 
             var functionDeclarations = syntaxTrees.SelectMany(st => st.Root.Members)
                                                   .OfType<FunctionDeclaration>();
@@ -80,7 +84,7 @@ namespace Hyper.Core.Binding
 
             foreach (var globalStatement in globalStatements)
             {
-                var s = binder.BindStatement(globalStatement.Statement);
+                var s = binder.BindGlobalStatement(globalStatement.Statement);
                 statements.Add(s);
             }
 
@@ -170,7 +174,28 @@ namespace Hyper.Core.Binding
                 _diagnostics.ReportSymbolAlreadyDeclared(syntax.Identifier.Location, function.Name);
         }
 
-        private BoundStatement BindStatement(Statement? syntax)
+        private BoundStatement BindGlobalStatement(Statement syntax) => BindStatement(syntax, isGlobal: true);
+
+        private BoundStatement BindStatement(Statement? syntax, bool isGlobal = false)
+        {
+            var result = BindStatementInternal(syntax);
+
+            if (!_isScript || !isGlobal)
+            {
+                if (result is BoundExpressionStatement es)
+                {
+                    var isAllowedExpression = es.Expression.Kind == BoundNodeKind.ErrorExpression ||
+                                              es.Expression.Kind == BoundNodeKind.AssignmentExpression ||
+                                              es.Expression.Kind == BoundNodeKind.CallExpression;
+                    if (!isAllowedExpression)
+                        _diagnostics.ReportInvalidExpressionStatement(syntax.Location);
+                }
+            }
+
+            return result;
+        }
+
+        private BoundStatement BindStatementInternal(Statement? syntax)
         {
             return syntax?.Kind switch
             {
