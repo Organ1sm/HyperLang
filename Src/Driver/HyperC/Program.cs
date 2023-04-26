@@ -12,7 +12,7 @@ internal static class Program
     {
         if (args.Length == 0)
         {
-            Console.Error.WriteLine("usage: mc <source-paths>");
+            Console.Error.WriteLine("usage: HyperC <source-paths>");
             return 1;
         }
 
