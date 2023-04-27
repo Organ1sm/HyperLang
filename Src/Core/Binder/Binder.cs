@@ -526,25 +526,14 @@ namespace Hyper.Core.Binding
                 return new BoundErrorExpression();
             }
 
-            var hasErrors = false;
             for (var i = 0; i < syntax.Arguments.Count; i++)
             {
-                var argument  = boundArguments[i];
-                var parameter = function.Parameters[i];
+                var argumentLocation = syntax.Arguments[i].Location;
+                var argument         = boundArguments[i];
+                var parameter        = function.Parameters[i];
 
-                if (argument.Type == parameter.Type)
-                    continue;
-
-                if (argument.Type != TypeSymbol.Error)
-                    _diagnostics.ReportWrongArgumentType(syntax.Arguments[i].Location,
-                                                         parameter.Name,
-                                                         parameter.Type,
-                                                         argument.Type);
-                hasErrors = true;
+                boundArguments[i] = BindConversion(argumentLocation, argument, parameter.Type);
             }
-
-            if (hasErrors)
-                return new BoundErrorExpression();
 
             return new BoundCallExpression(function, boundArguments.ToImmutable());
         }

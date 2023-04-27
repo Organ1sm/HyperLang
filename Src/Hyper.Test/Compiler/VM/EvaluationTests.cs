@@ -535,7 +535,7 @@ public class EvaluationTests
     public void EvaluatorWrongArgumentType()
     {
         var text = @"
-                func test(n: int)-> bool
+                func test(n: int) -> bool
                 {
                     return n > 10
                 }
@@ -544,8 +544,8 @@ public class EvaluationTests
             ";
 
         var diagnostics = @"
-                Parameter 'n' requires a value of type 'int' but was given a value of type 'string'.
-            ";
+            Cannot convert type 'string' to 'int'. An explicit conversion exists (are you missing a cast?)
+        ";
 
         AssertDiagnostics(text, diagnostics);
     }
