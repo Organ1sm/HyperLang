@@ -8,7 +8,7 @@ internal sealed class BoundForStatement : BoundLoopStatement
     public BoundForStatement(VariableSymbol variable,
                              BoundExpression lowerBound,
                              BoundExpression upperBound,
-                             BoundStatement? body,
+                             BoundStatement body,
                              BoundLabel breakLabel,
                              BoundLabel continueLabel)
         : base(breakLabel, continueLabel)
@@ -23,5 +23,5 @@ internal sealed class BoundForStatement : BoundLoopStatement
     public          VariableSymbol  Variable   { get; }
     public          BoundExpression LowerBound { get; }
     public          BoundExpression UpperBound { get; }
-    public          BoundStatement? Body       { get; }
+    public          BoundStatement Body       { get; }
 }

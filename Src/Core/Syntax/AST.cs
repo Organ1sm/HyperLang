@@ -9,7 +9,7 @@ namespace Hyper.Core.Syntax;
 public sealed class AST
 {
     private delegate void ParseHandler(AST syntaxTree,
-                                       out CompilationUnit? root,
+                                       out CompilationUnit root,
                                        out ImmutableArray<Diagnostic.Diagnostic> diagnostics);
 
     private AST(SourceText text, ParseHandler handler)
@@ -66,10 +66,8 @@ public sealed class AST
     {
         var tokens = new List<Token>();
 
-        void ParseTokens(AST st, out CompilationUnit? root, out ImmutableArray<Diagnostic.Diagnostic> d)
+        void ParseTokens(AST st, out CompilationUnit root, out ImmutableArray<Diagnostic.Diagnostic> d)
         {
-            root = null;
-
             var l = new Lexer(st);
             while (true)
             {

@@ -28,10 +28,10 @@ public sealed class SeparatedSyntaxList<T> : SeparatedSyntaxList, IEnumerable<T>
     /// <param name="index"></param>
     public T this[int index] => (T) _nodesAndSeparators[index * 2];
 
-    public Token? GetSeparator(int index)
+    public Token GetSeparator(int index)
     {
-        if (index == Count - 1)
-            return null;
+        if (index < 0 || index >= Count - 1)
+            throw new ArgumentOutOfRangeException(nameof(index));
 
         return (Token) _nodesAndSeparators[index * 2 + 1];
     }

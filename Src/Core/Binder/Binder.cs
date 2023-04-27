@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using Hyper.Core.Binding.Expr;
 using Hyper.Core.Binding.Operator;
 using Hyper.Core.Binding.Opt;
@@ -17,7 +18,7 @@ namespace Hyper.Core.Binding
 {
     internal sealed class Binder
     {
-        private          BoundScope?     _scope;
+        private          BoundScope      _scope;
         private readonly bool            _isScript;
         private readonly FunctionSymbol? _function;
         private readonly DiagnosticBag   _diagnostics = new();
@@ -49,7 +50,7 @@ namespace Hyper.Core.Binding
             foreach (var function in globalScope.Functions)
             {
                 var binder      = new Binder(isScript, parentScope, function);
-                var body        = binder.BindStatement(function.Declaration?.Body);
+                var body        = binder.BindStatement(function.Declaration!.Body);
                 var loweredBody = Lowerer.Lower(body);
 
                 if (function.Type != TypeSymbol.Void && !ControlFlowGraph.AllPathsReturn(loweredBody))
@@ -88,8 +89,8 @@ namespace Hyper.Core.Binding
                 statements.Add(s);
             }
 
-            var functions   = binder._scope?.GetDeclaredFunctions();
-            var variables   = binder._scope?.GetDeclaredVariables() ?? null;
+            var functions   = binder._scope.GetDeclaredFunctions();
+            var variables   = binder._scope.GetDeclaredVariables();
             var diagnostics = binder.Diagnostics.ToImmutableArray();
 
             if (previous != null)
@@ -98,7 +99,7 @@ namespace Hyper.Core.Binding
             return new BoundGlobalScope(previous, diagnostics, variables, functions, statements.ToImmutable());
         }
 
-        private static BoundScope? CreateParentScope(BoundGlobalScope? previous)
+        private static BoundScope CreateParentScope(BoundGlobalScope? previous)
         {
             var stack = new Stack<BoundGlobalScope>();
             while (previous != null)
@@ -115,17 +116,11 @@ namespace Hyper.Core.Binding
                 previous = stack.Pop();
                 var scope = new BoundScope(parent);
 
-                if (previous.Functions != null)
-                {
-                    foreach (var f in previous.Functions)
-                        scope.TryDeclareFunction(f);
-                }
+                foreach (var f in previous.Functions)
+                    scope.TryDeclareFunction(f);
 
-                if (previous.Variables != null)
-                {
-                    foreach (var v in previous.Variables)
-                        scope.TryDeclareVariable(v);
-                }
+                foreach (var v in previous.Variables)
+                    scope.TryDeclareVariable(v);
 
                 parent = scope;
             }
@@ -159,9 +154,6 @@ namespace Hyper.Core.Binding
                 }
                 else
                 {
-                    if (parameterName == null || parameterType == null)
-                        continue;
-
                     var p = new ParameterSymbol(parameterName, parameterType);
                     parameters.Add(p);
                 }
@@ -170,13 +162,13 @@ namespace Hyper.Core.Binding
             var type = BindTypeClause(syntax.Type) ?? TypeSymbol.Void;
 
             var function = new FunctionSymbol(syntax.Identifier.Text, parameters.ToImmutable(), type, syntax);
-            if (_scope != null && function.Declaration?.Identifier.Text != null && !_scope.TryDeclareFunction(function))
+            if (_scope.TryDeclareFunction(function))
                 _diagnostics.ReportSymbolAlreadyDeclared(syntax.Identifier.Location, function.Name);
         }
 
         private BoundStatement BindGlobalStatement(Statement syntax) => BindStatement(syntax, isGlobal: true);
 
-        private BoundStatement BindStatement(Statement? syntax, bool isGlobal = false)
+        private BoundStatement BindStatement(Statement syntax, bool isGlobal = false)
         {
             var result = BindStatementInternal(syntax);
 
@@ -195,9 +187,9 @@ namespace Hyper.Core.Binding
             return result;
         }
 
-        private BoundStatement BindStatementInternal(Statement? syntax)
+        private BoundStatement BindStatementInternal(Statement syntax)
         {
-            return syntax?.Kind switch
+            return syntax.Kind switch
             {
                 SyntaxKind.BlockStatement      => BindBlockStatement((BlockStatement) syntax),
                 SyntaxKind.ExpressionStatement => BindExpressionStatement((ExpressionStatement) syntax),
@@ -223,7 +215,7 @@ namespace Hyper.Core.Binding
             foreach (var statement in syntax.Statements.Select(statementSyntax => BindStatement(statementSyntax)))
                 statements.Add(statement);
 
-            _scope = _scope.Parent;
+            _scope = _scope.Parent!;
 
             return new BoundBlockStatement(statements.ToImmutable());
         }
@@ -247,6 +239,7 @@ namespace Hyper.Core.Binding
             return new BoundVariableDeclaration(variable, convertedInitializer);
         }
 
+        [return: NotNullIfNotNull("syntax")]
         private TypeSymbol? BindTypeClause(TypeClause? syntax)
         {
             if (syntax == null)
@@ -294,7 +287,7 @@ namespace Hyper.Core.Binding
             var variable = BindVariableDeclaration(syntax.Identifier, false, TypeSymbol.Int);
             var body     = BindLoopBody(syntax.Body, out var breakLabel, out var continueLabel);
 
-            _scope = _scope.Parent;
+            _scope = _scope.Parent!;
 
             return new BoundForStatement(variable, lowerBound, upperBound, body, breakLabel, continueLabel);
         }
@@ -349,14 +342,14 @@ namespace Hyper.Core.Binding
                 if (_function.Type == TypeSymbol.Void)
                 {
                     if (expression != null && syntax.Expression != null)
-                        _diagnostics.ReportInvalidReturnExpression(syntax.Expression.Location, _function.Name);
+                        _diagnostics.ReportInvalidReturnExpression(syntax.Expression!.Location, _function.Name);
                 }
                 else
                 {
                     if (expression == null)
                         _diagnostics.ReportMissingReturnExpression(syntax.ReturnKeyword.Location, _function.Type);
                     else if (syntax.Expression != null)
-                        expression = BindConversion(syntax.Expression.Location, expression, _function.Type);
+                        expression = BindConversion(syntax.Expression!.Location, expression, _function.Type);
                 }
             }
 
@@ -396,7 +389,7 @@ namespace Hyper.Core.Binding
 
         private BoundLiteralExpression BindLiteralExpression(LiteralExpression syntax)
         {
-            var value = syntax.Value ?? 0;
+            var value = syntax.Value;
 
             return new BoundLiteralExpression(value);
         }
@@ -444,7 +437,6 @@ namespace Hyper.Core.Binding
 
         private BoundExpression BindNameExpression(NameExpression syntax)
         {
-            var name = syntax.IdentifierToken.Text;
             if (syntax.IdentifierToken.IsMissing)
             {
                 // This means the token was inserted by the parser. We already
@@ -481,7 +473,7 @@ namespace Hyper.Core.Binding
 
         private BoundExpression BindCallExpression(CallExpression syntax)
         {
-            if (syntax.Arguments.Count == 1 && LookupType(syntax.Identifier.Text) is TypeSymbol type)
+            if (syntax.Arguments.Count == 1 && LookupType(syntax.Identifier.Text) is { } type)
                 return BindConversion(type, syntax.Arguments[0], allowExplicit: true);
 
             var boundArguments = ImmutableArray.CreateBuilder<BoundExpression>();
@@ -584,13 +576,13 @@ namespace Hyper.Core.Binding
 
         private VariableSymbol BindVariableDeclaration(Token identifier, bool isReadOnly, TypeSymbol type)
         {
-            var name    = identifier.Text ?? "?";
+            var name    = identifier.Text;
             var declare = !identifier.IsMissing;
             var variable = _function == null
                 ? (VariableSymbol) new GlobalVariableSymbol(name, type, isReadOnly)
                 : new LocalVariableSymbol(name, type, isReadOnly);
 
-            if (declare && _scope != null && !_scope.TryDeclareVariable(variable))
+            if (declare && !_scope.TryDeclareVariable(variable))
                 _diagnostics.ReportSymbolAlreadyDeclared(identifier.Location, name);
 
             return variable;
@@ -599,7 +591,7 @@ namespace Hyper.Core.Binding
         private VariableSymbol? BindVariableReference(Token identifier)
         {
             var name = identifier.Text;
-            switch (_scope?.TryLookUpSymbol(name))
+            switch (_scope.TryLookUpSymbol(name))
             {
                 case VariableSymbol variable:
                     return variable;

@@ -16,8 +16,8 @@ namespace Hyper.Core.VM
         private BoundGlobalScope?   _globalScope;
         private bool                IsScript { get; }
 
-        public ImmutableArray<FunctionSymbol>? Functions => GlobalScope.Functions;
-        public ImmutableArray<VariableSymbol>? Variables => GlobalScope.Variables;
+        public ImmutableArray<FunctionSymbol> Functions => GlobalScope.Functions;
+        public ImmutableArray<VariableSymbol> Variables => GlobalScope.Variables;
 
         private Compilation(bool isScript, Compilation? previous, params AST[] syntaxTrees)
         {
@@ -123,7 +123,6 @@ namespace Hyper.Core.VM
             else
             {
                 foreach (var functionBody in program.Functions.Where(functionBody =>
-                                                                         GlobalScope.Functions == null ||
                                                                          GlobalScope.Functions
                                                                             .Contains(functionBody.Key)))
                 {
