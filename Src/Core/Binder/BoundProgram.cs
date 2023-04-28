@@ -7,18 +7,21 @@ namespace Hyper.Core.Binding;
 internal sealed class BoundProgram
 {
     public BoundProgram(BoundProgram? previous,
-                        BoundBlockStatement blockStatement,
                         ImmutableArray<Diagnostic.Diagnostic> diagnostics,
+                        FunctionSymbol? mainFunction,
+                        FunctionSymbol? scriptFunction,
                         ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functions)
     {
         Previous = previous;
-        BlockStatement = blockStatement;
         Diagnostics = diagnostics;
+        MainFunction = mainFunction;
+        ScriptFunction = scriptFunction;
         Functions = functions;
     }
 
-    public BoundProgram?                                             Previous       { get; }
-    public BoundBlockStatement                                      BlockStatement { get; }
+    public BoundProgram?                                            Previous       { get; }
     public ImmutableArray<Diagnostic.Diagnostic>                    Diagnostics    { get; }
+    public FunctionSymbol?                                          MainFunction   { get; }
+    public FunctionSymbol?                                          ScriptFunction { get; }
     public ImmutableDictionary<FunctionSymbol, BoundBlockStatement> Functions      { get; }
 }

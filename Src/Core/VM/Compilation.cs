@@ -16,8 +16,9 @@ namespace Hyper.Core.VM
         private BoundGlobalScope?   _globalScope;
         private bool                IsScript { get; }
 
-        public ImmutableArray<FunctionSymbol> Functions => GlobalScope.Functions;
-        public ImmutableArray<VariableSymbol> Variables => GlobalScope.Variables;
+        public FunctionSymbol?                MainFunction => GlobalScope.MainFunction;
+        public ImmutableArray<FunctionSymbol> Functions    => GlobalScope.Functions;
+        public ImmutableArray<VariableSymbol> Variables    => GlobalScope.Variables;
 
         private Compilation(bool isScript, Compilation? previous, params AST[] syntaxTrees)
         {
@@ -47,19 +48,19 @@ namespace Hyper.Core.VM
 
             var program = GetProgram();
 
-            var appPath      = Environment.GetCommandLineArgs()[0];
-            var appDirectory = Path.GetDirectoryName(appPath);
-            var cfgPath      = Path.Combine(appDirectory, "cfg.dot");
-
-            BoundBlockStatement cfgStatement;
-            if (!program.BlockStatement.Statements.Any() && program.Functions.Any())
-                cfgStatement = program.Functions.Last().Value;
-            else
-                cfgStatement = program.BlockStatement;
-
-            var cfg = ControlFlowGraph.Create(cfgStatement);
-            using (var streamWriter = new StreamWriter(cfgPath))
-                cfg.WriteTo(streamWriter);
+            // var appPath      = Environment.GetCommandLineArgs()[0];
+            // var appDirectory = Path.GetDirectoryName(appPath);
+            // var cfgPath      = Path.Combine(appDirectory, "cfg.dot");
+            //
+            // BoundBlockStatement cfgStatement;
+            // if (!program.BlockStatement.Statements.Any() && program.Functions.Any())
+            //     cfgStatement = program.Functions.Last().Value;
+            // else
+            //     cfgStatement = program.BlockStatement;
+            //
+            // var cfg = ControlFlowGraph.Create(cfgStatement);
+            // using (var streamWriter = new StreamWriter(cfgPath))
+            //     cfg.WriteTo(streamWriter);
 
             if (program.Diagnostics.Any())
                 return new EvaluationResult(program.Diagnostics.ToImmutableArray(), null);
@@ -117,20 +118,10 @@ namespace Hyper.Core.VM
 
         public void EmitTree(TextWriter writer)
         {
-            var program = GetProgram();
-            if (program.BlockStatement.Statements.Any())
-                program.BlockStatement.WriteTo(writer);
-            else
-            {
-                foreach (var functionBody in program.Functions.Where(functionBody =>
-                                                                         GlobalScope.Functions
-                                                                            .Contains(functionBody.Key)))
-                {
-                    functionBody.Key.WriteTo(writer);
-                    writer.WriteLine();
-                    functionBody.Value.WriteTo(writer);
-                }
-            }
+            if (GlobalScope.MainFunction != null)
+                EmitTree(GlobalScope.MainFunction, writer);
+            else if (GlobalScope.ScriptFunction != null)
+                EmitTree(GlobalScope.ScriptFunction, writer);
         }
 
         public void EmitTree(FunctionSymbol symbol, TextWriter writer)

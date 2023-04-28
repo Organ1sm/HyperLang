@@ -484,17 +484,13 @@ public class EvaluationTests
     }
 
     [Fact]
-    public void EvaluatorInvalidReturn()
+    public void EvaluatorScriptReturn()
     {
         var text = @"
-                [return]
+                return
             ";
 
-        var diagnostics = @"
-                The 'return' keyword can only be used inside of functions.
-            ";
-
-        AssertDiagnostics(text, diagnostics);
+        AssertValue(text, "");
     }
 
     [Fact]

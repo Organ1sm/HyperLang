@@ -60,10 +60,37 @@ namespace Hyper.Core.Binding
                 diagnostics.AddRange(binder.Diagnostics);
             }
 
+            if (globalScope.MainFunction != null && globalScope.Statements.Any())
+            {
+                var body = Lowerer.Lower(new BoundBlockStatement(globalScope.Statements));
+                functionBodies.Add(globalScope.MainFunction, body);
+            }
+            else if (globalScope.ScriptFunction != null)
+            {
+                var statements = globalScope.Statements;
 
-            var statements = Lowerer.Lower(new BoundBlockStatement(globalScope.Statements));
+                if (statements.Length == 1 &&
+                    statements[0] is BoundExpressionStatement es &&
+                    es.Expression.Type != TypeSymbol.Void)
+                {
+                    statements = statements.SetItem(0, new BoundReturnStatement(es.Expression));
+                }
+                else if (statements.Any() && statements.Last().Kind != BoundNodeKind.ReturnStatement)
+                {
+                    var nullValue = new BoundLiteralExpression("");
+                    statements = statements.Add(new BoundReturnStatement(nullValue));
+                }
 
-            return new BoundProgram(previous, statements, diagnostics.ToImmutable(), functionBodies.ToImmutable());
+                var body = Lowerer.Lower(new BoundBlockStatement(statements));
+                functionBodies.Add(globalScope.ScriptFunction, body);
+            }
+
+
+            return new BoundProgram(previous,
+                                    diagnostics.ToImmutable(),
+                                    globalScope.MainFunction,
+                                    globalScope.ScriptFunction,
+                                    functionBodies.ToImmutable());
         }
 
         public static BoundGlobalScope BindGlobalScope(bool isScript,
@@ -83,20 +110,81 @@ namespace Hyper.Core.Binding
                                               .OfType<GlobalStatement>();
             var statements = ImmutableArray.CreateBuilder<BoundStatement>();
 
-            foreach (var globalStatement in globalStatements)
-            {
-                var s = binder.BindGlobalStatement(globalStatement.Statement);
+            var enumerable = globalStatements.ToList();
+            foreach (var s in enumerable.Select(globalStatement =>
+                                                    binder.BindGlobalStatement(globalStatement.Statement)))
                 statements.Add(s);
+
+            // Check global Statement
+
+            var firstGlobalStatementSyntaxTree = syntaxTrees
+                                                .Select(st => st.Root.Members.OfType<GlobalStatement>()
+                                                                .FirstOrDefault())
+                                                .Where(g => g != null)
+                                                .ToArray();
+
+            if (firstGlobalStatementSyntaxTree.Length > 1)
+            {
+                foreach (var globalStatement in firstGlobalStatementSyntaxTree)
+                    binder.Diagnostics.ReportOnlyOneFileCanHaveGlobalStatements(globalStatement!.Location);
             }
 
-            var functions   = binder._scope.GetDeclaredFunctions();
+            // Check for main/script with global statement..
+            var functions = binder._scope.GetDeclaredFunctions();
+
+            FunctionSymbol? mainFunction;
+            FunctionSymbol? scriptFunction;
+
+            if (isScript)
+            {
+                mainFunction = null;
+                if (enumerable.Any())
+                    scriptFunction =
+                        new FunctionSymbol("$eval", ImmutableArray<ParameterSymbol>.Empty, TypeSymbol.Any);
+                else
+                    scriptFunction = null;
+            }
+            else
+            {
+                mainFunction = functions.FirstOrDefault(f => f.Name == "main");
+                scriptFunction = null;
+                if (mainFunction != null)
+                {
+                    if (mainFunction.Type != TypeSymbol.Void || mainFunction.Parameters.Any())
+                        binder.Diagnostics.ReportMainMustHaveCorrectSignature(mainFunction.Declaration!.Location);
+                }
+
+                if (enumerable.Any())
+                {
+                    if (mainFunction != null)
+                    {
+                        binder.Diagnostics.ReportCannotMixMainAndGlobalStatements(mainFunction.Declaration!.Identifier
+                           .Location);
+
+                        foreach (var globalStatement in firstGlobalStatementSyntaxTree)
+                            binder.Diagnostics.ReportCannotMixMainAndGlobalStatements(globalStatement!.Location);
+                    }
+                    else
+                    {
+                        mainFunction =
+                            new FunctionSymbol("main", ImmutableArray<ParameterSymbol>.Empty, TypeSymbol.Void);
+                    }
+                }
+            }
+
             var variables   = binder._scope.GetDeclaredVariables();
             var diagnostics = binder.Diagnostics.ToImmutableArray();
 
             if (previous != null)
                 diagnostics = diagnostics.InsertRange(0, previous.Diagnostics);
 
-            return new BoundGlobalScope(previous, diagnostics, variables, functions, statements.ToImmutable());
+            return new BoundGlobalScope(previous,
+                                        diagnostics,
+                                        mainFunction,
+                                        scriptFunction,
+                                        variables,
+                                        functions,
+                                        statements.ToImmutable());
         }
 
         private static BoundScope CreateParentScope(BoundGlobalScope? previous)
@@ -162,7 +250,7 @@ namespace Hyper.Core.Binding
             var type = BindTypeClause(syntax.Type) ?? TypeSymbol.Void;
 
             var function = new FunctionSymbol(syntax.Identifier.Text, parameters.ToImmutable(), type, syntax);
-            if (_scope.TryDeclareFunction(function))
+            if (!_scope.TryDeclareFunction(function))
                 _diagnostics.ReportSymbolAlreadyDeclared(syntax.Identifier.Location, function.Name);
         }
 
@@ -335,7 +423,13 @@ namespace Hyper.Core.Binding
 
             if (_function == null)
             {
-                _diagnostics.ReportInvalidReturn(syntax.ReturnKeyword.Location);
+                // Ignore because we allow both return with and without values.
+                if (_isScript)
+                    expression ??= new BoundLiteralExpression("");
+
+                // Main does not support return values.
+                else if (expression != null)
+                    _diagnostics.ReportInvalidReturnWithValueInGlobalStatements(syntax.Expression!.Location);
             }
             else
             {
@@ -602,6 +696,7 @@ namespace Hyper.Core.Binding
                 "bool"   => TypeSymbol.Bool,
                 "int"    => TypeSymbol.Int,
                 "string" => TypeSymbol.String,
+                "any" => TypeSymbol.Any,
 
                 _ => null
             };

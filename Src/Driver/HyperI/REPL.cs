@@ -529,7 +529,7 @@ internal abstract class REPL
                 {
                     Console.Out.WriteSpace();
                     Console.Out.WritePunctuation("<");
-                    Console.Out.WriteIdentifier(pi.Name);
+                    Console.Out.WriteIdentifier(pi.Name!);
                     Console.Out.WritePunctuation(">");
                 }
 

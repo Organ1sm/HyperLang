@@ -9,7 +9,7 @@ namespace Hyper.Core.VM
 {
     internal sealed class Evaluator
     {
-        private readonly BoundProgram                                   _program;
+        private readonly BoundProgram                                    _program;
         private readonly Dictionary<VariableSymbol, object>              _globals;
         private readonly Dictionary<FunctionSymbol, BoundBlockStatement> _functions = new();
         private readonly Stack<Dictionary<VariableSymbol, object>>       _locals    = new();
@@ -38,7 +38,15 @@ namespace Hyper.Core.VM
             }
         }
 
-        public object? Evaluate() => EvaluateStatement(_program.BlockStatement);
+        public object? Evaluate()
+        {
+            var function = _program.MainFunction ?? _program.ScriptFunction;
+            if (function == null)
+                return null;
+
+            var body = _functions[function];
+            return EvaluateStatement(body);
+        }
 
         private object? EvaluateStatement(BoundBlockStatement body)
         {
@@ -192,7 +200,7 @@ namespace Hyper.Core.VM
 
             if (node.Function == BuiltinFunctions.Print)
             {
-                var message =  EvaluateExpression(node.Arguments[0]);
+                var message = EvaluateExpression(node.Arguments[0]);
                 Console.WriteLine(message);
                 return null;
             }
@@ -230,6 +238,9 @@ namespace Hyper.Core.VM
         {
             var value = EvaluateExpression(node.Expression);
 
+            if (node.Type == TypeSymbol.Any)
+                return value;
+            
             if (node.Type == TypeSymbol.Bool)
                 return Convert.ToBoolean(value);
 
