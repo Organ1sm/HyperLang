@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Mono.Cecil;
 using Hyper.Core.Symbols;
 using Hyper.Core.Syntax;
 using Hyper.Core.Text;
@@ -192,6 +193,38 @@ namespace Hyper.Core.Diagnostic
         {
             var message = $"Cannot declare main function when global statements are used.";
             Report(location, message);
+        }
+
+        public void ReportInvalidReference(string path)
+        {
+            var message = $"The reference is not a valid .NET assembly: '{path}'";
+            Report(default, message);
+        }
+
+        public void ReportRequiredTypeNotFound(string? hyperName, string metadataName)
+        {
+            var message = hyperName == null
+                ? $"The required type '{metadataName}' cannot be resolved among the given references."
+                : $"The required type '{hyperName}' ('{metadataName}') cannot be resolved among the given references.";
+            Report(default, message);
+        }
+
+        public void ReportRequiredTypeAmbiguous(string? hyperName, string metadataName, TypeDefinition[] foundTypes)
+        {
+            var assemblyNames    = foundTypes.Select(t => t.Module.Assembly.Name.Name);
+            var assemblyNameList = string.Join(", ", assemblyNames);
+            var message = hyperName == null
+                ? $"The required type '{metadataName}' was found in multiple references: {assemblyNameList}."
+                : $"The required type '{hyperName}' ('{metadataName}') was found in multiple references: {assemblyNameList}.";
+            Report(default, message);
+        }
+
+        public void ReportRequiredMethodNotFound(string typeName, string methodName, string[] parameterTypeNames)
+        {
+            var parameterTypeNameList = string.Join(", ", parameterTypeNames);
+            var message =
+                $"The required method '{typeName}.{methodName}({parameterTypeNameList})' cannot be resolved among the given references.";
+            Report(default, message);
         }
     }
 }
