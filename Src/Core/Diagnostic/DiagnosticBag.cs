@@ -39,7 +39,7 @@ namespace Hyper.Core.Diagnostic
             Report(location, message);
         }
 
-        public void ReportUndefinedUnaryOperator(TextLocation location, string? operatorText, TypeSymbol operandType)
+        public void ReportUndefinedUnaryOperator(TextLocation location, string operatorText, TypeSymbol operandType)
         {
             var message = $"Unary operator '{operatorText}' is not defined for type '{operandType}'.";
             Report(location, message);
@@ -52,7 +52,7 @@ namespace Hyper.Core.Diagnostic
         }
 
         public void ReportUndefinedBinaryOperator(TextLocation location,
-                                                  string? operatorText,
+                                                  string operatorText,
                                                   TypeSymbol leftType,
                                                   TypeSymbol rightType)
         {
@@ -60,13 +60,13 @@ namespace Hyper.Core.Diagnostic
             Report(location, message);
         }
 
-        public void ReportParameterAlreadyDeclared(TextLocation location, string? parameterName)
+        public void ReportParameterAlreadyDeclared(TextLocation location, string parameterName)
         {
             var message = $"A parameter with the name '{parameterName}' already exists.";
             Report(location, message);
         }
 
-        public void ReportUndefinedVariable(TextLocation location, string? name)
+        public void ReportUndefinedVariable(TextLocation location, string name)
         {
             var message = $"Variable '{name}' doesn't exist.";
             Report(location, message);
@@ -78,7 +78,7 @@ namespace Hyper.Core.Diagnostic
             Report(location, message);
         }
 
-        public void ReportUndefinedType(TextLocation location, string? name)
+        public void ReportUndefinedType(TextLocation location, string name)
         {
             var message = $"Type '{name}' doesn't exist.";
             Report(location, message);
@@ -97,19 +97,19 @@ namespace Hyper.Core.Diagnostic
             Report(location, message);
         }
 
-        public void ReportSymbolAlreadyDeclared(TextLocation location, string? name)
+        public void ReportSymbolAlreadyDeclared(TextLocation location, string name)
         {
             var message = $"'{name}' is already declared.";
             Report(location, message);
         }
 
-        public void ReportCannotAssign(TextLocation location, string? name)
+        public void ReportCannotAssign(TextLocation location, string name)
         {
             var message = $"Variable '{name}' is read-only and cannot be assigned to.";
             Report(location, message);
         }
 
-        public void ReportUndefinedFunction(TextLocation location, string? name)
+        public void ReportUndefinedFunction(TextLocation location, string name)
         {
             var message = $"Function '{name}' doesn't exist.";
             Report(location, message);
@@ -121,19 +121,9 @@ namespace Hyper.Core.Diagnostic
             Report(location, message);
         }
 
-        public void ReportWrongArgumentCount(TextLocation location, string? name, int expectedCount, int actualCount)
+        public void ReportWrongArgumentCount(TextLocation location, string name, int expectedCount, int actualCount)
         {
             var message = $"Function '{name}' requires {expectedCount} arguments but was given {actualCount}.";
-            Report(location, message);
-        }
-
-        public void ReportWrongArgumentType(TextLocation location,
-                                            string? name,
-                                            TypeSymbol expectedType,
-                                            TypeSymbol actualType)
-        {
-            var message =
-                $"Parameter '{name}' requires a value of type '{expectedType}' but was given a value of type '{actualType}'.";
             Report(location, message);
         }
 
@@ -155,12 +145,6 @@ namespace Hyper.Core.Diagnostic
             Report(location, message);
         }
 
-        public void ReportInvalidReturn(TextLocation location)
-        {
-            var message = "The 'return' keyword can only be used inside of functions.";
-            Report(location, message);
-        }
-
         public void ReportAllPathsMustReturn(TextLocation location)
         {
             var message = "Not all code paths return a value.";
@@ -174,9 +158,39 @@ namespace Hyper.Core.Diagnostic
             Report(location, message);
         }
 
+        public void ReportInvalidReturnWithValueInGlobalStatements(TextLocation location)
+        {
+            var message = "The 'return' keyword cannot be followed by an expression in global statements.";
+            Report(location, message);
+        }
+
         public void ReportMissingReturnExpression(TextLocation location, TypeSymbol returnType)
         {
             var message = $"An expression of type '{returnType}' is expected.";
+            Report(location, message);
+        }
+
+        public void ReportInvalidExpressionStatement(TextLocation location)
+        {
+            var message = $"Only assignment and call expressions can be used as a statement.";
+            Report(location, message);
+        }
+
+        public void ReportOnlyOneFileCanHaveGlobalStatements(TextLocation location)
+        {
+            var message = $"At most one file can have global statements.";
+            Report(location, message);
+        }
+
+        public void ReportMainMustHaveCorrectSignature(TextLocation location)
+        {
+            var message = $"main must not take arguments and not return anything.";
+            Report(location, message);
+        }
+
+        public void ReportCannotMixMainAndGlobalStatements(TextLocation location)
+        {
+            var message = $"Cannot declare main function when global statements are used.";
             Report(location, message);
         }
     }

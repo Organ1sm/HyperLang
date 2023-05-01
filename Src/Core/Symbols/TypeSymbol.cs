@@ -6,6 +6,7 @@ public sealed class TypeSymbol : Symbol
     public static readonly TypeSymbol Int    = new("int");
     public static readonly TypeSymbol String = new("string");
     public static readonly TypeSymbol Void = new("void");
+    public static readonly TypeSymbol Any = new("any");
     public static readonly TypeSymbol Error  = new("?");
 
     private TypeSymbol(string name) : base(name) { }

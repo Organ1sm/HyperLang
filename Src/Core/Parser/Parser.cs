@@ -226,7 +226,7 @@ namespace Hyper.Core.Parser
             return ParseTypeClause();
         }
 
-        private TypeClause? ParseTypeClause()
+        private TypeClause ParseTypeClause()
         {
             var token = Current.Kind switch
             {
@@ -244,7 +244,7 @@ namespace Hyper.Core.Parser
             var condition = ParseExpression();
             Match(SyntaxKind.ColonToken);
             var statement  = ParseStatement();
-            var elseClause = ParseElseClause();
+            var elseClause = ParseOptionalElseClause();
 
             return new IfStatement(_syntaxTree, keyword, condition, statement, elseClause);
         }
@@ -270,7 +270,7 @@ namespace Hyper.Core.Parser
             return new WhileStatement(_syntaxTree, keyword, condition, body);
         }
 
-        private ElseClause? ParseElseClause()
+        private ElseClause? ParseOptionalElseClause()
         {
             if (Current.Kind != SyntaxKind.ElseKeyword)
                 return null;

@@ -21,6 +21,12 @@ internal sealed class Conversion
         if (from == to)
             return Identity;
 
+        if (from != TypeSymbol.Void && to == TypeSymbol.Any)
+            return Implicit;
+
+        if (from == TypeSymbol.Any && to != TypeSymbol.Void)
+            return Explicit;
+
         if (from == TypeSymbol.Bool || from == TypeSymbol.Int)
         {
             if (to == TypeSymbol.String)
@@ -32,6 +38,7 @@ internal sealed class Conversion
             if (to == TypeSymbol.Bool || to == TypeSymbol.Int)
                 return Explicit;
         }
+
 
         return None;
     }

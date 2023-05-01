@@ -4,7 +4,7 @@ namespace Hyper.Core.Binding.Expr;
 
 internal sealed class BoundVariableExpression : BoundExpression
 {
-    public BoundVariableExpression(VariableSymbol? variable)
+    public BoundVariableExpression(VariableSymbol variable)
     {
         Variable = variable;
     }
@@ -12,5 +12,5 @@ internal sealed class BoundVariableExpression : BoundExpression
     public override BoundNodeKind Kind => BoundNodeKind.VariableExpression;
 
     public override TypeSymbol      Type     => Variable?.Type ?? TypeSymbol.Error;
-    public          VariableSymbol? Variable { get; }
+    public          VariableSymbol Variable { get; }
 }

@@ -4,7 +4,7 @@ namespace Hyper.Core.Binding.Stmt;
 
 internal sealed class BoundDoWhileStatement : BoundLoopStatement
 {
-    public BoundDoWhileStatement(BoundStatement? body,
+    public BoundDoWhileStatement(BoundStatement body,
                                  BoundExpression condition,
                                  BoundLabel breakLabel,
                                  BoundLabel continueLabel)
@@ -15,6 +15,6 @@ internal sealed class BoundDoWhileStatement : BoundLoopStatement
     }
 
     public override BoundNodeKind   Kind      => BoundNodeKind.DoWhileStatement;
-    public          BoundStatement? Body      { get; }
+    public          BoundStatement  Body      { get; }
     public          BoundExpression Condition { get; }
 }

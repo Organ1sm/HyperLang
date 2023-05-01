@@ -14,7 +14,7 @@ internal sealed class Lowerer : BoundTreeRewriter
 
     private BoundLabel GenerateLabel() => new($"Label{++_labelCount}");
 
-    public static BoundBlockStatement Lower(BoundStatement? statement)
+    public static BoundBlockStatement Lower(BoundStatement statement)
     {
         var lowerer = new Lowerer();
         var result  = lowerer.RewriteStatement(statement);
@@ -22,10 +22,10 @@ internal sealed class Lowerer : BoundTreeRewriter
         return Flatten(result);
     }
 
-    private static BoundBlockStatement Flatten(BoundStatement? statement)
+    private static BoundBlockStatement Flatten(BoundStatement statement)
     {
-        var builder = ImmutableArray.CreateBuilder<BoundStatement?>();
-        var stack   = new Stack<BoundStatement?>();
+        var builder = ImmutableArray.CreateBuilder<BoundStatement>();
+        var stack   = new Stack<BoundStatement>();
         stack.Push(statement);
 
         while (stack.Count > 0)
@@ -47,7 +47,7 @@ internal sealed class Lowerer : BoundTreeRewriter
         return new BoundBlockStatement(builder.ToImmutable());
     }
 
-    protected override BoundStatement? RewriteIfStatement(BoundIfStatement node)
+    protected override BoundStatement RewriteIfStatement(BoundIfStatement node)
     {
         if (node.ElseStatement == null)
         {
@@ -107,7 +107,7 @@ internal sealed class Lowerer : BoundTreeRewriter
     }
 
 
-    protected override BoundStatement? RewriteDoWhileStatement(BoundDoWhileStatement node)
+    protected override BoundStatement RewriteDoWhileStatement(BoundDoWhileStatement node)
     {
         // do
         //    <body>
@@ -137,7 +137,7 @@ internal sealed class Lowerer : BoundTreeRewriter
         return RewriteStatement(result);
     }
 
-    protected override BoundStatement? RewriteWhileStatement(BoundWhileStatement node)
+    protected override BoundStatement RewriteWhileStatement(BoundWhileStatement node)
     {
         // while <condition>
         //      <body>
@@ -170,7 +170,7 @@ internal sealed class Lowerer : BoundTreeRewriter
         return RewriteStatement(result);
     }
 
-    protected override BoundStatement? RewriteForStatement(BoundForStatement node)
+    protected override BoundStatement RewriteForStatement(BoundForStatement node)
     {
         // for <var> = <lower> to <upper>
         //      <body>
@@ -197,7 +197,7 @@ internal sealed class Lowerer : BoundTreeRewriter
         var condition = new BoundBinaryExpression(varExpr,
                                                   BoundBinaryOperator.Bind(SyntaxKind.LessOrEqualsToken,
                                                                            TypeSymbol.Int,
-                                                                           TypeSymbol.Int),
+                                                                           TypeSymbol.Int)!,
                                                   new BoundVariableExpression(upperBoundSymbol));
 
         var continueLabelStatement = new BoundLabelStatement(node.ContinueLabel);
@@ -207,13 +207,13 @@ internal sealed class Lowerer : BoundTreeRewriter
                                                                                 BoundBinaryOperator
                                                                                    .Bind(SyntaxKind.PlusToken,
                                                                                      TypeSymbol.Int,
-                                                                                     TypeSymbol.Int),
+                                                                                     TypeSymbol.Int)!,
                                                                                 new BoundLiteralExpression(1))));
 
         var whileBody = new BoundBlockStatement(ImmutableArray.Create(node.Body, continueLabelStatement, increment));
         var whileStatements = new BoundWhileStatement(condition, whileBody, node.BreakLabel, GenerateLabel());
         var result =
-            new BoundBlockStatement(ImmutableArray.Create<BoundStatement?>(varDecl, upperBoundDecl, whileStatements));
+            new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(varDecl, upperBoundDecl, whileStatements));
 
         return RewriteStatement(result);
     }

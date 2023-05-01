@@ -122,19 +122,19 @@ a = 2 // error, let keyword indicates that the variable is a read-only variable.
 
 ### If-statement
 
-```js
+```
 var a = 1
 if a == 1:
-a = 10
+    a = 10
 else:
-a = 100
+    a = 100
 
 a  // output: 10
 ```
 
 ### While-statement
 
-```js
+```
 var i = 10
 var result = 0
 while i > 0:
@@ -148,10 +148,9 @@ result          // output 55
 
 ### For-Statement
 
-```js
+```
 var result = 0
-for i = 1 to
-10
+for i = 1 to 10
 {
     result = result + i
 }
@@ -188,21 +187,20 @@ not the most convenient approach. Many language constructs can be reduced, also
 called *lowered*, to other constructs. That's because languages often provide
 syntactic sugar that is merely a shorthand for other constructs. For example:
 
-```js
-for i = 1 to
-100
+```
+for i = 1 to 100
 < statement >
 ```
 
 is just a shorthand for this `while`-statement:
 
-```js
+```
 let i = 1
 while i <= 100:
 {
     <statement>
-        i = i + 1
-        }
+    i = i + 1
+}
 ```
 
 Instead of having to generate code for both, `for`- and `while`-statements, it's
@@ -344,7 +342,7 @@ We added support for explicit typing of variables and function declarations.
 ### Functions
 
 ```
->> function hi(name: string) -> void
+>> func hi(name: string) -> void
 {
     // do something
 }
@@ -407,8 +405,7 @@ all control flows through a function end in the return statement.
 Consider this code
 
 ```
-func
-sum(n: int) -> int
+func sum(n: int) -> int
 {
     var i = 0
     var result = 0
@@ -457,3 +454,76 @@ it doesn't have any incoming nodes or all incoming nodes are also considered unr
 * Add `#ls` that shows visible symbols
 * Add `#dump` that shows the bound tree of a given function
 * Persist submissions between run
+
+## Stage 17
+
+## Completed items
+
+* Introduce `Compilation.IsScript` and use it to restrict expression statements
+* Support implicit argument conversions when calling functions
+* Add `any` type
+* Lower global statements into `main` function
+
+### Regular vs Script mode
+
+In virtual All C-like languages, some expressions (such as assignment expressions and function call expressions) are
+also allowed as standalone statements. The canonical examples are assignments and expressions:
+
+```typescript
+x = 10
+print(string(x))
+```
+
+Syntactically, also allow for other expression such as
+
+```
+x + 1
+```
+
+Normally, these expressions are unmeaning because their values aren't observed.
+
+```typescript
+x + f(3)
+```
+
+But the top level binary-expression will produce a value that's not going anywhere, which is
+most likely indicative that the developer made a mistake.
+Hence, most c-like languages disallow or at lease warn when compiler encounter these expression.
+
+However, when entering the REPL, these expression are useful. And their return value is observed by printing
+it back to the console.
+
+To differentiate between the two modes we're changing our `Compilation` to be in
+either script mode or in regular mode:
+
+* **regular mode** only assignment expressions and function call expressions are allowed as
+  expression statements. Other expressions will be restricted or warned.
+
+* **script mode** any expression is allowed as a global statement. But if the statement becomes part of a block,
+  it will be treated as regular mode and subject to the same restrictions.
+
+The two modes allow the language to balance between global interaction and regular programming. Script mode is used in
+REPL and regular mode is used in other environments.
+
+### Lowering global statements
+
+We would like our logical model to be that all code is contained in a function.
+
+For regular programs that are compiled that means we are expected to have a `main` function
+where execution begins. `main` function take no arguments and returns no value(we also change later)
+
+In script mode, we want a script function that take no arguments and returns `any` type.
+
+* **Regular mode**. The developer can use global statements or explicitly
+  declare a `main` function. When global statements are used, the compiler will
+  synthesize a `main` function that will contain those statements. That's why
+  using both global statements and a `main` function is illegal. Furthermore, we
+  only allow one syntax tree to have global statements because unless we allow
+  the developer to control the order of files, the execution order between them
+  would be ill-defined.
+
+* **Script mode**. The developer can declare a function called `main` in script
+  mode but the function isn't treated specially and thus doesn't conflict with
+  global statements. When global statements are used, they are put in a
+  synthesized function with a name that the developer can't use (this avoids
+  naming conflicts).

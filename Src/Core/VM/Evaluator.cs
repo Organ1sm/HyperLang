@@ -1,4 +1,5 @@
-﻿using Hyper.Core.Symbols;
+﻿using System.Diagnostics;
+using Hyper.Core.Symbols;
 using Hyper.Core.Binding;
 using Hyper.Core.Binding.Expr;
 using Hyper.Core.Binding.Operator;
@@ -8,10 +9,11 @@ namespace Hyper.Core.VM
 {
     internal sealed class Evaluator
     {
-        private readonly BoundProgram                              _program;
-        private readonly Dictionary<VariableSymbol, object>        _globals;
-        private readonly Stack<Dictionary<VariableSymbol, object>> _locals = new();
-        private          Random?                                   _random;
+        private readonly BoundProgram                                    _program;
+        private readonly Dictionary<VariableSymbol, object>              _globals;
+        private readonly Dictionary<FunctionSymbol, BoundBlockStatement> _functions = new();
+        private readonly Stack<Dictionary<VariableSymbol, object>>       _locals    = new();
+        private          Random?                                         _random;
 
         private object? _lastValue;
 
@@ -20,9 +22,31 @@ namespace Hyper.Core.VM
             _program = program;
             _globals = variables;
             _locals.Push(new());
+
+            var current = program;
+            while (current != null)
+            {
+                foreach (var kv in current.Functions)
+                {
+                    var function = kv.Key;
+                    var body     = kv.Value;
+
+                    _functions.Add(function, body);
+                }
+
+                current = current.Previous;
+            }
         }
 
-        public object Evaluate() => EvaluateStatement(_program.BlockStatement);
+        public object? Evaluate()
+        {
+            var function = _program.MainFunction ?? _program.ScriptFunction;
+            if (function == null)
+                return null;
+
+            var body = _functions[function];
+            return EvaluateStatement(body);
+        }
 
         private object? EvaluateStatement(BoundBlockStatement body)
         {
@@ -55,7 +79,7 @@ namespace Hyper.Core.VM
                     case BoundNodeKind.ConditionalGotoStatement:
                     {
                         var cgs       = (BoundConditionalGotoStatement) s;
-                        var condition = (bool) EvaluateExpression(cgs.Condition);
+                        var condition = (bool) EvaluateExpression(cgs.Condition)!;
 
                         if (condition == cgs.JumpIfTrue)
                             index = labelToIndex[cgs.Label];
@@ -74,7 +98,7 @@ namespace Hyper.Core.VM
                         return _lastValue;
 
                     default:
-                        throw new Exception($"Unexpected s {s?.Kind}");
+                        throw new Exception($"Unexpected s {s.Kind}");
                 }
             }
 
@@ -84,8 +108,9 @@ namespace Hyper.Core.VM
         private void EvaluateVariableDeclaration(BoundVariableDeclaration node)
         {
             var value = EvaluateExpression(node.Initializer);
-            _lastValue = value;
+            Debug.Assert(value != null);
 
+            _lastValue = value;
             Assign(node.Variable, value);
         }
 
@@ -108,6 +133,7 @@ namespace Hyper.Core.VM
         private object EvaluateAssignmentExpression(BoundAssignmentExpression a)
         {
             var value = EvaluateExpression(a.Expression);
+            Debug.Assert(value != null);
             Assign(a.Variable, value);
 
             return value;
@@ -116,6 +142,7 @@ namespace Hyper.Core.VM
         private object EvaluateUnaryExpression(BoundUnaryExpression u)
         {
             var operand = EvaluateExpression(u.Operand);
+            Debug.Assert(operand != null);
 
             return u.Operator.OpKind switch
             {
@@ -132,6 +159,8 @@ namespace Hyper.Core.VM
         {
             var left  = EvaluateExpression(b.Left);
             var right = EvaluateExpression(b.Right);
+
+            Debug.Assert(left != null && right != null);
 
             return b.Operator.OpKind switch
             {
@@ -171,14 +200,14 @@ namespace Hyper.Core.VM
 
             if (node.Function == BuiltinFunctions.Print)
             {
-                var message = (string) EvaluateExpression(node.Arguments[0]);
+                var message = EvaluateExpression(node.Arguments[0]);
                 Console.WriteLine(message);
                 return null;
             }
 
             if (node.Function == BuiltinFunctions.Rnd)
             {
-                var max = (int) EvaluateExpression(node.Arguments[0]);
+                var max = (int) EvaluateExpression(node.Arguments[0])!;
 
                 if (_random == null)
                     _random = new Random();
@@ -191,12 +220,13 @@ namespace Hyper.Core.VM
             {
                 var parameter = node.Function.Parameters[i];
                 var value     = EvaluateExpression(node.Arguments[i]);
+                Debug.Assert(value != null);
                 locals.Add(parameter, value);
             }
 
             _locals.Push(locals);
 
-            var statement = _program.Functions[node.Function];
+            var statement = _functions[node.Function];
             var result    = EvaluateStatement(statement);
 
             _locals.Pop();
@@ -208,6 +238,9 @@ namespace Hyper.Core.VM
         {
             var value = EvaluateExpression(node.Expression);
 
+            if (node.Type == TypeSymbol.Any)
+                return value;
+            
             if (node.Type == TypeSymbol.Bool)
                 return Convert.ToBoolean(value);
 
@@ -220,7 +253,7 @@ namespace Hyper.Core.VM
             throw new Exception($"Unexpected type {node.Type}");
         }
 
-        private object EvaluateExpression(BoundExpression node)
+        private object? EvaluateExpression(BoundExpression node)
         {
             return (node switch
             {
