@@ -523,7 +523,7 @@ In script mode, we want a script function that take no arguments and returns `an
   would be ill-defined.
 
 * **Script mode**. The developer can declare a function called `main` in script
-  mode but the function isn't treated specially and thus doesn't conflict with
+  mode but the function isn't treated specially and thus does not conflict with
   global statements. When global statements are used, they are put in a
   synthesized function with a name that the developer can't use (this avoids
   naming conflicts).
