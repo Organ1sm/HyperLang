@@ -3,9 +3,7 @@ using Hyper.Core.Binding;
 using Hyper.Core.Symbols;
 using Hyper.Core.Syntax;
 using Hyper.Core.Binding.Expr;
-using Hyper.Core.Binding.Opt;
 using Hyper.Core.Binding.Scope;
-using Hyper.Core.Binding.Stmt;
 using Hyper.Core.Emit;
 
 namespace Hyper.Core.VM

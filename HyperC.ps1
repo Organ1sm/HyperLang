@@ -1,1 +1,1 @@
-dotnet run --project .\Src\Driver\HyperC\ -- ".\Demo\"
+dotnet run --project .\Src\Driver\HyperC\ -- ".\Demo\Hello\hello-world.hp"
