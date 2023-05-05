@@ -7,14 +7,17 @@ internal static class BuiltinFunctions
 {
     public static readonly FunctionSymbol Print = new("print",
                                                       ImmutableArray.Create(new ParameterSymbol("text",
-                                                                             TypeSymbol.String)),
+                                                                             TypeSymbol.String,
+                                                                             0)),
                                                       TypeSymbol.Void);
 
     public static readonly FunctionSymbol
         Input = new("input", ImmutableArray<ParameterSymbol>.Empty, TypeSymbol.String);
 
     public static readonly FunctionSymbol Rnd = new("rnd",
-                                                    ImmutableArray.Create(new ParameterSymbol("max", TypeSymbol.Int)),
+                                                    ImmutableArray.Create(new ParameterSymbol("max",
+                                                                           TypeSymbol.Int,
+                                                                           0)),
                                                     TypeSymbol.Int);
 
 
