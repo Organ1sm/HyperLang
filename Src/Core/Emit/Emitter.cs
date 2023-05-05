@@ -178,8 +178,9 @@ internal sealed class Emitter
 
     private void EmitFunctionDeclaration(FunctionSymbol function)
     {
-        var voidType = _knownTypes[TypeSymbol.Void];
-        var method = new MethodDefinition(function.Name, MethodAttributes.Static | MethodAttributes.Private, voidType);
+        var functionType = _knownTypes[function.Type];
+        var method =
+            new MethodDefinition(function.Name, MethodAttributes.Static | MethodAttributes.Private, functionType);
 
         _typeDefinition.Methods.Add(method);
         _methods.Add(function, method);
@@ -258,7 +259,10 @@ internal sealed class Emitter
 
     private void EmitReturnStatement(ILProcessor ilProcessor, BoundReturnStatement node)
     {
-        throw new NotImplementedException();
+        if (node.Expression != null)
+            EmitExpression(ilProcessor, node.Expression);
+
+        ilProcessor.Emit(OpCodes.Ret);
     }
 
     private void EmitExpressionStatement(ILProcessor ilProcessor, BoundExpressionStatement node)

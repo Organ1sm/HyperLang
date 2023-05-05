@@ -242,7 +242,7 @@ namespace Hyper.Core.Binding
                 }
                 else
                 {
-                    var p = new ParameterSymbol(parameterName, parameterType);
+                    var p = new ParameterSymbol(parameterName, parameterType, parameters.Count);
                     parameters.Add(p);
                 }
             }
