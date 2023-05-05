@@ -1,6 +1,19 @@
 func main()
 {
-    print("What's you name?")
-    let name = input()
+    let name = readLine("What's your name?")
     print("Hello " + name + "!")
+}
+
+func getName() -> string
+{
+    let name = input()
+    
+    return name
+}
+
+func readLine(prompt: string) -> string
+{
+    print(prompt)
+    
+    return getName()
 }
