@@ -7,6 +7,7 @@ using Hyper.Core.Diagnostic;
 using Hyper.Core.Symbols;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 
 namespace Hyper.Core.Emit;
 
@@ -187,8 +188,11 @@ internal sealed class Emitter
         foreach (var statement in body.Statements)
             EmitStatement(ilProcessor, statement);
 
+        // We should make sure that our bound tree has explicit returns.
         if (function.Type == TypeSymbol.Void)
             ilProcessor.Emit(OpCodes.Ret);
+
+        method.Body.OptimizeMacros();
     }
 
     private void EmitStatement(ILProcessor ilProcessor, BoundStatement node)
