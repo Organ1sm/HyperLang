@@ -1,5 +1,4 @@
-﻿using Hyper.Core.Symbols;
-using Hyper.Core.Syntax;
+﻿using Hyper.Core.Syntax;
 using Hyper.Core.VM;
 using Hyper.Core.IO;
 using Mono.Options;

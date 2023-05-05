@@ -21,6 +21,7 @@ internal sealed class Emitter
 
     private readonly MethodReference?   _consoleWriteLineReference;
     private readonly MethodReference?   _consoleReadLineReference;
+    private readonly MethodReference?   _stringConcatReference;
     private readonly AssemblyDefinition _assemblyDefinition;
     private          TypeDefinition     _typeDefinition;
 
@@ -136,6 +137,7 @@ internal sealed class Emitter
 
         _consoleReadLineReference = ResolveMethod("System.Console", "ReadLine", Array.Empty<string>());
         _consoleWriteLineReference = ResolveMethod("System.Console", "WriteLine", new[] {"System.String"});
+        _stringConcatReference = ResolveMethod("System.String", "Concat", new[] {"System.String", "System.String"});
     }
 
     public static ImmutableArray<Diagnostic.Diagnostic> Emit(BoundProgram program,
@@ -339,7 +341,23 @@ internal sealed class Emitter
 
     private void EmitBinaryExpression(ILProcessor ilProcessor, BoundBinaryExpression node)
     {
-        throw new NotImplementedException();
+        if (node.Operator.OpKind == BoundBinaryOperatorKind.Addition)
+        {
+            if (node.Left.Type == TypeSymbol.String && node.Right.Type == TypeSymbol.String)
+            {
+                EmitExpression(ilProcessor, node.Left);
+                EmitExpression(ilProcessor, node.Right);
+                ilProcessor.Emit(OpCodes.Call, _stringConcatReference);
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+        }
+        else
+        {
+            throw new NotImplementedException();
+        }
     }
 
     private void EmitCallExpression(ILProcessor ilProcessor, BoundCallExpression node)
