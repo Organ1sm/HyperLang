@@ -51,7 +51,7 @@ namespace Hyper.Core.Binding
             {
                 var binder      = new Binder(isScript, parentScope, function);
                 var body        = binder.BindStatement(function.Declaration!.Body);
-                var loweredBody = Lowerer.Lower(body);
+                var loweredBody = Lowerer.Lower(function, body);
 
                 if (function.Type != TypeSymbol.Void && !ControlFlowGraph.AllPathsReturn(loweredBody))
                     binder._diagnostics.ReportAllPathsMustReturn(function.Declaration!.Identifier.Location);
@@ -62,7 +62,7 @@ namespace Hyper.Core.Binding
 
             if (globalScope.MainFunction != null && globalScope.Statements.Any())
             {
-                var body = Lowerer.Lower(new BoundBlockStatement(globalScope.Statements));
+                var body = Lowerer.Lower(globalScope.MainFunction, new BoundBlockStatement(globalScope.Statements));
                 functionBodies.Add(globalScope.MainFunction, body);
             }
             else if (globalScope.ScriptFunction != null)
@@ -81,7 +81,7 @@ namespace Hyper.Core.Binding
                     statements = statements.Add(new BoundReturnStatement(nullValue));
                 }
 
-                var body = Lowerer.Lower(new BoundBlockStatement(statements));
+                var body = Lowerer.Lower(globalScope.ScriptFunction, new BoundBlockStatement(statements));
                 functionBodies.Add(globalScope.ScriptFunction, body);
             }
 
@@ -118,10 +118,10 @@ namespace Hyper.Core.Binding
             // Check global Statement
 
             var firstGlobalStatementSyntaxTree = syntaxTrees
-                                                .Select(st => st.Root.Members.OfType<GlobalStatement>()
-                                                                .FirstOrDefault())
-                                                .Where(g => g != null)
-                                                .ToArray();
+                                                 .Select(st => st.Root.Members.OfType<GlobalStatement>()
+                                                                 .FirstOrDefault())
+                                                 .Where(g => g != null)
+                                                 .ToArray();
 
             if (firstGlobalStatementSyntaxTree.Length > 1)
             {
@@ -159,7 +159,7 @@ namespace Hyper.Core.Binding
                     if (mainFunction != null)
                     {
                         binder.Diagnostics.ReportCannotMixMainAndGlobalStatements(mainFunction.Declaration!.Identifier
-                           .Location);
+                            .Location);
 
                         foreach (var globalStatement in firstGlobalStatementSyntaxTree)
                             binder.Diagnostics.ReportCannotMixMainAndGlobalStatements(globalStatement!.Location);
@@ -696,7 +696,7 @@ namespace Hyper.Core.Binding
                 "bool"   => TypeSymbol.Bool,
                 "int"    => TypeSymbol.Int,
                 "string" => TypeSymbol.String,
-                "any" => TypeSymbol.Any,
+                "any"    => TypeSymbol.Any,
 
                 _ => null
             };
