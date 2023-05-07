@@ -1,7 +1,9 @@
 func main()
 {
     let name = readLine("What's your name?")
+    let age = getAge()
     print("Hello " + name + "!")
+    print("I am " + string(age) + ".")
 }
 
 func getName() -> string
@@ -17,3 +19,10 @@ func readLine(prompt: string) -> string
     
     return getName()
 }
+
+func getAge() -> int
+{
+    let age = input()
+    
+    return int(age)
+ }
