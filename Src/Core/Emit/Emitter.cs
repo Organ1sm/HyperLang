@@ -213,7 +213,7 @@ internal sealed class Emitter
         foreach (var statement in body.Statements)
             EmitStatement(ilProcessor, statement);
 
-        method.Body.OptimizeMacros();
+        method.Body.Optimize();
     }
 
     private void EmitStatement(ILProcessor ilProcessor, BoundStatement node)
