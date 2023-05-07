@@ -1,28 +1,14 @@
 func main()
 {
-    let name = readLine("What's your name?")
-    let age = getAge()
-    print("Hello " + name + "!")
-    print("I am " + string(age) + ".")
+    testUnaryExpr()
 }
 
-func getName() -> string
+func testUnaryExpr()
 {
-    let name = input()
+    var a = 1
+    var b = -1
+    var c = !true
+    var d = ~1
     
-    return name
-}
-
-func readLine(prompt: string) -> string
-{
-    print(prompt)
-    
-    return getName()
-}
-
-func getAge() -> int
-{
-    let age = input()
-    
-    return int(age)
+    print(string(b))
  }

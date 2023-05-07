@@ -5,6 +5,7 @@ using Hyper.Core.Binding.Operator;
 using Hyper.Core.Binding.Stmt;
 using Hyper.Core.Diagnostic;
 using Hyper.Core.Symbols;
+using Hyper.Core.Syntax;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
@@ -364,7 +365,30 @@ internal sealed class Emitter
 
     private void EmitUnaryExpression(ILProcessor ilProcessor, BoundUnaryExpression node)
     {
-        throw new NotImplementedException();
+        EmitExpression(ilProcessor, node.Operand);
+
+        if (node.Operator.OpKind == BoundUnaryOperatorKind.Identity)
+        {
+            // Done
+        }
+        else if (node.Operator.OpKind == BoundUnaryOperatorKind.LogicalNegation)
+        {
+            ilProcessor.Emit(OpCodes.Ldc_I4_0);
+            ilProcessor.Emit(OpCodes.Ceq);
+        }
+        else if (node.Operator.OpKind == BoundUnaryOperatorKind.Negation)
+        {
+            ilProcessor.Emit(OpCodes.Neg);
+        }
+        else if (node.Operator.OpKind == BoundUnaryOperatorKind.OnesComplement)
+        {
+            ilProcessor.Emit(OpCodes.Not);
+        }
+        else
+        {
+            throw new
+                Exception($"Unexpected unary operator {Factors.GetText(node.Operator.Kind)}({node.Operand.Type})");
+        }
     }
 
     private void EmitBinaryExpression(ILProcessor ilProcessor, BoundBinaryExpression node)
