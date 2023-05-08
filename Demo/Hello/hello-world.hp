@@ -12,7 +12,7 @@ func testUnaryExpr ()
     var c = !true
     var d = ~1
     
-    print(string(b))
+    print(b)
 }
 
 func testBinaryExpr ()
@@ -23,14 +23,14 @@ func testBinaryExpr ()
     let a = ("1" == "2")
     let b = ("1" != "2")
     
-    print(string(x))
-    print(string(y))
-    print(string(a))
-    print(string(b))
+    print(x)
+    print(y)
+    print(a)
+    print(b)
 }
 
 func testRemainingStmt()
 {
     for i = 1 to 10
-        print(string(i))
+        print(i)
 }

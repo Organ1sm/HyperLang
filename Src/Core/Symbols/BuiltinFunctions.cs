@@ -7,7 +7,7 @@ internal static class BuiltinFunctions
 {
     public static readonly FunctionSymbol Print = new("print",
                                                       ImmutableArray.Create(new ParameterSymbol("text",
-                                                                             TypeSymbol.String,
+                                                                             TypeSymbol.Any,
                                                                              0)),
                                                       TypeSymbol.Void);
 
