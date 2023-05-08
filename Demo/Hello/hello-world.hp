@@ -1,9 +1,10 @@
 func main()
 {
     testUnaryExpr()
+    testBinaryExpr()
 }
 
-func testUnaryExpr()
+func testUnaryExpr ()
 {
     var a = 1
     var b = -1
@@ -11,4 +12,18 @@ func testUnaryExpr()
     var d = ~1
     
     print(string(b))
- }
+}
+
+func testBinaryExpr ()
+{
+    let x = (1 == 2)
+    let y = (1 != 2)
+    
+    let a = ("1" == "2")
+    let b = ("1" != "2")
+    
+    print(string(x))
+    print(string(y))
+    print(string(a))
+    print(string(b))
+}

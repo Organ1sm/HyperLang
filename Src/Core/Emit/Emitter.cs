@@ -26,6 +26,7 @@ internal sealed class Emitter
     private readonly MethodReference? _convertToBooleanReference;
     private readonly MethodReference? _convertToInt32Reference;
     private readonly MethodReference? _convertToStringReference;
+    private readonly MethodReference? _objectEqualsReference;
 
     private readonly AssemblyDefinition _assemblyDefinition;
     private          TypeDefinition     _typeDefinition;
@@ -46,7 +47,7 @@ internal sealed class Emitter
             }
         }
 
-        var builtInTypes = new List<(TypeSymbol type, string MetadataName)>()
+        var builtInTypes = new List<(TypeSymbol type, string MetadataName)>
         {
             (TypeSymbol.Any, "System.Object"),
             (TypeSymbol.Bool, "System.Boolean"),
@@ -147,6 +148,8 @@ internal sealed class Emitter
         _convertToBooleanReference = ResolveMethod("System.Convert", "ToBoolean", new[] {"System.Object"});
         _convertToInt32Reference = ResolveMethod("System.Convert", "ToInt32", new[] {"System.Object"});
         _convertToStringReference = ResolveMethod("System.Convert", "ToString", new[] {"System.Object"});
+
+        _objectEqualsReference = ResolveMethod("System.Object", "Equals", new[] {"System.Object", "System.Object"});
     }
 
     public static ImmutableArray<Diagnostic.Diagnostic> Emit(BoundProgram program,
@@ -393,24 +396,102 @@ internal sealed class Emitter
 
     private void EmitBinaryExpression(ILProcessor ilProcessor, BoundBinaryExpression node)
     {
+        EmitExpression(ilProcessor, node.Left);
+        EmitExpression(ilProcessor, node.Right);
+  
+        // (string + string)
         if (node.Operator.OpKind == BoundBinaryOperatorKind.Addition)
         {
             if (node.Left.Type == TypeSymbol.String && node.Right.Type == TypeSymbol.String)
             {
-                EmitExpression(ilProcessor, node.Left);
-                EmitExpression(ilProcessor, node.Right);
                 ilProcessor.Emit(OpCodes.Call, _stringConcatReference);
-            }
-            else
-            {
-                throw new NotImplementedException();
+                return;
             }
         }
-        else
+
+        // (any == any)
+        // (string == string)
+        if (node.Operator.OpKind == BoundBinaryOperatorKind.Equals)
         {
-            throw new NotImplementedException();
+            if ((node.Left.Type == TypeSymbol.Any && node.Right.Type == TypeSymbol.Any) ||
+                node.Left.Type == TypeSymbol.String && node.Right.Type == TypeSymbol.String)
+            {
+                ilProcessor.Emit(OpCodes.Call, _objectEqualsReference);
+                return;
+            }
+        }
+
+        // (any != any)
+        // (string != string)
+        if (node.Operator.OpKind == BoundBinaryOperatorKind.NotEquals)
+        {
+            if ((node.Left.Type == TypeSymbol.Any && node.Right.Type == TypeSymbol.Any) ||
+                node.Left.Type == TypeSymbol.String && node.Right.Type == TypeSymbol.String)
+            {
+                ilProcessor.Emit(OpCodes.Call, _objectEqualsReference);
+                ilProcessor.Emit(OpCodes.Ldc_I4_0);
+                ilProcessor.Emit(OpCodes.Ceq);
+                return;
+            }
+        }
+
+        switch (node.Operator.OpKind)
+        {
+            case BoundBinaryOperatorKind.Addition:
+                ilProcessor.Emit(OpCodes.Add);
+                break;
+            case BoundBinaryOperatorKind.Subtraction:
+                ilProcessor.Emit(OpCodes.Sub);
+                break;
+            case BoundBinaryOperatorKind.Multiplication:
+                ilProcessor.Emit(OpCodes.Mul);
+                break;
+            case BoundBinaryOperatorKind.Division:
+                ilProcessor.Emit(OpCodes.Div);
+                break;
+            // TODO: Implement short-circuit evaluation
+            case BoundBinaryOperatorKind.LogicalAnd:
+            case BoundBinaryOperatorKind.BitwiseAnd:
+                ilProcessor.Emit(OpCodes.And);
+                break;
+            // TODO: Implement short-circuit evaluation
+            case BoundBinaryOperatorKind.LogicalOr:
+            case BoundBinaryOperatorKind.BitwiseOr:
+                ilProcessor.Emit(OpCodes.Or);
+                break;
+            case BoundBinaryOperatorKind.BitwiseXor:
+                ilProcessor.Emit(OpCodes.Xor);
+                break;
+            case BoundBinaryOperatorKind.Equals:
+                ilProcessor.Emit(OpCodes.Ceq);
+                break;
+            case BoundBinaryOperatorKind.NotEquals:
+                ilProcessor.Emit(OpCodes.Ceq);
+                ilProcessor.Emit(OpCodes.Ldc_I4_0);
+                ilProcessor.Emit(OpCodes.Ceq);
+                break;
+            case BoundBinaryOperatorKind.Less:
+                ilProcessor.Emit(OpCodes.Clt);
+                break;
+            case BoundBinaryOperatorKind.LessOrEquals:
+                ilProcessor.Emit(OpCodes.Cgt);
+                ilProcessor.Emit(OpCodes.Ldc_I4_0);
+                ilProcessor.Emit(OpCodes.Ceq);
+                break;
+            case BoundBinaryOperatorKind.Greater:
+                ilProcessor.Emit(OpCodes.Cgt);
+                break;
+            case BoundBinaryOperatorKind.GreaterOrEquals:
+                ilProcessor.Emit(OpCodes.Clt);
+                ilProcessor.Emit(OpCodes.Ldc_I4_0);
+                ilProcessor.Emit(OpCodes.Ceq);
+                break;
+            default:
+                throw new
+                    Exception($"Unexpected binary operator {Factors.GetText(node.Operator.Kind)}({node.Left.Type}, {node.Right.Type})");
         }
     }
+
 
     private void EmitCallExpression(ILProcessor ilProcessor, BoundCallExpression node)
     {
