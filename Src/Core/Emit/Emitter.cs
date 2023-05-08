@@ -543,7 +543,7 @@ internal sealed class Emitter
         }
         else
         {
-            throw new Exception($"Unexpected convertion from {node.Expression.Type} to {node.Type}");
+            throw new Exception($"Unexpected conversion from {node.Expression.Type} to {node.Type}");
         }
     }
 }
