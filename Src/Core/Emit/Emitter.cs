@@ -16,9 +16,11 @@ internal sealed class Emitter
 {
     private DiagnosticBag _diagnostics = new();
 
-    private readonly Dictionary<TypeSymbol, TypeReference?>         _knownTypes;
-    private readonly Dictionary<FunctionSymbol, MethodDefinition>   _methods = new();
-    private readonly Dictionary<VariableSymbol, VariableDefinition> _locals  = new();
+    private readonly Dictionary<TypeSymbol, TypeReference?>          _knownTypes;
+    private readonly Dictionary<FunctionSymbol, MethodDefinition>    _methods = new();
+    private readonly Dictionary<VariableSymbol, VariableDefinition>  _locals  = new();
+    private readonly Dictionary<BoundLabel, int>                     _labels  = new();
+    private readonly List<(int InstructionIndex, BoundLabel Target)> _fixups  = new();
 
     private readonly MethodReference? _consoleWriteLineReference;
     private readonly MethodReference? _consoleReadLineReference;
@@ -210,11 +212,24 @@ internal sealed class Emitter
     private void EmitFunctionBody(FunctionSymbol function, BoundBlockStatement body)
     {
         _locals.Clear();
+        _labels.Clear();
+        _fixups.Clear();
+
         var method      = _methods[function];
         var ilProcessor = method.Body.GetILProcessor();
 
         foreach (var statement in body.Statements)
             EmitStatement(ilProcessor, statement);
+
+        foreach (var fixup in _fixups)
+        {
+            var targetLabel            = fixup.Target;
+            var targetInstructionIndex = _labels[targetLabel];
+            var targetInstruction      = ilProcessor.Body.Instructions[targetInstructionIndex];
+            var instructionToFixUp     = ilProcessor.Body.Instructions[fixup.InstructionIndex];
+
+            instructionToFixUp.Operand = targetInstruction;
+        }
 
         method.Body.Optimize();
     }
@@ -259,19 +274,22 @@ internal sealed class Emitter
         ilProcessor.Emit(OpCodes.Stloc, variableDefinition);
     }
 
-    private void EmitLabelStatement(ILProcessor ilProcessor, BoundLabelStatement node)
-    {
-        throw new NotImplementedException();
-    }
+    private void EmitLabelStatement(ILProcessor ilProcessor, BoundLabelStatement node) =>
+        _labels.Add(node.Label, ilProcessor.Body.Instructions.Count);
 
     private void EmitGotoStatement(ILProcessor ilProcessor, BoundGotoStatement node)
     {
-        throw new NotImplementedException();
+        _fixups.Add((ilProcessor.Body.Instructions.Count, node.Label));
+        ilProcessor.Emit(OpCodes.Br, Instruction.Create(OpCodes.Nop));
     }
 
     private void EmitConditionalGotoStatement(ILProcessor ilProcessor, BoundConditionalGotoStatement node)
     {
-        throw new NotImplementedException();
+        EmitExpression(ilProcessor, node.Condition);
+
+        var opCode = node.JumpIfTrue ? OpCodes.Brtrue : OpCodes.Brfalse;
+        _fixups.Add((ilProcessor.Body.Instructions.Count, node.Label));
+        ilProcessor.Emit(opCode, Instruction.Create(OpCodes.Nop));
     }
 
     private void EmitReturnStatement(ILProcessor ilProcessor, BoundReturnStatement node)
@@ -398,7 +416,7 @@ internal sealed class Emitter
     {
         EmitExpression(ilProcessor, node.Left);
         EmitExpression(ilProcessor, node.Right);
-  
+
         // (string + string)
         if (node.Operator.OpKind == BoundBinaryOperatorKind.Addition)
         {

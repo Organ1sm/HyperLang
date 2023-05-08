@@ -2,6 +2,7 @@ func main()
 {
     testUnaryExpr()
     testBinaryExpr()
+    testRemainingStmt()
 }
 
 func testUnaryExpr ()
@@ -26,4 +27,10 @@ func testBinaryExpr ()
     print(string(y))
     print(string(a))
     print(string(b))
+}
+
+func testRemainingStmt()
+{
+    for i = 1 to 10
+        print(string(i))
 }
