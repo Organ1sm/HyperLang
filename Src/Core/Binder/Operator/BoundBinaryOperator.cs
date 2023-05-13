@@ -83,7 +83,6 @@ namespace Hyper.Core.Binding.Operator
             new(SyntaxKind.EqualsEqualsToken, BoundBinaryOperatorKind.Equals, TypeSymbol.Bool),
             new(SyntaxKind.BangEqualsToken, BoundBinaryOperatorKind.NotEquals, TypeSymbol.Bool),
 
-
             new(SyntaxKind.PlusToken, BoundBinaryOperatorKind.Addition, TypeSymbol.String),
             new(SyntaxKind.EqualsEqualsToken,
                 BoundBinaryOperatorKind.Equals,
@@ -93,6 +92,9 @@ namespace Hyper.Core.Binding.Operator
                 BoundBinaryOperatorKind.NotEquals,
                 TypeSymbol.String,
                 TypeSymbol.Bool),
+
+            new(SyntaxKind.EqualsEqualsToken, BoundBinaryOperatorKind.Equals, TypeSymbol.Any),
+            new(SyntaxKind.BangEqualsToken, BoundBinaryOperatorKind.NotEquals, TypeSymbol.Any)
         };
 
         public static BoundBinaryOperator? Bind(SyntaxKind syntaxKind, TypeSymbol leftType, TypeSymbol rightType)
