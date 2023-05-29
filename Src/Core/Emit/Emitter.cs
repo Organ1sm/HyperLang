@@ -29,9 +29,13 @@ internal sealed class Emitter
     private readonly MethodReference? _convertToInt32Reference;
     private readonly MethodReference? _convertToStringReference;
     private readonly MethodReference? _objectEqualsReference;
+    private readonly TypeReference?   _randomReference;
+    private readonly MethodReference? _randomCtorReference;
+    private readonly MethodReference? _randomNextReference;
 
     private readonly AssemblyDefinition _assemblyDefinition;
     private          TypeDefinition     _typeDefinition;
+    private          FieldDefinition?   _randomFieldDefinition;
 
     private Emitter(string moduleName, string[] references)
     {
@@ -152,6 +156,9 @@ internal sealed class Emitter
         _convertToStringReference = ResolveMethod("System.Convert", "ToString", new[] {"System.Object"});
 
         _objectEqualsReference = ResolveMethod("System.Object", "Equals", new[] {"System.Object", "System.Object"});
+        _randomReference = ResolveType(null, "System.Random");
+        _randomCtorReference = ResolveMethod("System.Random", ".ctor", Array.Empty<string>());
+        _randomNextReference = ResolveMethod("System.Random", "Next", new[] {"System.Int32"});
     }
 
     public static ImmutableArray<Diagnostic.Diagnostic> Emit(BoundProgram program,
@@ -513,6 +520,20 @@ internal sealed class Emitter
 
     private void EmitCallExpression(ILProcessor ilProcessor, BoundCallExpression node)
     {
+        if (node.Function == BuiltinFunctions.Rnd)
+        {
+            if (_randomFieldDefinition == null)
+                EmitRandomField();
+
+            ilProcessor.Emit(OpCodes.Ldsfld, _randomFieldDefinition);
+
+            foreach (var argument in node.Arguments)
+                EmitExpression(ilProcessor, argument);
+
+            ilProcessor.Emit(OpCodes.Callvirt, _randomNextReference);
+            return;
+        }
+
         foreach (var argument in node.Arguments)
             EmitExpression(ilProcessor, argument);
 
@@ -524,16 +545,32 @@ internal sealed class Emitter
         {
             ilProcessor.Emit(OpCodes.Call, _consoleReadLineReference);
         }
-        else if (node.Function == BuiltinFunctions.Rnd)
-        {
-            throw new NotImplementedException();
-        }
         else
         {
             var methodDefinition = _methods[node.Function];
             ilProcessor.Emit(OpCodes.Call, methodDefinition);
         }
     }
+
+    private void EmitRandomField()
+    {
+        _randomFieldDefinition =
+            new FieldDefinition("$rnd", FieldAttributes.Static | FieldAttributes.Private, _randomReference);
+
+        _typeDefinition.Fields.Add(_randomFieldDefinition);
+
+        var staticConstructor = new MethodDefinition(".cctor",
+                                                     MethodAttributes.Static | MethodAttributes.Private |
+                                                     MethodAttributes.SpecialName | MethodAttributes.RTSpecialName,
+                                                     _knownTypes[TypeSymbol.Void]);
+        _typeDefinition.Methods.Insert(0, staticConstructor);
+
+        var ilProcessor = staticConstructor.Body.GetILProcessor();
+        ilProcessor.Emit(OpCodes.Newobj, _randomCtorReference);
+        ilProcessor.Emit(OpCodes.Stsfld, _randomFieldDefinition);
+        ilProcessor.Emit(OpCodes.Ret);
+    }
+
 
     private void EmitConversionExpression(ILProcessor ilProcessor, BoundConversionExpression node)
     {

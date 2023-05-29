@@ -1,8 +1,15 @@
 func main()
 {
-    testUnaryExpr()
-    testBinaryExpr()
-    testRemainingStmt()
+    testRndFunc()
+}
+
+func testRndFunc ()
+{
+    for i = 1 to 15
+    {
+        var x = rnd(15)
+        print(x)
+    }
 }
 
 func testUnaryExpr ()
