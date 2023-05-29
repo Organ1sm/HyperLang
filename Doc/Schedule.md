@@ -1,6 +1,6 @@
-## Stage 1
+# Stage 1
 
-### Completed items
+## Completed items
 
 * Basic REPL (read-eval-print loop) for an expression evaluator
 * Implement a lexer, parser, and an evaluator.
@@ -22,9 +22,9 @@ When parsing the expression `1 + 2 * 3`, the ast like this:
             └──NumberToken 3
 ```
 
-## Stage 2
+# Stage 2
 
-### Completed items
+## Completed items
 
 * Generalized parsing using precedences
 * Support unary operators, such as `+2` and `-3`
@@ -42,9 +42,9 @@ complicated features to impossible. The *bound tree* is created by
 the Binder class by walking the ast and binding the nodes to symbolic information.
 The binder represents the semantic analysis.
 
-## Stage 3
+# Stage 3
 
-### Completed items
+## Completed items
 
 * Extract compiler into a separate library
 * Expose span on diagnostics that indicate where the error occurred
@@ -55,24 +55,24 @@ The binder represents the semantic analysis.
 We have added a class called `Compilation` which holds onto the entire state of the
 program. For now, it only provide an `Envaluate` API that will interpret the expression.
 
-## Stage 4
+# Stage 4
 
-### Completed items
+## Completed items
 
 * Added tests for lexing all tokens and their combinations
 * Added tests for parsing unary and binary operators
 * Added tests for evaluating
 
-## Stage5
+# Stage5
 
-### Completed items
+## Completed items
 
 * Clean-up lexer, parser
 * Added `SourceText`, which allow us to know token line number information.
 
-## Stage6
+# Stage6
 
-### Completed items
+## Completed items
 
 * Add colorization to REPL
 * Add compilation unit
@@ -159,9 +159,9 @@ result // output: 55
 
 ```
 
-## Stage 8
+# Stage 8
 
-### Completed items
+## Completed items
 
 * Add support for bitwise operators
 * Add ability to output the bound tree
@@ -237,16 +237,16 @@ that the label it references applies to the next statement.
 With these primitives, it's pretty straightforward to replace the flow-control
 elements.
 
-## Stage9
+# Stage9
 
-### Completed items
+## Completed items
 
 We just improve the REPL, This includes the ability to edit multiple lines, have
 history, and syntax highlighting.
 
-## Stage10
+# Stage10
 
-### Completed items
+## Completed items
 
 * We added support for string literals and type symbols.
 
@@ -311,9 +311,9 @@ private BoundExpression BindBinaryExpression(BinaryExpression syntax)
 }
 ```
 
-## Stage 11
+# Stage 11
 
-### Completed items
+## Completed items
 
 * We added support for calling built-in functions and convert between types.
 
@@ -333,9 +333,9 @@ give you the second argument rather than the first comma), however, we have a me
 returns the associated token. For the last node it will return `null` because the last node doesn't have a trailing
 comma.
 
-## Stage 12
+# Stage 12
 
-### Completed items
+## Completed items
 
 We added support for explicit typing of variables and function declarations.
 
@@ -386,14 +386,14 @@ This also required us to change how assign and look-up values for variables: by 
 the symbol kind we identify whether it's a global, a local variable or parameter.
 Global-Variables use the global dictionary while local variables and parameter use the current stack frame.
 
-## Stage 13
+# Stage 13
 
 ### Completed items
 
 * We added pretty printing for bound nodes as well as `break` and `continue`
   statements.
 
-## Stage 14
+# Stage 14
 
 ### Completed items
 
@@ -437,14 +437,14 @@ it doesn't have any incoming nodes or all incoming nodes are also considered unr
 
 ![](stage14-cfg.png)
 
-## Stage 15
+# Stage 15
 
 ### Completed items
 
 * Added support for multiple syntax trees in a single compilation.
 * Added a compiler project `HyperC` which accepts the program paths.
 
-## Stage 16
+# Stage 16
 
 ## Completed items
 
@@ -455,7 +455,7 @@ it doesn't have any incoming nodes or all incoming nodes are also considered unr
 * Add `#dump` that shows the bound tree of a given function
 * Persist submissions between run
 
-## Stage 17
+# Stage 17
 
 ## Completed items
 
@@ -527,3 +527,21 @@ In script mode, we want a script function that take no arguments and returns `an
   global statements. When global statements are used, they are put in a
   synthesized function with a name that the developer can't use (this avoids
   naming conflicts).
+
+# Stage 18
+
+## Completed items
+
+* Add IL emitter 
+* Add MSBuild project file for Hello
+* Replaced hard-coded IL emitter for Hello World by one that uses our
+  intermediate representation
+* Emit `input()` and variables
+* Emit `string` concatenation
+* Emit assignments
+* Emit non-`void` functions and parameters
+* Remove unnecessary references from compilation
+* Expand implicit returns
+* Emit conversions, unary expressions, and binary expressions
+* Emit remaining statements
+* Emit code for built-in rnd function
