@@ -3,9 +3,8 @@ using Hyper.Core.Binding;
 using Hyper.Core.Symbols;
 using Hyper.Core.Syntax;
 using Hyper.Core.Binding.Expr;
-using Hyper.Core.Binding.Opt;
 using Hyper.Core.Binding.Scope;
-using Hyper.Core.Binding.Stmt;
+using Hyper.Core.Emit;
 
 namespace Hyper.Core.VM
 {
@@ -135,6 +134,12 @@ namespace Hyper.Core.VM
                 return;
 
             body.WriteTo(writer);
+        }
+
+        public ImmutableArray<Diagnostic.Diagnostic> Emit(string moduleName, string[] references, string outputPath)
+        {
+            var program = GetProgram();
+            return Emitter.Emit(program, moduleName, references, outputPath);
         }
     }
 }

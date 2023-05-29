@@ -200,8 +200,8 @@ namespace Hyper.Core.VM
 
             if (node.Function == BuiltinFunctions.Print)
             {
-                var message = EvaluateExpression(node.Arguments[0]);
-                Console.WriteLine(message);
+                var value = EvaluateExpression(node.Arguments[0]);
+                Console.WriteLine(value);
                 return null;
             }
 
@@ -240,7 +240,7 @@ namespace Hyper.Core.VM
 
             if (node.Type == TypeSymbol.Any)
                 return value;
-            
+
             if (node.Type == TypeSymbol.Bool)
                 return Convert.ToBoolean(value);
 
