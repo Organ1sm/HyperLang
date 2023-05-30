@@ -16,6 +16,8 @@ namespace Hyper.Core.Parser
             Value = value;
         }
 
+        public override IEnumerable<Node> GetChildren() => Array.Empty<Node>();
+
         public override SyntaxKind Kind { get; }
 
         public          int      Position { get; }

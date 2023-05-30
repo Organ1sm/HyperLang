@@ -2,7 +2,7 @@
 
 namespace Hyper.Core.Syntax.Expr;
 
-public class CallExpression : Expression
+public sealed partial class CallExpression : Expression
 {
     public CallExpression(AST syntaxTree,Token identifier,
                           Token openParenthesisToken,

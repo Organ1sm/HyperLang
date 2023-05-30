@@ -3,7 +3,7 @@ using Hyper.Core.Syntax.Expr;
 
 namespace Hyper.Core.Syntax.Stmt;
 
-public sealed class WhileStatement : Statement
+public sealed partial class WhileStatement : Statement
 {
     public WhileStatement(AST syntaxTree, Token whileKeyword, Expression condition, Statement body)
         : base(syntaxTree)

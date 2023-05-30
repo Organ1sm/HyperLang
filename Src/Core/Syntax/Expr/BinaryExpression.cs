@@ -2,7 +2,7 @@
 
 namespace Hyper.Core.Syntax.Expr;
 
-public sealed class BinaryExpression : Expression
+public sealed partial class BinaryExpression : Expression
 {
     public override SyntaxKind Kind     => SyntaxKind.BinaryExpression;
     public          Expression Left     { get; }

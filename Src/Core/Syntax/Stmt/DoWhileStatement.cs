@@ -3,7 +3,7 @@ using Hyper.Core.Syntax.Expr;
 
 namespace Hyper.Core.Syntax.Stmt;
 
-public sealed class DoWhileStatement : Statement
+public sealed partial class DoWhileStatement : Statement
 {
     public DoWhileStatement(AST syntaxTree, Token doKeyword, Statement body, Token whileKeyword, Expression condition)
         : base(syntaxTree)

@@ -3,7 +3,7 @@ using Hyper.Core.Syntax.Expr;
 
 namespace Hyper.Core.Syntax.Stmt;
 
-public sealed class Parameter : Node
+public sealed partial class Parameter : Node
 {
     public Parameter(AST syntaxTree, Token identifier, TypeClause type)
         : base(syntaxTree)

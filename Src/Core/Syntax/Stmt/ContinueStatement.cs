@@ -2,7 +2,7 @@
 
 namespace Hyper.Core.Syntax.Stmt;
 
-internal class ContinueStatement : Statement
+internal sealed partial class ContinueStatement : Statement
 {
     public ContinueStatement(AST syntaxTree, Token keyword)
         : base(syntaxTree)

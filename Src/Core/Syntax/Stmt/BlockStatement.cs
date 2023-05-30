@@ -3,7 +3,7 @@ using Hyper.Core.Parser;
 
 namespace Hyper.Core.Syntax.Stmt;
 
-public sealed class BlockStatement : Statement
+public sealed partial class BlockStatement : Statement
 {
     public BlockStatement(AST syntaxTree,
                           Token openBraceToken,

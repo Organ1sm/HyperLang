@@ -2,7 +2,7 @@
 
 namespace Hyper.Core.Syntax.Stmt;
 
-public sealed class ExpressionStatement : Statement
+public sealed partial class ExpressionStatement : Statement
 {
     public ExpressionStatement(AST syntaxTree, Expression expression)
         : base(syntaxTree)

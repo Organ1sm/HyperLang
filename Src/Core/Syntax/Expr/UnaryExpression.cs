@@ -2,7 +2,7 @@
 
 namespace Hyper.Core.Syntax.Expr;
 
-public sealed class UnaryExpression : Expression
+public sealed partial class UnaryExpression : Expression
 {
     public override SyntaxKind Kind     => SyntaxKind.UnaryExpression;
     public          Token      Operator { get; }

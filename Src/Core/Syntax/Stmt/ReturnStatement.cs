@@ -3,7 +3,7 @@ using Hyper.Core.Syntax.Expr;
 
 namespace Hyper.Core.Syntax.Stmt;
 
-public sealed class ReturnStatement : Statement
+public sealed partial class ReturnStatement : Statement
 {
     public ReturnStatement(AST syntaxTree, Token returnKeyword, Expression? expression)
         : base(syntaxTree)

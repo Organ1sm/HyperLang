@@ -3,7 +3,7 @@ using Hyper.Core.Parser;
 
 namespace Hyper.Core.Syntax.Stmt;
 
-public class ElseClause : Node
+public sealed partial class ElseClause : Node
 {
     public ElseClause(AST syntaxTree, Token elseKeyword, Statement elseStatement)
         : base(syntaxTree)
