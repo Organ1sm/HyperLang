@@ -2,7 +2,7 @@
 
 namespace Hyper.Core.Syntax.Stmt;
 
-internal class BreakStatement : Statement
+internal sealed partial class BreakStatement : Statement
 {
     public BreakStatement(AST syntaxTree, Token keyword)
         : base(syntaxTree)

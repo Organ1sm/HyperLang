@@ -3,7 +3,7 @@ using Hyper.Core.Syntax.Expr;
 
 namespace Hyper.Core.Syntax.Stmt;
 
-public sealed class ForStatement : Statement
+public sealed partial class ForStatement : Statement
 {
     // for <var> = <lower> to <upper>
     // <body>

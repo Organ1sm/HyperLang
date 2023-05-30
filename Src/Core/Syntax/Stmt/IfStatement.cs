@@ -3,7 +3,7 @@ using Hyper.Core.Syntax.Expr;
 
 namespace Hyper.Core.Syntax.Stmt;
 
-public class IfStatement : Statement
+public sealed partial class IfStatement : Statement
 {
     public IfStatement(AST syntaxTree,
                        Token ifKeyword,

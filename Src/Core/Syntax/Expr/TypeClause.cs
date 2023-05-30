@@ -2,7 +2,7 @@
 
 namespace Hyper.Core.Syntax.Expr;
 
-public sealed class TypeClause : Node
+public sealed partial class TypeClause : Node
 {
     public TypeClause(AST syntaxTree, Token colonOrArrowToken, Token identifier)
         : base(syntaxTree)

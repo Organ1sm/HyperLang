@@ -3,7 +3,7 @@ using Hyper.Core.Syntax.Expr;
 
 namespace Hyper.Core.Syntax.Stmt;
 
-public sealed class FunctionDeclaration : MemberSyntax
+public sealed partial class FunctionDeclaration : MemberSyntax
 {
     public FunctionDeclaration(AST syntaxTree,
                                Token functionKeyword,

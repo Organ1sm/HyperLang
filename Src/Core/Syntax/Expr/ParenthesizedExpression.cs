@@ -2,7 +2,7 @@
 
 namespace Hyper.Core.Syntax.Expr;
 
-public sealed class ParenthesizedExpression : Expression
+public sealed partial class ParenthesizedExpression : Expression
 {
     public override SyntaxKind Kind                  => SyntaxKind.ParenthesizedExpression;
     public          Token      OpenParenthesisToken  { get; }

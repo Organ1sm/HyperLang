@@ -2,7 +2,7 @@
 
 namespace Hyper.Core.Syntax.Expr;
 
-public sealed class LiteralExpression : Expression
+public sealed partial class LiteralExpression : Expression
 {
     public override SyntaxKind Kind         => SyntaxKind.LiteralExpression;
     public          Token      LiteralToken { get; }

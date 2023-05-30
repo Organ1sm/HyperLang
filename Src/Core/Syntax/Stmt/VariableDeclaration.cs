@@ -3,7 +3,7 @@ using Hyper.Core.Syntax.Expr;
 
 namespace Hyper.Core.Syntax.Stmt;
 
-public sealed class VariableDeclaration : Statement
+public sealed partial class VariableDeclaration : Statement
 {
     public VariableDeclaration(AST syntaxTree,
                                Token keyword,
