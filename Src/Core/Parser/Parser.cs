@@ -311,7 +311,7 @@ namespace Hyper.Core.Parser
         private Statement ParseContinueStatement()
         {
             var keyword = Match(SyntaxKind.ContinueKeyword);
-            return new BreakStatement(_syntaxTree, keyword);
+            return new ContinueStatement( _syntaxTree, keyword);
         }
 
         private Statement ParseReturnStatement()
