@@ -3,7 +3,7 @@ using Hyper.Core.Syntax.Expr;
 
 namespace Hyper.Core.Syntax.Stmt;
 
-public sealed partial class FunctionDeclaration : MemberSyntax
+public sealed class FunctionDeclaration : MemberSyntax
 {
     public FunctionDeclaration(AST syntaxTree,
                                Token functionKeyword,
@@ -25,6 +25,23 @@ public sealed partial class FunctionDeclaration : MemberSyntax
     }
 
     public override SyntaxKind Kind => SyntaxKind.FunctionDeclaration;
+
+    public override IEnumerable<Node> GetChildren()
+    {
+        yield return FunctionKeyword;
+        yield return Identifier;
+        yield return OpenParenthesisToken;
+
+        foreach (var child in Parameters.GetWithSeparators())
+            yield return child;
+
+        yield return CloseParenthesisToken;
+
+        if (Type != null)
+            yield return Type;
+
+        yield return Body;
+    }
 
     public Token                          FunctionKeyword       { get; }
     public Token                          Identifier            { get; }

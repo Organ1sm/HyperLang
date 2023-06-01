@@ -3,7 +3,7 @@ using Hyper.Core.Syntax.Expr;
 
 namespace Hyper.Core.Syntax.Stmt;
 
-public sealed partial class IfStatement : Statement
+public sealed class IfStatement : Statement
 {
     public IfStatement(AST syntaxTree,
                        Token ifKeyword,
@@ -18,9 +18,20 @@ public sealed partial class IfStatement : Statement
         ElseClause = elseClause;
     }
 
-    public override SyntaxKind  Kind          => SyntaxKind.IfStatement;
-    public          Token       IfKeyword     { get; }
-    public          Expression  Condition     { get; }
-    public          Statement   ThenStatement { get; }
-    public          ElseClause? ElseClause    { get; }
+    public override SyntaxKind Kind => SyntaxKind.IfStatement;
+
+    public override IEnumerable<Node> GetChildren()
+    {
+        yield return IfKeyword;
+        yield return Condition;
+        yield return ThenStatement;
+
+        if (ElseClause != null)
+            yield return ElseClause;
+    }
+
+    public Token       IfKeyword     { get; }
+    public Expression  Condition     { get; }
+    public Statement   ThenStatement { get; }
+    public ElseClause? ElseClause    { get; }
 }

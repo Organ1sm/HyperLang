@@ -3,7 +3,7 @@ using Hyper.Core.Syntax.Expr;
 
 namespace Hyper.Core.Syntax.Stmt;
 
-public sealed partial class VariableDeclaration : Statement
+public sealed class VariableDeclaration : Statement
 {
     public VariableDeclaration(AST syntaxTree,
                                Token keyword,
@@ -20,10 +20,23 @@ public sealed partial class VariableDeclaration : Statement
         Initializer = initializer;
     }
 
-    public override SyntaxKind  Kind        => SyntaxKind.VariableDeclaration;
-    public          Token       Keyword     { get; }
-    public          Token       Identifier  { get; }
-    public          TypeClause? TypeClause  { get; }
-    public          Token       EqualsToken { get; }
-    public          Expression  Initializer { get; }
+    public override SyntaxKind Kind => SyntaxKind.VariableDeclaration;
+
+    public override IEnumerable<Node> GetChildren()
+    {
+        yield return Keyword;
+        yield return Identifier;
+
+        if (TypeClause != null)
+            yield return TypeClause;
+
+        yield return EqualsToken;
+        yield return Initializer;
+    }
+
+    public Token       Keyword     { get; }
+    public Token       Identifier  { get; }
+    public TypeClause? TypeClause  { get; }
+    public Token       EqualsToken { get; }
+    public Expression  Initializer { get; }
 }

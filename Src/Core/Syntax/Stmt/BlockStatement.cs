@@ -1,9 +1,10 @@
 ﻿using System.Collections.Immutable;
 using Hyper.Core.Parser;
+using Hyper.Core.Syntax.Expr;
 
 namespace Hyper.Core.Syntax.Stmt;
 
-public sealed partial class BlockStatement : Statement
+public sealed class BlockStatement : Statement
 {
     public BlockStatement(AST syntaxTree,
                           Token openBraceToken,
@@ -14,6 +15,14 @@ public sealed partial class BlockStatement : Statement
         OpenBraceToken = openBraceToken;
         Statements = statements;
         CloseBraceToken = closeBraceToken;
+    }
+
+    public override IEnumerable<Node> GetChildren()
+    {
+        yield return OpenBraceToken;
+        foreach (var child in Statements)
+            yield return child;
+        yield return CloseBraceToken;
     }
 
     public override SyntaxKind                Kind            => SyntaxKind.BlockStatement;

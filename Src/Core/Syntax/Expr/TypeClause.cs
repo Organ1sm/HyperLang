@@ -2,7 +2,7 @@
 
 namespace Hyper.Core.Syntax.Expr;
 
-public sealed partial class TypeClause : Node
+public sealed class TypeClause : Node
 {
     public TypeClause(AST syntaxTree, Token colonOrArrowToken, Token identifier)
         : base(syntaxTree)
@@ -12,6 +12,12 @@ public sealed partial class TypeClause : Node
     }
 
     public override SyntaxKind Kind              => SyntaxKind.TypeClause;
+    public override IEnumerable<Node> GetChildren()
+    {
+        yield return ColonOrArrowToken;
+        yield return Identifier;
+    }
+
     public          Token      ColonOrArrowToken { get; }
     public          Token      Identifier        { get; }
 }

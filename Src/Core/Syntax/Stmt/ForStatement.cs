@@ -3,7 +3,7 @@ using Hyper.Core.Syntax.Expr;
 
 namespace Hyper.Core.Syntax.Stmt;
 
-public sealed partial class ForStatement : Statement
+public sealed class ForStatement : Statement
 {
     // for <var> = <lower> to <upper>
     // <body>
@@ -27,12 +27,24 @@ public sealed partial class ForStatement : Statement
         Body = body;
     }
 
-    public override SyntaxKind Kind        => SyntaxKind.ForStatement;
-    public          Token      Keyword     { get; }
-    public          Token      Identifier  { get; }
-    public          Token      EqualsToken { get; }
-    public          Expression LowerBound  { get; }
-    public          Token      ToKeyword   { get; }
-    public          Expression UpperBound  { get; }
-    public          Statement  Body        { get; }
+    public override SyntaxKind Kind => SyntaxKind.ForStatement;
+
+    public override IEnumerable<Node> GetChildren()
+    {
+        yield return Keyword;
+        yield return Identifier;
+        yield return EqualsToken;
+        yield return LowerBound;
+        yield return ToKeyword;
+        yield return UpperBound;
+        yield return Body;
+    }
+
+    public Token      Keyword     { get; }
+    public Token      Identifier  { get; }
+    public Token      EqualsToken { get; }
+    public Expression LowerBound  { get; }
+    public Token      ToKeyword   { get; }
+    public Expression UpperBound  { get; }
+    public Statement  Body        { get; }
 }

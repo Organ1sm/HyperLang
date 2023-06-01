@@ -3,13 +3,19 @@ using Hyper.Core.Parser;
 
 namespace Hyper.Core.Syntax.Stmt;
 
-public sealed partial class ElseClause : Node
+public sealed class ElseClause : Node
 {
     public ElseClause(AST syntaxTree, Token elseKeyword, Statement elseStatement)
         : base(syntaxTree)
     {
         ElseKeyword = elseKeyword;
         ElseStatement = elseStatement;
+    }
+
+    public override IEnumerable<Node> GetChildren()
+    {
+        yield return ElseKeyword;
+        yield return ElseStatement;
     }
 
     public override SyntaxKind Kind          => SyntaxKind.ElseClause;
