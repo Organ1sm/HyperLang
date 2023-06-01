@@ -2,7 +2,7 @@
 
 namespace Hyper.Core.Syntax.Expr;
 
-public sealed partial class AssignmentExpression : Expression
+public sealed class AssignmentExpression : Expression
 {
     public AssignmentExpression(AST syntaxTree, Token identifierToken, Token equalsToken, Expression expression)
         : base(syntaxTree)
@@ -10,6 +10,13 @@ public sealed partial class AssignmentExpression : Expression
         IdentifierToken = identifierToken;
         EqualsToken = equalsToken;
         Expression = expression;
+    }
+
+    public override IEnumerable<Node> GetChildren()
+    {
+        yield return IdentifierToken;
+        yield return EqualsToken;
+        yield return Expression;
     }
 
     public override SyntaxKind Kind            => SyntaxKind.AssignmentExpression;

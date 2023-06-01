@@ -2,11 +2,17 @@
 
 namespace Hyper.Core.Syntax.Expr;
 
-public sealed partial class LiteralExpression : Expression
+public sealed class LiteralExpression : Expression
 {
-    public override SyntaxKind Kind         => SyntaxKind.LiteralExpression;
-    public          Token      LiteralToken { get; }
-    public          object     Value        { get; }
+    public override SyntaxKind Kind => SyntaxKind.LiteralExpression;
+
+    public override IEnumerable<Node> GetChildren()
+    {
+        yield return LiteralToken;
+    }
+
+    public Token  LiteralToken { get; }
+    public object Value        { get; }
 
     public LiteralExpression(AST syntaxTree, Token literalToken)
         : this(syntaxTree, literalToken, literalToken.Value!) { }

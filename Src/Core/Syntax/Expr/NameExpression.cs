@@ -2,7 +2,7 @@
 
 namespace Hyper.Core.Syntax.Expr;
 
-public sealed partial class NameExpression : Expression
+public sealed class NameExpression : Expression
 {
     public NameExpression(AST syntaxTree, Token identifierToken)
         : base(syntaxTree)
@@ -11,5 +11,10 @@ public sealed partial class NameExpression : Expression
     }
 
     public override SyntaxKind Kind            => SyntaxKind.NameExpression;
+    public override IEnumerable<Node> GetChildren()
+    {
+        yield return IdentifierToken;
+    }
+
     public          Token      IdentifierToken { get; }
 }

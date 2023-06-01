@@ -2,7 +2,7 @@
 
 namespace Hyper.Core.Syntax.Expr;
 
-public sealed partial class BinaryExpression : Expression
+public sealed class BinaryExpression : Expression
 {
     public override SyntaxKind Kind     => SyntaxKind.BinaryExpression;
     public          Expression Left     { get; }
@@ -15,5 +15,12 @@ public sealed partial class BinaryExpression : Expression
         Left = left;
         Operator = @operator;
         Right = right;
+    }
+
+    public override IEnumerable<Node> GetChildren()
+    {
+        yield return Left;
+        yield return Operator;
+        yield return Right;
     }
 }

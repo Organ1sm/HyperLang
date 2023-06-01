@@ -1,6 +1,8 @@
-﻿namespace Hyper.Core.Syntax.Stmt;
+﻿using Hyper.Core.Syntax.Expr;
 
-public sealed partial class GlobalStatement : MemberSyntax
+namespace Hyper.Core.Syntax.Stmt;
+
+public sealed class GlobalStatement : MemberSyntax
 {
     public GlobalStatement(AST syntaxTree, Statement statement)
         : base(syntaxTree)
@@ -8,6 +10,12 @@ public sealed partial class GlobalStatement : MemberSyntax
         Statement = statement;
     }
 
-    public override SyntaxKind Kind      => SyntaxKind.GlobalStatement;
-    public          Statement  Statement { get; }
+    public override IEnumerable<Node> GetChildren()
+    {
+        yield return Statement;
+    }
+
+    public override SyntaxKind Kind => SyntaxKind.GlobalStatement;
+
+    public Statement Statement { get; }
 }
