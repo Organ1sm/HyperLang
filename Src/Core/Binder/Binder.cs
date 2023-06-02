@@ -13,6 +13,8 @@ using Hyper.Core.Lowering;
 using Hyper.Core.Parser;
 using Hyper.Core.Syntax.Expr;
 using Hyper.Core.Syntax.Stmt;
+using Microsoft.VisualBasic;
+using Conversion = Hyper.Core.Binding.Expr.Conversion;
 
 namespace Hyper.Core.Binding
 {
@@ -28,7 +30,7 @@ namespace Hyper.Core.Binding
 
         private int _labelCounter;
 
-        public Binder(bool isScript, BoundScope? parent, FunctionSymbol? function)
+        private Binder(bool isScript, BoundScope? parent, FunctionSymbol? function)
         {
             _scope = new BoundScope(parent);
             _isScript = isScript;
@@ -99,6 +101,17 @@ namespace Hyper.Core.Binding
         {
             var parentScope = CreateParentScope(previous);
             var binder      = new Binder(isScript, parentScope, function: null);
+
+            binder.Diagnostics.AddRange(syntaxTrees.SelectMany(st => st.Diagnostics));
+            if (binder.Diagnostics.Any())
+                return new BoundGlobalScope(previous,
+                                            binder.Diagnostics.ToImmutableArray(),
+                                            null,
+                                            null,
+                                            ImmutableArray<VariableSymbol>.Empty,
+                                            ImmutableArray<FunctionSymbol>.Empty,
+                                            ImmutableArray<BoundStatement>.Empty);
+
 
             var functionDeclarations = syntaxTrees.SelectMany(st => st.Root.Members)
                                                   .OfType<FunctionDeclaration>();
