@@ -85,6 +85,21 @@ public class LexerTests
         Assert.Equal(tokens[2].Text, t2Text);
     }
 
+    [Theory]
+    [InlineData("foo")]
+    [InlineData("foo42")]
+    [InlineData("foo_42")]
+    [InlineData("_foo")]
+    public void LexerLexIdentifiers(string name)
+    {
+        var tokens = AST.ParseTokens(name).ToArray();
+
+        Assert.Single(tokens);
+
+        var token = tokens[0];
+        Assert.Equal(SyntaxKind.IdentifierToken, token.Kind);
+        Assert.Equal(name, token.Text);
+    }
 
     public static IEnumerable<object[]> GetTokensData()
     {
@@ -111,7 +126,7 @@ public class LexerTests
     public static IEnumerable<object[]> GetTokenPairsWithSeparatorData()
     {
         return GetTokenPairsWithSeparator()
-           .Select(t => new object[]
+            .Select(t => new object[]
             {
                 t.t1Kind, t.t1Text, t.separatorKind, t.separatorText, t.t2Kind, t.t2Text
             });
@@ -132,6 +147,12 @@ public class LexerTests
             return true;
 
         if (t1Kind == SyntaxKind.IdentifierToken && t2IsKeyword)
+            return true;
+
+        if (t1Kind == SyntaxKind.IdentifierToken && t2Kind == SyntaxKind.NumberToken)
+            return true;
+
+        if (t1IsKeyword && t2Kind == SyntaxKind.NumberToken)
             return true;
 
         if (t1Kind == SyntaxKind.NumberToken && t2Kind == SyntaxKind.NumberToken)
