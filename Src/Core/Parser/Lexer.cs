@@ -194,6 +194,10 @@ namespace Hyper.Core.Parser
                     LexWhiteSpace();
                     break;
 
+                case '_':
+                    LexIdentifierOrKeyword();
+                    break;
+
                 default:
                     if (char.IsLetter(Current))
                         LexIdentifierOrKeyword();
@@ -297,7 +301,7 @@ namespace Hyper.Core.Parser
 
         private void LexIdentifierOrKeyword()
         {
-            while (char.IsLetter(Current))
+            while (char.IsLetterOrDigit(Current) || Current == '_')
                 _position++;
 
             var length = _position - _start;
