@@ -14,7 +14,7 @@ namespace Hyper.Core.Diagnostic
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public void AddRange(DiagnosticBag diagnostic) => _diagnostics.AddRange(diagnostic._diagnostics);
+        public void AddRange(IEnumerable<Diagnostic> diagnostic) => _diagnostics.AddRange(diagnostic);
 
         private void Report(TextLocation location, string message)
         {
