@@ -545,3 +545,7 @@ In script mode, we want a script function that take no arguments and returns `an
 * Emit conversions, unary expressions, and binary expressions
 * Emit remaining statements
 * Emit code for built-in rnd function
+
+# Stage19
+
+* Try replaced the reflection code in `Node.GetChildren()` with the source generator
