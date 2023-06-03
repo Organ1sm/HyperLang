@@ -258,9 +258,9 @@ internal sealed class Lowerer : BoundTreeRewriter
             var condition = (bool) node.Condition.ConstantValue.Value;
             condition = node.JumpIfTrue ? condition : !condition;
             if (condition)
-                return new BoundGotoStatement(node.Label);
+                return RewriteStatement(new BoundGotoStatement(node.Label));
 
-            return new BoundNopStatement();
+            return RewriteStatement(new BoundNopStatement());
         }
 
         return base.RewriteConditionalGotoStatement(node);
