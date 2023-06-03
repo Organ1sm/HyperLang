@@ -122,7 +122,7 @@ namespace Hyper.Core.VM
             _lastValue = EvaluateExpression(node.Expression);
         }
 
-        private static object EvaluateLiteralExpression(BoundLiteralExpression n) => n.Value;
+        private static object EvaluateConstantExpression(BoundExpression n) => n.ConstantValue.Value;
 
         private object EvaluateVariableExpression(BoundVariableExpression v)
         {
@@ -258,9 +258,11 @@ namespace Hyper.Core.VM
 
         private object? EvaluateExpression(BoundExpression node)
         {
+            if (node.ConstantValue != null)
+                return EvaluateConstantExpression(node);
             return (node switch
             {
-                BoundLiteralExpression n     => EvaluateLiteralExpression(n),
+                BoundLiteralExpression n     => EvaluateConstantExpression(n),
                 BoundVariableExpression v    => EvaluateVariableExpression(v),
                 BoundAssignmentExpression a  => EvaluateAssignmentExpression(a),
                 BoundUnaryExpression u       => EvaluateUnaryExpression(u),
