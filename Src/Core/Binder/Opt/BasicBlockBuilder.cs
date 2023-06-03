@@ -26,6 +26,7 @@ internal sealed class BasicBlockBuilder
                     EndBlock();
                     break;
 
+                case BoundNodeKind.NopStatement:
                 case BoundNodeKind.VariableDeclaration:
                 case BoundNodeKind.ExpressionStatement:
                     _statements.Add(statement);

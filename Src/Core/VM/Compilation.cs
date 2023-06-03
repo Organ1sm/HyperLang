@@ -34,7 +34,7 @@ namespace Hyper.Core.VM
         private BoundProgram GetProgram()
         {
             var previous = Previous?.GetProgram() ?? null;
-            return Binder.BindProgram(IsScript, previous, GlobalScope);
+            return Binding.Binder.BindProgram(IsScript, previous, GlobalScope);
         }
 
         public EvaluationResult Evaluate(Dictionary<VariableSymbol, object> variables)
@@ -73,7 +73,7 @@ namespace Hyper.Core.VM
             {
                 if (_globalScope == null)
                 {
-                    var globalScope = Binder.BindGlobalScope(IsScript, Previous?.GlobalScope, SyntaxTrees);
+                    var globalScope = Binding.Binder.BindGlobalScope(IsScript, Previous?.GlobalScope, SyntaxTrees);
                     Interlocked.CompareExchange(ref _globalScope, globalScope, null);
                 }
 

@@ -245,6 +245,9 @@ internal sealed class Emitter
     {
         switch (node.Kind)
         {
+            case BoundNodeKind.NopStatement:
+                EmitNopStatement(ilProcessor, (BoundNopStatement) node);
+                break;
             case BoundNodeKind.VariableDeclaration:
                 EmitVariableDeclaration(ilProcessor, (BoundVariableDeclaration) node);
                 break;
@@ -267,6 +270,8 @@ internal sealed class Emitter
                 throw new Exception($"Unexpected node kind {node.Kind}");
         }
     }
+
+    private void EmitNopStatement(ILProcessor ilProcessor, BoundNopStatement node) => ilProcessor.Emit(OpCodes.Nop);
 
     private void EmitVariableDeclaration(ILProcessor ilProcessor, BoundVariableDeclaration node)
     {

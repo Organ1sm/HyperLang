@@ -64,6 +64,9 @@ namespace Hyper.Core.VM
                 var s = body.Statements[index];
                 switch (s.Kind)
                 {
+                    case BoundNodeKind.NopStatement:
+                        index++;
+                        break;
                     case BoundNodeKind.ExpressionStatement:
                         EvaluateExpressionStatement((BoundExpressionStatement) s);
                         index++;

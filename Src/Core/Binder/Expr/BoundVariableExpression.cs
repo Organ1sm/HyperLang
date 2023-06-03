@@ -1,4 +1,5 @@
-﻿using Hyper.Core.Symbols;
+﻿using Hyper.Core.Binder.Expr;
+using Hyper.Core.Symbols;
 
 namespace Hyper.Core.Binding.Expr;
 
@@ -11,6 +12,7 @@ internal sealed class BoundVariableExpression : BoundExpression
 
     public override BoundNodeKind Kind => BoundNodeKind.VariableExpression;
 
-    public override TypeSymbol      Type     => Variable?.Type ?? TypeSymbol.Error;
-    public          VariableSymbol Variable { get; }
+    public override TypeSymbol     Type          => Variable?.Type ?? TypeSymbol.Error;
+    public          VariableSymbol Variable      { get; }
+    public override BoundConstant? ConstantValue => Variable.Constant;
 }

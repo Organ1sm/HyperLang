@@ -4,6 +4,7 @@ using Hyper.Core.Syntax;
 using Hyper.Core.Binding;
 using Hyper.Core.Binding.Expr;
 using Hyper.Core.Binding.Operator;
+using Hyper.Core.Binding.Opt;
 using Hyper.Core.Binding.Stmt;
 
 namespace Hyper.Core.Lowering;
@@ -19,7 +20,7 @@ internal sealed class Lowerer : BoundTreeRewriter
         var lowerer = new Lowerer();
         var result  = lowerer.RewriteStatement(statement);
 
-        return Flatten(function, result);
+        return RemoveDeadCode(Flatten(function, result));
     }
 
     private static BoundBlockStatement Flatten(FunctionSymbol function, BoundStatement statement)
@@ -61,6 +62,21 @@ internal sealed class Lowerer : BoundTreeRewriter
         //       first place.
         return boundStatement.Kind != BoundNodeKind.ReturnStatement &&
                boundStatement.Kind != BoundNodeKind.GotoStatement;
+    }
+
+    private static BoundBlockStatement RemoveDeadCode(BoundBlockStatement node)
+    {
+        var controlFlow         = ControlFlowGraph.Create(node);
+        var reachableStatements = new HashSet<BoundStatement>(controlFlow.Blocks.SelectMany(b => b.Statements));
+
+        var builder = node.Statements.ToBuilder();
+        for (int i = builder.Count - 1; i >= 0; i--)
+        {
+            if (!reachableStatements.Contains(builder[i]))
+                builder.RemoveAt(i);
+        }
+
+        return new BoundBlockStatement(builder.ToImmutable());
     }
 
     protected override BoundStatement RewriteIfStatement(BoundIfStatement node)
@@ -207,8 +223,9 @@ internal sealed class Lowerer : BoundTreeRewriter
         var varDecl = new BoundVariableDeclaration(node.Variable, node.LowerBound);
         var varExpr = new BoundVariableExpression(node.Variable);
 
-        var upperBoundSymbol = new LocalVariableSymbol("upperBound", TypeSymbol.Int, true);
-        var upperBoundDecl   = new BoundVariableDeclaration(upperBoundSymbol, node.UpperBound);
+        var upperBoundSymbol =
+            new LocalVariableSymbol("upperBound", TypeSymbol.Int, true, node.UpperBound.ConstantValue);
+        var upperBoundDecl = new BoundVariableDeclaration(upperBoundSymbol, node.UpperBound);
 
         var condition = new BoundBinaryExpression(varExpr,
                                                   BoundBinaryOperator.Bind(SyntaxKind.LessOrEqualsToken,
@@ -232,6 +249,21 @@ internal sealed class Lowerer : BoundTreeRewriter
             new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(varDecl, upperBoundDecl, whileStatements));
 
         return RewriteStatement(result);
+    }
+
+    protected override BoundStatement RewriteConditionalGotoStatement(BoundConditionalGotoStatement node)
+    {
+        if (node.Condition.ConstantValue != null)
+        {
+            var condition = (bool) node.Condition.ConstantValue.Value;
+            condition = node.JumpIfTrue ? condition : !condition;
+            if (condition)
+                return new BoundGotoStatement(node.Label);
+
+            return new BoundNopStatement();
+        }
+
+        return base.RewriteConditionalGotoStatement(node);
     }
 
     private int _labelCount;

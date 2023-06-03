@@ -1,12 +1,15 @@
-﻿using Hyper.Core.Binding.Operator;
+﻿using Hyper.Core.Binder.Expr;
+using Hyper.Core.Binding.Operator;
+using Hyper.Core.Binding.Opt;
 using Hyper.Core.Symbols;
 
 namespace Hyper.Core.Binding.Expr
 {
     internal class BoundBinaryExpression : BoundExpression
     {
-        public override BoundNodeKind Kind => BoundNodeKind.BinaryExpression;
-        public override TypeSymbol    Type => Operator.Type;
+        public override BoundConstant? ConstantValue { get; }
+        public override BoundNodeKind  Kind          => BoundNodeKind.BinaryExpression;
+        public override TypeSymbol     Type          => Operator.Type;
 
         public BoundExpression     Left     { get; }
         public BoundBinaryOperator Operator { get; }
@@ -17,6 +20,7 @@ namespace Hyper.Core.Binding.Expr
             Left = left;
             Operator = @operator;
             Right = right;
+            ConstantValue = ConstantFolding.ComputeConstant(left, Operator, right);
         }
     }
 }

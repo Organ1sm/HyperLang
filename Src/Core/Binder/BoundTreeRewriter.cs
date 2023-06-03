@@ -12,6 +12,7 @@ internal class BoundTreeRewriter
         return node.Kind switch
         {
             BoundNodeKind.BlockStatement      => RewriteBlockStatement((BoundBlockStatement) node),
+            BoundNodeKind.NopStatement        => RewriteNopStatement((BoundNopStatement) node),
             BoundNodeKind.VariableDeclaration => RewriteVariableDeclaration((BoundVariableDeclaration) node),
             BoundNodeKind.IfStatement         => RewriteIfStatement((BoundIfStatement) node),
             BoundNodeKind.DoWhileStatement    => RewriteDoWhileStatement((BoundDoWhileStatement) node),
@@ -72,6 +73,9 @@ internal class BoundTreeRewriter
 
         return new BoundBlockStatement(builder.MoveToImmutable());
     }
+
+    protected virtual BoundStatement RewriteNopStatement(BoundNopStatement node) => node;
+
 
     protected virtual BoundStatement RewriteVariableDeclaration(BoundVariableDeclaration node)
     {
