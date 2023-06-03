@@ -4,6 +4,7 @@ internal enum BoundNodeKind
 {
     // Statements
     BlockStatement,
+    NopStatement,
     ExpressionStatement,
     IfStatement,
     DoWhileStatement,

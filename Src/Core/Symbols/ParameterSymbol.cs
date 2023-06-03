@@ -3,7 +3,7 @@
 public sealed class ParameterSymbol : LocalVariableSymbol
 {
     public ParameterSymbol(string name, TypeSymbol type, int ordinal)
-        : base(name, type, isReadOnly: true)
+        : base(name, type, isReadOnly: true, null)
     {
         Ordinal = ordinal;
     }

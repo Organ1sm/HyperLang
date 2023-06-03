@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using Hyper.Core.Binder.Expr;
 using Hyper.Core.Binding.Expr;
 using Hyper.Core.Binding.Operator;
 using Hyper.Core.Binding.Opt;
@@ -13,7 +14,6 @@ using Hyper.Core.Lowering;
 using Hyper.Core.Parser;
 using Hyper.Core.Syntax.Expr;
 using Hyper.Core.Syntax.Stmt;
-using Microsoft.VisualBasic;
 using Conversion = Hyper.Core.Binding.Expr.Conversion;
 
 namespace Hyper.Core.Binding
@@ -333,8 +333,8 @@ namespace Hyper.Core.Binding
             var type        = BindTypeClause(syntax.TypeClause);
             var initializer = BindExpression(syntax.Initializer);
             var varType     = type ?? initializer.Type;
-            var variable    = BindVariableDeclaration(syntax.Identifier, isReadOnly, varType);
 
+            var variable = BindVariableDeclaration(syntax.Identifier, isReadOnly, varType, initializer.ConstantValue);
             var convertedInitializer = BindConversion(syntax.Initializer.Location, initializer, varType);
 
             return new BoundVariableDeclaration(variable, convertedInitializer);
@@ -670,13 +670,16 @@ namespace Hyper.Core.Binding
             return new BoundErrorExpression();
         }
 
-        private VariableSymbol BindVariableDeclaration(Token identifier, bool isReadOnly, TypeSymbol type)
+        private VariableSymbol BindVariableDeclaration(Token identifier,
+                                                       bool isReadOnly,
+                                                       TypeSymbol type,
+                                                       BoundConstant? constant = null)
         {
             var name    = identifier.Text;
             var declare = !identifier.IsMissing;
             var variable = _function == null
-                ? (VariableSymbol) new GlobalVariableSymbol(name, type, isReadOnly)
-                : new LocalVariableSymbol(name, type, isReadOnly);
+                ? (VariableSymbol) new GlobalVariableSymbol(name, type, isReadOnly, constant)
+                : new LocalVariableSymbol(name, type, isReadOnly, constant);
 
             if (declare && !_scope.TryDeclareVariable(variable))
                 _diagnostics.ReportSymbolAlreadyDeclared(identifier.Location, name);
