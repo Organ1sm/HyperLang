@@ -532,7 +532,7 @@ In script mode, we want a script function that take no arguments and returns `an
 
 ## Completed items
 
-* Add IL emitter 
+* Add IL emitter
 * Add MSBuild project file for Hello
 * Replaced hard-coded IL emitter for Hello World by one that uses our
   intermediate representation
@@ -546,6 +546,16 @@ In script mode, we want a script function that take no arguments and returns `an
 * Emit remaining statements
 * Emit code for built-in rnd function
 
-# Stage19
+# Stage 19
+
+## Completed items
 
 * Try replaced the reflection code in `Node.GetChildren()` with the source generator
+
+# Stage 20
+
+## Completed items
+
+* Perform constant folding
+    - Emit constant values
+    - Use constant values in evaluator
