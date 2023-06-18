@@ -6,6 +6,7 @@ public enum SyntaxKind
     EndOfFileToken,
 
     WhitespaceToken,
+    SingleLineCommentToken,
     NumberToken,
     StringToken,
 

@@ -47,8 +47,16 @@ namespace Hyper.Core.Parser
                     _position++;
                     break;
                 case '/':
-                    _kind = SyntaxKind.SlashToken;
-                    _position++;
+                    if (Lookahead == '/')
+                    {
+                        LexSingleLineComment();
+                    }
+                    else
+                    {
+                        _kind = SyntaxKind.SlashToken;
+                        _position++;
+                    }
+
                     break;
                 case '(':
                     _kind = SyntaxKind.OpenParenthesisToken;
@@ -219,6 +227,28 @@ namespace Hyper.Core.Parser
             var text   = Factors.GetText(_kind) ?? _text.ToString(_start, length);
 
             return new Token(_syntaxTree, _kind, _start, text, _value);
+        }
+
+        private void LexSingleLineComment()
+        {
+            _position += 2;
+            var done = false;
+            while (!done)
+            {
+                switch (Current)
+                {
+                    case '\r':
+                    case '\n':
+                    case '\0':
+                        done = true;
+                        break;
+                    default:
+                        _position++;
+                        break;
+                }
+            }
+
+            _kind = SyntaxKind.SingleLineCommentToken;
         }
 
         private void LexString()
