@@ -26,6 +26,7 @@ internal sealed class HyperREPL : REPL
             var isNumber     = token.Kind == SyntaxKind.NumberToken;
             var isIdentifier = token.Kind == SyntaxKind.IdentifierToken;
             var isString     = token.Kind == SyntaxKind.StringToken;
+            var isComment    = token.Kind == SyntaxKind.SingleLineCommentToken;
 
             if (isKeyword)
                 Console.ForegroundColor = ConsoleColor.Blue;
@@ -35,6 +36,8 @@ internal sealed class HyperREPL : REPL
                 Console.ForegroundColor = ConsoleColor.Magenta;
             else if (isIdentifier)
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
+            else if (isComment)
+                Console.ForegroundColor = ConsoleColor.Green;
 
             Console.Write(token.Text);
             Console.ResetColor();
@@ -136,10 +139,8 @@ internal sealed class HyperREPL : REPL
         var syntaxTree = AST.Parse(text);
 
         // Use Statement because we need to exclude the EndOfFileToken.
-        if (syntaxTree.Root.Members.Last().GetLastToken().IsMissing)
-            return false;
-
-        return true;
+        var lastMember = syntaxTree.Root.Members.LastOrDefault();
+        return lastMember == null || !syntaxTree.Root.Members.Last().GetLastToken().IsMissing;
     }
 
     protected override void EvaluateSubmission(string text)
