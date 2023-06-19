@@ -14,6 +14,8 @@ public struct TextSpan
         return new TextSpan(start, length);
     }
 
+    public bool OverlapsWith(TextSpan span) => Start < span.End && End > span.Start;
+
     public int Start  { get; }
     public int Length { get; }
     public int End    => Start + Length;

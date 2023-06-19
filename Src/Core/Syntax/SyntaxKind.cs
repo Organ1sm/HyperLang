@@ -7,6 +7,7 @@ public enum SyntaxKind
 
     WhitespaceToken,
     SingleLineCommentToken,
+    MultiLineCommentToken,
     NumberToken,
     StringToken,
 

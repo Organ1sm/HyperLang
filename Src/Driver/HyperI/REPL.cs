@@ -19,11 +19,11 @@ internal abstract class REPL
     private void InitializeMetaCommands()
     {
         var methods = GetType()
-           .GetMethods(BindingFlags.Public |
-                       BindingFlags.Static |
-                       BindingFlags.NonPublic |
-                       BindingFlags.Instance |
-                       BindingFlags.FlattenHierarchy);
+            .GetMethods(BindingFlags.Public |
+                        BindingFlags.Static |
+                        BindingFlags.NonPublic |
+                        BindingFlags.Instance |
+                        BindingFlags.FlattenHierarchy);
 
         foreach (var method in methods)
         {
@@ -54,7 +54,12 @@ internal abstract class REPL
         }
     }
 
-    protected virtual void RenderLine(string line) => Console.Write(line);
+    protected virtual object? RenderLine(IReadOnlyList<string> lines, int lineIndex, object? state)
+    {
+        Console.Write(lines[lineIndex]);
+        return state;
+    }
+
     protected void ClearHistory() => _submissionHistory.Clear();
 
     protected void EvaluateMetaCommand(string input)
@@ -386,9 +391,11 @@ internal abstract class REPL
         view.CurrentCharacter += text.Length;
     }
 
-    public sealed class SubmissionView
+    private delegate object LineRenderHandler(IReadOnlyList<string> lines, int lineIndex, object state);
+
+    private sealed class SubmissionView
     {
-        private readonly Action<string>               _lineRender;
+        private readonly LineRenderHandler            _lineRender;
         private readonly ObservableCollection<string> _submissionDocument;
 
         private int _cursorTop;
@@ -396,7 +403,7 @@ internal abstract class REPL
         private int _currentLine;
         private int _currentCharacter;
 
-        public SubmissionView(Action<string> lineRenderer, ObservableCollection<string> submissionDocument)
+        public SubmissionView(LineRenderHandler lineRenderer, ObservableCollection<string> submissionDocument)
         {
             _lineRender = lineRenderer;
             _submissionDocument = submissionDocument;
@@ -413,17 +420,26 @@ internal abstract class REPL
         {
             Console.CursorVisible = false;
 
-            var lineCount = 0;
+            var     lineCount = 0;
+            object? state     = null;
 
             foreach (var line in _submissionDocument)
             {
+                if (_cursorTop + lineCount >= Console.WindowHeight)
+                {
+                    Console.SetCursorPosition(0, Console.WindowHeight - 1);
+                    Console.WriteLine();
+                    if (_cursorTop > 0)
+                        _cursorTop--;
+                }
+
                 Console.SetCursorPosition(0, _cursorTop + lineCount);
                 Console.ForegroundColor = ConsoleColor.Green;
 
                 Console.Write(lineCount == 0 ? ">> " : ".. ");
                 Console.ResetColor();
 
-                _lineRender(line);
+                state = _lineRender(_submissionDocument, lineCount, state);
 
                 Console.WriteLine(new string(' ', Console.WindowWidth - line.Length));
                 lineCount++;
@@ -477,7 +493,6 @@ internal abstract class REPL
                 UpdateCursorPosition();
             }
         }
-
     }
 
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]

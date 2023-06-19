@@ -2,6 +2,9 @@
 
 public static class Factors
 {
+    public static bool IsComment(this SyntaxKind kind) =>
+        kind is SyntaxKind.SingleLineCommentToken or SyntaxKind.MultiLineCommentToken;
+
     public static int GetBinaryOperatorPrecedence(this SyntaxKind kind)
     {
         return kind switch
