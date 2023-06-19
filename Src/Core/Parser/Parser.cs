@@ -30,7 +30,7 @@ namespace Hyper.Core.Parser
                 token = lexer.Lex();
 
                 if (token.Kind != SyntaxKind.WhitespaceToken && token.Kind != SyntaxKind.BadToken &&
-                    token.Kind != SyntaxKind.SingleLineCommentToken)
+                    token.Kind != SyntaxKind.SingleLineCommentToken && token.Kind != SyntaxKind.MultiLineCommentToken)
                 {
                     tokens.Add(token);
                 }

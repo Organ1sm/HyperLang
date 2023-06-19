@@ -51,6 +51,10 @@ namespace Hyper.Core.Parser
                     {
                         LexSingleLineComment();
                     }
+                    else if (Lookahead == '*')
+                    {
+                        LexMultiLineComment();
+                    }
                     else
                     {
                         _kind = SyntaxKind.SlashToken;
@@ -249,6 +253,39 @@ namespace Hyper.Core.Parser
             }
 
             _kind = SyntaxKind.SingleLineCommentToken;
+        }
+
+        private void LexMultiLineComment()
+        {
+            _position += 2;
+            var done = true;
+
+            while (!done)
+            {
+                switch (Current)
+                {
+                    case '\0':
+                        var span     = new TextSpan(_start, 2);
+                        var location = new TextLocation(_text, span);
+                        _diagnostics.ReportUnterminatedMultiLineComment(location);
+                        done = true;
+                        break;
+                    case '*':
+                        if (Lookahead == '/')
+                        {
+                            _position++;
+                            done = true;
+                        }
+
+                        _position++;
+                        break;
+                    default:
+                        _position++;
+                        break;
+                }
+            }
+
+            _kind = SyntaxKind.MultiLineCommentToken;
         }
 
         private void LexString()

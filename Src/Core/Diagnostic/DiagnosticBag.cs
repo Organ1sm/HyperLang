@@ -52,6 +52,12 @@ namespace Hyper.Core.Diagnostic
             Report(location, message);
         }
 
+        public void ReportUnterminatedMultiLineComment(TextLocation location)
+        {
+            var message = "Unterminated multi-line comment.";
+            Report(location, message);
+        }
+
         public void ReportUndefinedBinaryOperator(TextLocation location,
                                                   string operatorText,
                                                   TypeSymbol leftType,
