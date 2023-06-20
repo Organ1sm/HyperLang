@@ -11,7 +11,9 @@ public class LexerTests
     {
         var tokenKinds = Enum.GetValues(typeof(SyntaxKind))
                              .Cast<SyntaxKind>()
-                             .Where(k => k.ToString().EndsWith("Keyword") || k.ToString().EndsWith("Token"));
+                             .Where(k => k != SyntaxKind.SingleLineCommentTrivia &&
+                                         k != SyntaxKind.MultiLineCommentTrivia)
+                             .Where(k => k.IsToken());
         var testedTokenKinds = GetTokens().Concat(GetSeparators()).Select(t => t.kind);
 
         var untestedTokenKinds = new SortedSet<SyntaxKind>(tokenKinds);
@@ -134,8 +136,8 @@ public class LexerTests
 
     private static bool RequiresSeparator(SyntaxKind t1Kind, SyntaxKind t2Kind)
     {
-        var t1IsKeyword = t1Kind.ToString().EndsWith("Keyword");
-        var t2IsKeyword = t2Kind.ToString().EndsWith("Keyword");
+        var t1IsKeyword = t1Kind.IsKeyword();
+        var t2IsKeyword = t2Kind.IsKeyword();
 
         if (t1Kind == SyntaxKind.IdentifierToken && t2Kind == SyntaxKind.IdentifierToken)
             return true;
@@ -197,6 +199,18 @@ public class LexerTests
         if (t1Kind == SyntaxKind.PipeToken && t2Kind == SyntaxKind.PipePipeToken)
             return true;
 
+        if (t1Kind == SyntaxKind.SlashToken && t2Kind == SyntaxKind.SlashToken)
+            return true;
+
+        if (t1Kind == SyntaxKind.SlashToken && t2Kind == SyntaxKind.StarToken)
+            return true;
+
+        if (t1Kind == SyntaxKind.SlashToken && t2Kind == SyntaxKind.SingleLineCommentTrivia)
+            return true;
+
+        if (t1Kind == SyntaxKind.SlashToken && t2Kind == SyntaxKind.MultiLineCommentTrivia)
+            return true;
+
         return false;
     }
 
@@ -225,11 +239,12 @@ public class LexerTests
     {
         return new[]
         {
-            (WhitespaceToken: SyntaxKind.WhitespaceTrivia, " "),
-            (WhitespaceToken: SyntaxKind.WhitespaceTrivia, "  "),
-            (WhitespaceToken: SyntaxKind.WhitespaceTrivia, "\r"),
-            (WhitespaceToken: SyntaxKind.WhitespaceTrivia, "\n"),
-            (WhitespaceToken: SyntaxKind.WhitespaceTrivia, "\r\n")
+            (SyntaxKind.WhitespaceTrivia, " "),
+            (SyntaxKind.WhitespaceTrivia, "  "),
+            (SyntaxKind.WhitespaceTrivia, "\r"),
+            (SyntaxKind.WhitespaceTrivia, "\n"),
+            (SyntaxKind.WhitespaceTrivia, "\r\n"),
+            (SyntaxKind.MultiLineCommentTrivia, "/**/"),
         };
     }
 
@@ -244,7 +259,10 @@ public class LexerTests
                 if (RequiresSeparator(t1.kind, t2.kind))
                 {
                     foreach (var s in GetSeparators())
-                        yield return (t1.kind, t1.text, s.kind, s.text, t2.kind, t2.text);
+                    {
+                        if (!RequiresSeparator(t1.kind, s.kind) && !RequiresSeparator(s.kind, t2.kind))
+                            yield return (t1.kind, t1.text, s.kind, s.text, t2.kind, t2.text);
+                    }
                 }
             }
         }
