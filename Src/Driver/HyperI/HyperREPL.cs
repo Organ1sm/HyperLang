@@ -58,7 +58,7 @@ internal sealed class HyperREPL : REPL
             var tokenSpan  = TextSpan.MakeTextSpanFromBound(tokenStart, tokenEnd);
             var tokenText  = renderState.Text.ToString(tokenSpan);
 
-            var isKeyword    = token.Kind.ToString().EndsWith("Keyword");
+            var isKeyword    = token.Kind.IsKeyword();
             var isNumber     = token.Kind == SyntaxKind.NumberToken;
             var isIdentifier = token.Kind == SyntaxKind.IdentifierToken;
             var isString     = token.Kind == SyntaxKind.StringToken;
@@ -178,7 +178,7 @@ internal sealed class HyperREPL : REPL
 
         // Use Statement because we need to exclude the EndOfFileToken.
         var lastMember = syntaxTree.Root.Members.LastOrDefault();
-        return lastMember == null || !syntaxTree.Root.Members.Last().GetLastToken().IsMissing;
+        return lastMember != null && !lastMember.GetLastToken().IsMissing;
     }
 
     protected override void EvaluateSubmission(string text)

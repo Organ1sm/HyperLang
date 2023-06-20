@@ -237,6 +237,7 @@ namespace Hyper.Core.Parser
         {
             _position += 2;
             var done = false;
+            
             while (!done)
             {
                 switch (Current)
@@ -258,7 +259,7 @@ namespace Hyper.Core.Parser
         private void LexMultiLineComment()
         {
             _position += 2;
-            var done = true;
+            var done = false;
 
             while (!done)
             {
@@ -270,6 +271,7 @@ namespace Hyper.Core.Parser
                         _diagnostics.ReportUnterminatedMultiLineComment(location);
                         done = true;
                         break;
+
                     case '*':
                         if (Lookahead == '/')
                         {
@@ -279,6 +281,7 @@ namespace Hyper.Core.Parser
 
                         _position++;
                         break;
+
                     default:
                         _position++;
                         break;
