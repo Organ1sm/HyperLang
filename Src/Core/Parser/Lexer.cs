@@ -17,7 +17,7 @@ namespace Hyper.Core.Parser
         public Token Lex()
         {
             _start = _position;
-            _kind = SyntaxKind.BadToken;
+            _kind = SyntaxKind.BadTokenTrivia;
             _value = null;
 
             switch (Current)
@@ -253,7 +253,7 @@ namespace Hyper.Core.Parser
                 }
             }
 
-            _kind = SyntaxKind.SingleLineCommentToken;
+            _kind = SyntaxKind.SingleLineCommentTrivia;
         }
 
         private void LexMultiLineComment()
@@ -288,7 +288,7 @@ namespace Hyper.Core.Parser
                 }
             }
 
-            _kind = SyntaxKind.MultiLineCommentToken;
+            _kind = SyntaxKind.MultiLineCommentTrivia;
         }
 
         private void LexString()
@@ -366,7 +366,7 @@ namespace Hyper.Core.Parser
             while (char.IsWhiteSpace(Current))
                 _position++;
 
-            _kind = SyntaxKind.WhitespaceToken;
+            _kind = SyntaxKind.WhitespaceTrivia;
         }
 
         private void LexIdentifierOrKeyword()

@@ -2,12 +2,12 @@
 
 public enum SyntaxKind
 {
-    BadToken,
     EndOfFileToken,
 
-    WhitespaceToken,
-    SingleLineCommentToken,
-    MultiLineCommentToken,
+    BadTokenTrivia,
+    WhitespaceTrivia,
+    SingleLineCommentTrivia,
+    MultiLineCommentTrivia,
     NumberToken,
     StringToken,
 

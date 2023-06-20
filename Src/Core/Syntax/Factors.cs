@@ -3,11 +3,22 @@
 public static class Factors
 {
     public static bool IsComment(this SyntaxKind kind) =>
-        kind is SyntaxKind.SingleLineCommentToken or SyntaxKind.MultiLineCommentToken;
+        kind is SyntaxKind.SingleLineCommentTrivia or SyntaxKind.MultiLineCommentTrivia;
 
     public static bool IsKeyword(this SyntaxKind kind) => kind.ToString().EndsWith("Keyword");
 
-    public static bool IsToken(this SyntaxKind kind) => kind.IsKeyword() || kind.ToString().EndsWith("Token");
+    public static bool IsToken(this SyntaxKind kind) =>
+        !kind.IsTrivia() && (kind.IsKeyword() || kind.ToString().EndsWith("Token"));
+
+    public static bool IsTrivia(this SyntaxKind kind) =>
+        kind switch
+        {
+            SyntaxKind.BadTokenTrivia          => true,
+            SyntaxKind.WhitespaceTrivia        => true,
+            SyntaxKind.SingleLineCommentTrivia => true,
+            SyntaxKind.MultiLineCommentTrivia  => true,
+            _                                  => false
+        };
 
     public static int GetBinaryOperatorPrecedence(this SyntaxKind kind)
     {
