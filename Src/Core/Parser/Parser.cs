@@ -29,11 +29,8 @@ namespace Hyper.Core.Parser
             {
                 token = lexer.Lex();
 
-                if (token.Kind != SyntaxKind.WhitespaceToken && token.Kind != SyntaxKind.BadToken &&
-                    token.Kind != SyntaxKind.SingleLineCommentToken && token.Kind != SyntaxKind.MultiLineCommentToken)
-                {
+                if (!token.Kind.IsTrivia())
                     tokens.Add(token);
-                }
             } while (token.Kind != SyntaxKind.EndOfFileToken);
 
             _syntaxTree = syntaxTree;
@@ -45,7 +42,7 @@ namespace Hyper.Core.Parser
         private Token Peek(int offset)
         {
             var index = _position + offset;
-            return index >= _tokens.Length ? _tokens[_tokens.Length - 1] : _tokens[index];
+            return index >= _tokens.Length ? _tokens[^1] : _tokens[index];
         }
 
         private Token NextToken()
