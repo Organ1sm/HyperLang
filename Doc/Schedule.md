@@ -559,3 +559,8 @@ In script mode, we want a script function that take no arguments and returns `an
 * Perform constant folding
     - Emit constant values
     - Use constant values in evaluator
+
+# Stage 21
+## Completed items
+
+* Add support for comment.
